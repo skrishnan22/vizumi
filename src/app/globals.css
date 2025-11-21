@@ -1,0 +1,48 @@
+:root {
+  --ink: #1c1a17;
+  --paper: #fdfbf6;
+  --card-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  --card-border: #ece3cf;
+  --accent-yellow: #fff3c4;
+  --accent-blue: #e0f0ff;
+  --accent-green: #eaf9e5;
+}
+
+.nextjs-portal {
+  display: none !important;
+}
+
+/* Adjust body styling to remove potential padding/overflow issues if the overlay was affecting it */
+body {
+  padding: 0 !important;
+  overflow: auto !important;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(28, 26, 23, 0.05) 1px, transparent 0);
+  background-size: 32px 32px;
+  font-family: var(--font-hand), 'Patrick Hand', 'Comic Sans', cursive;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
