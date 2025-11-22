@@ -21,6 +21,7 @@
 }
 
 .nodeCard {
+  position: relative;
   height: 100%;
   border-radius: 22px;
   border: 2px solid var(--card-border);

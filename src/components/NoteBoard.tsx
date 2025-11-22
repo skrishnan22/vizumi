@@ -18,7 +18,7 @@ type NoteBoardProps = {
 
 const COLUMN_COUNT = 3;
 const NODE_WIDTH = 320;
-const NODE_HEIGHT = 450;
+const NODE_HEIGHT = 400;
 const COLUMN_GAP = 120;
 const ROW_GAP = 160;
 const NODE_COLORS = [
@@ -80,7 +80,7 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           className={styles.flowCanvas}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.6 }}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
           minZoom={0.35}
           maxZoom={1.5}
           nodesDraggable
