@@ -1,33 +1,70 @@
 'use client';
 
-import { useState } from 'react';
-import Masonry from 'react-masonry-css';
-import ReactMarkdown from 'react-markdown';
+import { useEffect, useMemo } from 'react';
+import ReactFlow, {
+  Background,
+  useEdgesState,
+  useNodesState,
+  type Node,
+} from 'reactflow';
+import 'reactflow/dist/style.css';
 import { NoteBlock } from '@/lib/schemas';
-import { DiagramSection } from './DiagramSection';
-import { DiagramModal } from './DiagramModal';
+import { NoteBlockNode } from './NoteBlockNode';
 import styles from './NoteBoard.module.css';
-import { DiagramRenderer } from './DiagramRenderer';
 
 type NoteBoardProps = {
   blocks: NoteBlock[];
 };
 
-const masonryBreakpoints = {
-  default: 3,
-  1200: 2,
-  768: 1,
-};
+const COLUMN_COUNT = 3;
+const NODE_WIDTH = 320;
+const NODE_HEIGHT = 450;
+const COLUMN_GAP = 120;
+const ROW_GAP = 160;
+const NODE_COLORS = [
+  '#FFF6D9',
+  '#E5F4FF',
+  '#EAFBE7',
+  '#FFF0F5',
+  '#F3E8FF',
+  '#FFEFE0',
+];
 
-const accentVariants = ['cardYellow', 'cardBlue', 'cardGreen'] as const;
+export type NoteNodeData = { block: NoteBlock; accent: string };
 
-type ActiveDiagram = {
-  code: string;
-  title: string;
+function buildNodes(blocks: NoteBlock[]): Node<NoteNodeData>[] {
+  return blocks.map((block, index) => {
+    const column = index % COLUMN_COUNT;
+    const row = Math.floor(index / COLUMN_COUNT);
+    const x = column * (NODE_WIDTH + COLUMN_GAP);
+    const y = row * (NODE_HEIGHT + ROW_GAP);
+    const accent = NODE_COLORS[index % NODE_COLORS.length];
+
+    return {
+      id: block.id ?? `block-${index}`,
+      type: 'note',
+      data: { block, accent },
+      position: { x, y },
+      style: {
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
+      },
+    };
+  });
+}
+
+const nodeTypes = {
+  note: NoteBlockNode,
 };
 
 export function NoteBoard({ blocks }: NoteBoardProps) {
-  const [activeDiagram, setActiveDiagram] = useState<ActiveDiagram | null>(null);
+  const initialNodes = useMemo(() => buildNodes(blocks), [blocks]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, , onEdgesChange] = useEdgesState([]);
+
+  useEffect(() => {
+    setNodes(initialNodes);
+  }, [initialNodes, setNodes]);
 
   if (!blocks.length) {
     return null;
@@ -35,66 +72,25 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
 
   return (
     <section className={styles.boardSection} aria-label="Generated visual notes">
-      <div className={styles.canvas}>
-        <div className={styles.canvasInner}>
-          <header className={styles.boardHeader}>
-            <p className={styles.boardSubtitle}>Sketchbook</p>
-            <h2 className={styles.boardTitle}>Generated Visual Notes</h2>
-          </header>
-
-          <Masonry
-            breakpointCols={masonryBreakpoints}
-            className={styles.masonryGrid}
-            columnClassName={styles.masonryColumn}
-          >
-            {blocks.map((block, index) => {
-              const accentKey = accentVariants[index % accentVariants.length];
-              const accentClass = styles[accentKey];
-              const key = block.id || `block-${index}`;
-
-              return (
-                <article key={key} className={`${styles.card} ${accentClass}`}>
-                  <div className={styles.cardHeader}>
-                    <h3 className={styles.title}>{block.title}</h3>
-                  </div>
-
-                  <div className={styles.markdown}>
-                    <ReactMarkdown>{block.summary}</ReactMarkdown>
-                  </div>
-
-                  {block.visualType === 'diagram' && block.d2Code && (
-                    <div className={styles.diagramSection}>
-                      <DiagramRenderer
-                        code={block.d2Code}
-                        className={styles.diagramWrapper}
-                      />
-                      <button
-                        type="button"
-                        className={styles.diagramButton}
-                        onClick={() =>
-                          setActiveDiagram({
-                            code: block.d2Code ?? '',
-                            title: block.title || 'Diagram',
-                          })
-                        }
-                      >
-                        View full diagram
-                      </button>
-                    </div>
-                  )}
-                </article>
-              );
-            })}
-          </Masonry>
-        </div>
+      <div className={styles.flowShell}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          className={styles.flowCanvas}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.6 }}
+          minZoom={0.35}
+          maxZoom={1.5}
+          nodesDraggable
+          nodesConnectable={false}
+          panOnScroll
+          panOnDrag
+        >
+          <Background gap={24} color="#e2dcd4" />
+        </ReactFlow>
       </div>
-      {activeDiagram && (
-        <DiagramModal
-          code={activeDiagram.code}
-          title={activeDiagram.title}
-          onClose={() => setActiveDiagram(null)}
-        />
-      )}
     </section>
   );
 }

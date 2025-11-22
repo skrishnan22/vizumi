@@ -3,7 +3,7 @@ import path from 'path';
 import { streamObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { NoteSchema } from '@/lib/schemas';
-import { SYSTEM_PROMPT, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3 } from '@/lib/prompts';
+import { SYSTEM_PROMPT_3 } from '@/lib/prompts';
 
 // Configure OpenRouter as a custom OpenAI provider
 const openrouter = createOpenAI({

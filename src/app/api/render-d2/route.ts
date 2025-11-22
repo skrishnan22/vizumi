@@ -123,18 +123,6 @@ export async function POST(req: Request) {
 
     const message = extractD2ErrorMessage(error);
 
-    // Log the problematic code to a file for debugging
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const logPath = path.join(process.cwd(), 'd2-debug.log');
-      const timestamp = new Date().toISOString();
-      const logEntry = `\n\n--- ${timestamp} ---\nError: ${message}\nCode:\n${code}\nFull Source:\n${fullDiagramSource}\n`;
-      fs.appendFileSync(logPath, logEntry);
-    } catch (logError) {
-      console.error('Failed to write to debug log', logError);
-    }
-
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -51,7 +51,9 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
                 <div className={styles.error}>Error: {error.message}</div>
             )}
 
-            {object?.blocks?.length ? <NoteBoard blocks={object.blocks} /> : null}
+            {Array.isArray(object?.blocks) && object.blocks.length > 0 ? (
+                <NoteBoard blocks={object.blocks} />
+            ) : null}
         </section>
     );
 }
