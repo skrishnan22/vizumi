@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
-import { NoteSchema } from '@/lib/schemas';
+import { NoteSchema, NoteBlockSchema } from '@/lib/schemas';
+import type { NoteBlock } from '@/lib/schemas';
 import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
 
@@ -17,6 +18,16 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
     });
 
     const [url, setUrl] = useState(initialUrl);
+
+    const blocks = Array.isArray(object?.blocks)
+        ? object.blocks.reduce((acc, block) => {
+            const result = NoteBlockSchema.safeParse(block);
+            if (result.success) {
+                acc.push(result.data);
+            }
+            return acc;
+        }, [] as NoteBlock[])
+        : [];
 
     return (
         <section className={styles.wrapper}>
@@ -51,9 +62,7 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
                 <div className={styles.error}>Error: {error.message}</div>
             )}
 
-            {Array.isArray(object?.blocks) && object.blocks.length > 0 ? (
-                <NoteBoard blocks={object.blocks} />
-            ) : null}
+            {blocks.length > 0 ? <NoteBoard blocks={blocks} /> : null}
         </section>
     );
 }

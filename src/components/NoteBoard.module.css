@@ -10,7 +10,10 @@
   border-radius: 32px;
   border: 2px solid var(--card-border);
   box-shadow: var(--card-shadow);
-  background: #fff;
+  background-color: #fffbf2;
+  background-image: radial-gradient(rgba(28, 26, 23, 0.12) 0.75px, transparent 0);
+  background-size: 14px 14px;
+  background-position: -3px -3px;
   position: relative;
   overflow: hidden;
 }
@@ -22,7 +25,8 @@
 
 .nodeCard {
   position: relative;
-  height: 100%;
+  min-height: 100%;
+  height: auto;
   border-radius: 22px;
   border: 2px solid var(--card-border);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
@@ -50,11 +54,137 @@
   line-height: 1.3;
 }
 
+.editButton {
+  border: none;
+  background: transparent;
+  color: rgba(28, 26, 23, 0.8);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.editButton:hover,
+.editButton:focus-visible {
+  background: rgba(0, 0, 0, 0.08);
+}
+
 .nodeBody {
   flex: 0 0 auto;
+  color: #1c1a17;
   font-size: 1.05rem;
   line-height: 1.6;
   overflow: visible;
+}
+
+.editorWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editor {
+  width: 100%;
+  min-height: 150px;
+  border-radius: 16px;
+  border: 2px dashed rgba(28, 26, 23, 0.35);
+  padding: 1rem;
+  font-family: var(--font-hand), 'Patrick Hand', cursive;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+  background: #fff;
+}
+
+.editor:focus {
+  outline: none;
+  border-color: rgba(28, 26, 23, 0.8);
+}
+
+.richEditorShell {
+  border: 2px dashed rgba(28, 26, 23, 0.35);
+  border-radius: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.richEditorToolbar {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid rgba(28, 26, 23, 0.12);
+}
+
+.richEditorButton {
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 0.15rem 0.6rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: rgba(28, 26, 23, 0.8);
+}
+
+.richEditorButton[data-active='true'] {
+  background: rgba(28, 26, 23, 0.08);
+}
+
+.richEditor {
+  padding: 0.6rem 0.9rem 0.9rem;
+  min-height: 180px;
+  cursor: text;
+}
+
+.richEditor :global(.ProseMirror) {
+  min-height: 150px;
+  font-family: var(--font-hand), 'Patrick Hand', cursive;
+  font-size: 1rem;
+  line-height: 1.5;
+  outline: none;
+}
+
+.richEditor :global(.ProseMirror p + p) {
+  margin-top: 0.5rem;
+}
+
+.editorLoading {
+  border: 2px dashed rgba(28, 26, 23, 0.35);
+  border-radius: 16px;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: rgba(28, 26, 23, 0.65);
+  background: #fff;
+}
+
+.editorActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.editorButton,
+.editorButtonPrimary {
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.editorButton {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1c1a17;
+}
+
+.editorButtonPrimary {
+  background: #1c1a17;
+  color: #fff9db;
 }
 
 .nodeBody :global(p + p) {
@@ -66,13 +196,12 @@
 }
 
 .nodeDiagramWrapper {
-  flex: 0 0 auto;
-  margin-top: 0.5rem;
   border-radius: 16px;
   border: 1px dashed rgba(28, 26, 23, 0.25);
   background: #fff;
   width: 100%;
   padding: 0.5rem;
+  pointer-events: none;
 }
 
 .nodeDiagram {
@@ -84,4 +213,88 @@
   width: 100%;
   height: auto;
   display: block;
+}
+
+.diagramPreviewButton {
+  flex: 0 0 auto;
+  margin-top: 0.5rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 24px;
+  border: 2px solid var(--card-border);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  width: min(1200px, 94vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: modalFade 150ms ease;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modalTitle {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.modalClose {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  color: rgba(28, 26, 23, 0.8);
+}
+
+.modalBody {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalDiagram {
+  width: min(100%, 900px);
+  min-height: 500px;
+}
+
+.modalDiagram :global(svg) {
+  width: 100%;
+  height: auto;
+}
+
+@keyframes modalFade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

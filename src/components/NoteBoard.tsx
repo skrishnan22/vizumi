@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, {
   Background,
+  BackgroundVariant,
   NodeChange,
   useEdgesState,
   useNodesState,
@@ -35,11 +36,13 @@ export type NoteNodeData = {
   block: NoteBlock;
   accent: string;
   onMeasure?: (id: string, height: number) => void;
+  onSaveSummary?: (id: string, summary: string) => void;
 };
 
 function buildNodes(
   blocks: NoteBlock[],
   onMeasure: (id: string, height: number) => void,
+  onSaveSummary: (id: string, summary: string) => void,
 ): Node<NoteNodeData>[] {
   return blocks.map((block, index) => {
     const column = index % COLUMN_COUNT;
@@ -51,7 +54,7 @@ function buildNodes(
     return {
       id: block.id ?? `block-${index}`,
       type: 'note',
-      data: { block, accent, onMeasure },
+      data: { block, accent, onMeasure, onSaveSummary },
       position: { x, y },
       style: {
         width: NODE_WIDTH,
@@ -67,6 +70,7 @@ const nodeTypes = {
 
 export function NoteBoard({ blocks }: NoteBoardProps) {
   const [contentHeights, setContentHeights] = useState<Record<string, number>>({});
+  const [localBlocks, setLocalBlocks] = useState<NoteBlock[]>(blocks);
   const [autoLayoutEnabled, setAutoLayoutEnabled] = useState(true);
   const onMeasure = useCallback((nodeId: string, height: number) => {
     setContentHeights((prev) => {
@@ -77,9 +81,28 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     });
   }, []);
 
+  useEffect(() => {
+    setLocalBlocks(blocks);
+  }, [blocks]);
+
+  const handleSaveSummary = useCallback((nodeId: string, summary: string) => {
+    setLocalBlocks((prev) =>
+      prev.map((block) => {
+        const currentId = block.id;
+        if (currentId !== nodeId) {
+          return block;
+        }
+        if (block.summary === summary) {
+          return block;
+        }
+        return { ...block, summary };
+      }),
+    );
+  }, []);
+
   const initialNodes = useMemo(
-    () => buildNodes(blocks, onMeasure),
-    [blocks, onMeasure],
+    () => buildNodes(localBlocks, onMeasure, handleSaveSummary),
+    [localBlocks, onMeasure, handleSaveSummary],
   );
 
   const [nodes, setNodes, internalOnNodesChange] = useNodesState(initialNodes);
@@ -169,7 +192,12 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
           panOnScroll
           panOnDrag
         >
-          <Background gap={24} color="#e2dcd4" />
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={22}
+            size={1.6}
+            color="rgba(28,26,23,0.25)"
+          />
         </ReactFlow>
       </div>
     </section>

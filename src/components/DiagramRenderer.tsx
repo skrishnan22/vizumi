@@ -12,6 +12,29 @@ type DiagramRendererProps = {
   onSuccess?: () => void;
 };
 
+function normalizeAttributes(attribs: Record<string, string> = {}) {
+  return Object.entries(attribs).reduce<Record<string, string>>((acc, [key, value]) => {
+    if (key === 'class') {
+      acc.className = value;
+      return acc;
+    }
+
+    if (key.includes(':')) {
+      const parts = key.split(':').filter(Boolean);
+      if (parts.length) {
+        const normalizedKey = parts
+          .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+          .join('');
+        acc[normalizedKey] = value;
+        return acc;
+      }
+    }
+
+    acc[key] = value;
+    return acc;
+  }, {});
+}
+
 async function fetchDiagramSvg(diagramCode: string) {
   const response = await fetch('/api/render-d2', {
     method: 'POST',
@@ -71,13 +94,7 @@ export function DiagramRenderer({ code, className, onError, onSuccess }: Diagram
       replace(domNode) {
         const element = domNode as Element;
         if (element?.type === 'tag') {
-          const attribs = { ...(element.attribs ?? {}) };
-
-          // Convert 'class' to 'className' for React
-          if (attribs.class) {
-            attribs.className = attribs.class;
-            delete attribs.class;
-          }
+          const attribs = normalizeAttributes(element.attribs ?? {});
 
           // Special handling for root SVG element
           if (element.name === 'svg') {

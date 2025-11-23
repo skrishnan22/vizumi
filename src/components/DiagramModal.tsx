@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { DiagramRenderer } from './DiagramRenderer';
 import styles from './NoteBoard.module.css';
 
@@ -11,6 +12,7 @@ type DiagramModalProps = {
 };
 
 export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -21,11 +23,16 @@ export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
   );
 
   useEffect(() => {
+    setIsMounted(true);
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  return (
+  if (!isMounted || typeof document === 'undefined') {
+    return null;
+  }
+
+  const modalContent = (
     <div
       className={styles.modalOverlay}
       role="dialog"
@@ -54,4 +61,6 @@ export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
