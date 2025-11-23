@@ -13,6 +13,7 @@ import 'reactflow/dist/style.css';
 import { NoteBlock } from '@/lib/schemas';
 import { NoteBlockNode } from './NoteBlockNode';
 import styles from './NoteBoard.module.css';
+import { useNoteStore } from '@/store/noteStore';
 
 type NoteBoardProps = {
   blocks: NoteBlock[];
@@ -70,8 +71,11 @@ const nodeTypes = {
 
 export function NoteBoard({ blocks }: NoteBoardProps) {
   const [contentHeights, setContentHeights] = useState<Record<string, number>>({});
-  const [localBlocks, setLocalBlocks] = useState<NoteBlock[]>(blocks);
-  const [autoLayoutEnabled, setAutoLayoutEnabled] = useState(true);
+  const autoLayoutEnabled = useNoteStore((state) => state.autoLayoutEnabled);
+  const setAutoLayoutEnabled = useNoteStore((state) => state.setAutoLayoutEnabled);
+  const storeBlocks = useNoteStore((state) => state.blocks);
+  const updateBlockSummary = useNoteStore((state) => state.updateBlockSummary);
+  const setBlocksInStore = useNoteStore((state) => state.setBlocks);
   const onMeasure = useCallback((nodeId: string, height: number) => {
     setContentHeights((prev) => {
       if (Math.abs((prev[nodeId] ?? 0) - height) < 1) {
@@ -81,28 +85,22 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     });
   }, []);
 
-  useEffect(() => {
-    setLocalBlocks(blocks);
-  }, [blocks]);
+  const blocksForLayout = storeBlocks.length ? storeBlocks : blocks;
+  const storeBlockCount = storeBlocks.length;
 
-  const handleSaveSummary = useCallback((nodeId: string, summary: string) => {
-    setLocalBlocks((prev) =>
-      prev.map((block) => {
-        const currentId = block.id;
-        if (currentId !== nodeId) {
-          return block;
-        }
-        if (block.summary === summary) {
-          return block;
-        }
-        return { ...block, summary };
-      }),
-    );
-  }, []);
+  const handleSaveSummary = useCallback(
+    (nodeId: string, summary: string) => {
+      if (!storeBlockCount && blocks.length) {
+        setBlocksInStore(blocks);
+      }
+      updateBlockSummary(nodeId, summary);
+    },
+    [blocks, setBlocksInStore, storeBlockCount, updateBlockSummary],
+  );
 
   const initialNodes = useMemo(
-    () => buildNodes(localBlocks, onMeasure, handleSaveSummary),
-    [localBlocks, onMeasure, handleSaveSummary],
+    () => buildNodes(blocksForLayout, onMeasure, handleSaveSummary),
+    [blocksForLayout, onMeasure, handleSaveSummary],
   );
 
   const [nodes, setNodes, internalOnNodesChange] = useNodesState(initialNodes);

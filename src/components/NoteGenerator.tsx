@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { NoteSchema, NoteBlockSchema } from '@/lib/schemas';
 import type { NoteBlock } from '@/lib/schemas';
 import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
+import { useNoteStore } from '@/store/noteStore';
 
 type NoteGeneratorProps = {
     initialUrl?: string;
@@ -18,16 +19,21 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
     });
 
     const [url, setUrl] = useState(initialUrl);
+    const setBlocksInStore = useNoteStore((state) => state.setBlocks);
 
     const blocks = Array.isArray(object?.blocks)
         ? object.blocks.reduce((acc, block) => {
-            const result = NoteBlockSchema.safeParse(block);
-            if (result.success) {
-                acc.push(result.data);
-            }
-            return acc;
-        }, [] as NoteBlock[])
+              const result = NoteBlockSchema.safeParse(block);
+              if (result.success) {
+                  acc.push(result.data);
+              }
+              return acc;
+          }, [] as NoteBlock[])
         : [];
+
+    useEffect(() => {
+        setBlocksInStore(blocks);
+    }, [blocks, setBlocksInStore]);
 
     return (
         <section className={styles.wrapper}>
