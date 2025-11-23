@@ -23,12 +23,23 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
 
     const blocks = Array.isArray(object?.blocks)
         ? object.blocks.reduce((acc, block) => {
-              const result = NoteBlockSchema.safeParse(block);
-              if (result.success) {
-                  acc.push(result.data);
-              }
-              return acc;
-          }, [] as NoteBlock[])
+            const result = NoteBlockSchema.safeParse(block);
+            if (result.success) {
+                acc.push(result.data);
+            }
+            return acc;
+        }, [] as NoteBlock[])
+            // Assign parentId: first block is root, all others are children of first block
+            .map((block, index) => {
+                if (index === 0) {
+                    // Root block - no parent
+                    return { ...block, parentId: undefined };
+                } else {
+                    // All other blocks are children of the first block
+                    const rootId = object?.blocks?.[0]?.id;
+                    return { ...block, parentId: rootId };
+                }
+            })
         : [];
 
     useEffect(() => {

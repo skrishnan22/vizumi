@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const NoteBlockSchema = z.object({
   id: z.string().describe("Unique identifier for the block"),
+  parentId: z.string().optional().describe("ID of the parent block. Root blocks have no parentId."),
   title: z.string().describe("Short title for this section of the note"),
   summary: z.string().describe("Markdown formatted summary of the content. Use bolding for key terms."),
   visualType: z.enum(['none', 'diagram', 'icon']).describe("The type of visual aid to generate for this block"),

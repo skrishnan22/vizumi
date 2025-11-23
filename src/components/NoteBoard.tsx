@@ -42,14 +42,31 @@ export type NoteNodeData = {
   onSaveSummary?: (id: string, summary: string) => void;
 };
 
-// ELK layout options for horizontal tree
+// ELK layout options for radial tree (root at center, children in rings)
 const elkOptions = {
-  'elk.algorithm': 'layered',
-  'elk.direction': 'RIGHT',
-  'elk.spacing.nodeNode': '120',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '200',
-  'elk.layered.nodePlacement.strategy': 'SIMPLE',
+  'elk.algorithm': 'org.eclipse.elk.radial',
+  'elk.radial.radius': '150',
+  'elk.spacing.nodeNode': '80',
 };
+
+// Helper function to determine which handle to use based on angle
+function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
+  // Normalize angle to -π to π range
+  let normalized = angleInRadians;
+  while (normalized > Math.PI) normalized -= 2 * Math.PI;
+  while (normalized < -Math.PI) normalized += 2 * Math.PI;
+
+  // Map angle to cardinal direction
+  if (normalized >= -Math.PI / 4 && normalized < Math.PI / 4) {
+    return 'right';  // -45° to 45°
+  } else if (normalized >= Math.PI / 4 && normalized < 3 * Math.PI / 4) {
+    return 'bottom'; // 45° to 135°
+  } else if (normalized >= 3 * Math.PI / 4 || normalized < -3 * Math.PI / 4) {
+    return 'left';   // 135° to -135°
+  } else {
+    return 'top';    // -135° to -45°
+  }
+}
 
 async function getLayoutedElements(
   nodes: Node<NoteNodeData>[],
@@ -83,7 +100,39 @@ async function getLayoutedElements(
     };
   });
 
-  return { nodes: layoutedNodes, edges };
+  // Update edges with proper handle IDs based on node positions
+  const layoutedEdges = edges.map((edge) => {
+    const sourceNode = layoutedNodes.find((n) => n.id === edge.source);
+    const targetNode = layoutedNodes.find((n) => n.id === edge.target);
+
+    if (!sourceNode || !targetNode) {
+      return edge; // Keep edge as-is if nodes not found
+    }
+
+    // Calculate center positions of nodes
+    const sourceCenterX = sourceNode.position.x + NODE_WIDTH / 2;
+    const sourceCenterY = sourceNode.position.y + NODE_HEIGHT / 2;
+    const targetCenterX = targetNode.position.x + NODE_WIDTH / 2;
+    const targetCenterY = targetNode.position.y + NODE_HEIGHT / 2;
+
+    // Calculate angle from source to target
+    const angle = Math.atan2(
+      targetCenterY - sourceCenterY,
+      targetCenterX - sourceCenterX
+    );
+
+    // Determine which handles to use
+    const sourceHandleSide = getHandleForAngle(angle);
+    const targetHandleSide = getHandleForAngle(angle + Math.PI); // Opposite side
+
+    return {
+      ...edge,
+      sourceHandle: `source-${sourceHandleSide}`,
+      targetHandle: `target-${targetHandleSide}`,
+    };
+  });
+
+  return { nodes: layoutedNodes, edges: layoutedEdges };
 }
 
 function buildNodesAndEdges(
@@ -106,26 +155,21 @@ function buildNodesAndEdges(
     };
   });
 
-  // Create edges: all blocks except first connect to first block (root)
-  const edges: Edge[] = [];
-  if (blocks.length > 1) {
-    const rootId = blocks[0].id ?? 'block-0';
-    for (let i = 1; i < blocks.length; i++) {
-      const childId = blocks[i].id ?? `block-${i}`;
-      edges.push({
-        id: `edge-${rootId}-${childId}`,
-        source: rootId,
-        target: childId,
-        type: 'default',
-        animated: false,
-        style: { stroke: '#64748b', strokeWidth: 3 },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: '#64748b',
-        },
-      });
-    }
-  }
+  // Create edges based on parentId relationships
+  const edges: Edge[] = blocks
+    .filter(block => block.parentId)  // Only blocks with a parent
+    .map(block => ({
+      id: `edge-${block.parentId}-${block.id}`,
+      source: block.parentId!,
+      target: block.id ?? `block-${blocks.indexOf(block)}`,
+      type: 'default',
+      animated: false,
+      style: { stroke: '#64748b', strokeWidth: 3 },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: '#64748b',
+      },
+    }));
 
   return { nodes, edges };
 }
