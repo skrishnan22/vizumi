@@ -2,7 +2,7 @@
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { NodeResizer, type NodeProps } from 'reactflow';
+import { NodeResizer, Handle, Position, type NodeProps } from 'reactflow';
 import styles from './NoteBoard.module.css';
 import { DiagramRenderer } from './DiagramRenderer';
 import { DiagramModal } from './DiagramModal';
@@ -63,6 +63,10 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
 
   return (
     <div className={styles.nodeCard} style={{ background: accent }} ref={nodeRef}>
+      {/* Handles for edges - target on left, source on right for horizontal layout */}
+      <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
+
       <NodeResizer
         isVisible={selected}
         minWidth={260}

@@ -8,8 +8,11 @@ import ReactFlow, {
   useEdgesState,
   useNodesState,
   type Node,
+  type Edge,
+  MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import ELK from 'elkjs/lib/elk.bundled.js';
 import { NoteBlock } from '@/lib/schemas';
 import { NoteBlockNode } from './NoteBlockNode';
 import styles from './NoteBoard.module.css';
@@ -19,11 +22,10 @@ type NoteBoardProps = {
   blocks: NoteBlock[];
 };
 
-const COLUMN_COUNT = 3;
+const elk = new ELK();
+
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 440;
-const COLUMN_GAP = 120;
-const ROW_GAP = 190;
 const NODE_COLORS = [
   '#FFF6D9',
   '#E5F4FF',
@@ -40,29 +42,92 @@ export type NoteNodeData = {
   onSaveSummary?: (id: string, summary: string) => void;
 };
 
-function buildNodes(
+// ELK layout options for horizontal tree
+const elkOptions = {
+  'elk.algorithm': 'layered',
+  'elk.direction': 'RIGHT',
+  'elk.spacing.nodeNode': '120',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '200',
+  'elk.layered.nodePlacement.strategy': 'SIMPLE',
+};
+
+async function getLayoutedElements(
+  nodes: Node<NoteNodeData>[],
+  edges: Edge[],
+) {
+  const graph = {
+    id: 'root',
+    layoutOptions: elkOptions,
+    children: nodes.map((node) => ({
+      id: node.id,
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
+    })),
+    edges: edges.map((edge) => ({
+      id: edge.id,
+      sources: [edge.source],
+      targets: [edge.target],
+    })),
+  };
+
+  const layoutedGraph = await elk.layout(graph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
+    return {
+      ...node,
+      position: {
+        x: layoutedNode?.x ?? 0,
+        y: layoutedNode?.y ?? 0,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+}
+
+function buildNodesAndEdges(
   blocks: NoteBlock[],
   onMeasure: (id: string, height: number) => void,
   onSaveSummary: (id: string, summary: string) => void,
-): Node<NoteNodeData>[] {
-  return blocks.map((block, index) => {
-    const column = index % COLUMN_COUNT;
-    const row = Math.floor(index / COLUMN_COUNT);
-    const x = column * (NODE_WIDTH + COLUMN_GAP);
-    const y = row * (NODE_HEIGHT + ROW_GAP);
+): { nodes: Node<NoteNodeData>[]; edges: Edge[] } {
+  const nodes = blocks.map((block, index) => {
     const accent = NODE_COLORS[index % NODE_COLORS.length];
 
     return {
       id: block.id ?? `block-${index}`,
       type: 'note',
       data: { block, accent, onMeasure, onSaveSummary },
-      position: { x, y },
+      position: { x: 0, y: 0 }, // Will be set by ELK
       style: {
         width: NODE_WIDTH,
         height: NODE_HEIGHT,
       },
     };
   });
+
+  // Create edges: all blocks except first connect to first block (root)
+  const edges: Edge[] = [];
+  if (blocks.length > 1) {
+    const rootId = blocks[0].id ?? 'block-0';
+    for (let i = 1; i < blocks.length; i++) {
+      const childId = blocks[i].id ?? `block-${i}`;
+      edges.push({
+        id: `edge-${rootId}-${childId}`,
+        source: rootId,
+        target: childId,
+        type: 'default',
+        animated: false,
+        style: { stroke: '#64748b', strokeWidth: 3 },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: '#64748b',
+        },
+      });
+    }
+  }
+
+  return { nodes, edges };
 }
 
 const nodeTypes = {
@@ -76,6 +141,7 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
   const storeBlocks = useNoteStore((state) => state.blocks);
   const updateBlockSummary = useNoteStore((state) => state.updateBlockSummary);
   const setBlocksInStore = useNoteStore((state) => state.setBlocks);
+
   const onMeasure = useCallback((nodeId: string, height: number) => {
     setContentHeights((prev) => {
       if (Math.abs((prev[nodeId] ?? 0) - height) < 1) {
@@ -98,12 +164,14 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     [blocks, setBlocksInStore, storeBlockCount, updateBlockSummary],
   );
 
-  const initialNodes = useMemo(
-    () => buildNodes(blocksForLayout, onMeasure, handleSaveSummary),
+  const { nodes: initialNodes, edges: initialEdges } = useMemo(
+    () => buildNodesAndEdges(blocksForLayout, onMeasure, handleSaveSummary),
     [blocksForLayout, onMeasure, handleSaveSummary],
   );
 
   const [nodes, setNodes, internalOnNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       internalOnNodesChange(changes);
@@ -118,55 +186,19 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
         setAutoLayoutEnabled(false);
       }
     },
-    [internalOnNodesChange],
+    [internalOnNodesChange, setAutoLayoutEnabled],
   );
-  const [edges, , onEdgesChange] = useEdgesState([]);
 
+  // Apply ELK layout when blocks change
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setContentHeights({});
-      setAutoLayoutEnabled(true);
-      setNodes(initialNodes);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [initialNodes, setNodes]);
+    const applyLayout = async () => {
+      const layouted = await getLayoutedElements(initialNodes, initialEdges);
+      setNodes(layouted.nodes);
+      setEdges(layouted.edges);
+    };
 
-  useEffect(() => {
-    if (!blocks.length || !autoLayoutEnabled || !nodes.length) {
-      return;
-    }
-
-    const allMeasured = nodes.every((node) => contentHeights[node.id] != null);
-    if (!allMeasured) {
-      return;
-    }
-
-    const frame = requestAnimationFrame(() => {
-      const columnHeights = new Array(COLUMN_COUNT).fill(0);
-      setNodes((current) =>
-        current.map((node, index) => {
-          const column = index % COLUMN_COUNT;
-          const height = contentHeights[node.id] ?? NODE_HEIGHT;
-          const x = column * (NODE_WIDTH + COLUMN_GAP);
-          const y = columnHeights[column];
-          columnHeights[column] += height + ROW_GAP;
-
-          return {
-            ...node,
-            position: { x, y },
-            style: {
-              ...node.style,
-              width: NODE_WIDTH,
-              height,
-            },
-          };
-        }),
-      );
-
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [autoLayoutEnabled, blocks.length, contentHeights, nodes, setNodes]);
+    applyLayout();
+  }, [initialNodes, initialEdges, setNodes, setEdges]);
 
   if (!blocks.length) {
     return null;
@@ -189,6 +221,7 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
           nodesConnectable={false}
           panOnScroll
           panOnDrag
+          fitView
         >
           <Background
             variant={BackgroundVariant.Dots}
