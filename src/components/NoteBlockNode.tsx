@@ -63,9 +63,16 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
 
   return (
     <div className={styles.nodeCard} style={{ background: accent }} ref={nodeRef}>
-      {/* Handles for edges - target on left, source on right for horizontal layout */}
-      <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
-      <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
+      {/* Multiple handles on all sides for radial layout */}
+      <Handle type="source" position={Position.Top} id="source-top" style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Right} id="source-right" style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Bottom} id="source-bottom" style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Left} id="source-left" style={{ opacity: 0 }} />
+
+      <Handle type="target" position={Position.Top} id="target-top" style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Right} id="target-right" style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Bottom} id="target-bottom" style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Left} id="target-left" style={{ opacity: 0 }} />
 
       <NodeResizer
         isVisible={selected}

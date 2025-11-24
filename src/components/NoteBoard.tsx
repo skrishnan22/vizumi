@@ -42,30 +42,33 @@ export type NoteNodeData = {
   onSaveSummary?: (id: string, summary: string) => void;
 };
 
-// ELK layout options for radial tree (root at center, children in rings)
+
 const elkOptions = {
   'elk.algorithm': 'org.eclipse.elk.radial',
   'elk.radial.radius': '150',
   'elk.spacing.nodeNode': '80',
 };
 
-// Helper function to determine which handle to use based on angle
 function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
-  // Normalize angle to -π to π range
-  let normalized = angleInRadians;
-  while (normalized > Math.PI) normalized -= 2 * Math.PI;
-  while (normalized < -Math.PI) normalized += 2 * Math.PI;
-
-  // Map angle to cardinal direction
-  if (normalized >= -Math.PI / 4 && normalized < Math.PI / 4) {
+  if (angleInRadians >= -Math.PI / 4 && angleInRadians < Math.PI / 4) {
     return 'right';  // -45° to 45°
-  } else if (normalized >= Math.PI / 4 && normalized < 3 * Math.PI / 4) {
+  } else if (angleInRadians >= Math.PI / 4 && angleInRadians < 3 * Math.PI / 4) {
     return 'bottom'; // 45° to 135°
-  } else if (normalized >= 3 * Math.PI / 4 || normalized < -3 * Math.PI / 4) {
-    return 'left';   // 135° to -135°
+  } else if (angleInRadians >= 3 * Math.PI / 4 || angleInRadians < -3 * Math.PI / 4) {
+    return 'left';   // 135° to -135° (wraps around at ±180°)
   } else {
     return 'top';    // -135° to -45°
   }
+}
+
+function getOppositeHandle(handle: 'top' | 'right' | 'bottom' | 'left'): 'top' | 'right' | 'bottom' | 'left' {
+  const opposites = {
+    'right': 'left',
+    'left': 'right',
+    'top': 'bottom',
+    'bottom': 'top',
+  } as const;
+  return opposites[handle];
 }
 
 async function getLayoutedElements(
@@ -100,35 +103,31 @@ async function getLayoutedElements(
     };
   });
 
-  // Update edges with proper handle IDs based on node positions
   const layoutedEdges = edges.map((edge) => {
-    const sourceNode = layoutedNodes.find((n) => n.id === edge.source);
-    const targetNode = layoutedNodes.find((n) => n.id === edge.target);
+    const parentNode = layoutedNodes.find((n) => n.id === edge.source);
+    const childNode = layoutedNodes.find((n) => n.id === edge.target);
 
-    if (!sourceNode || !targetNode) {
-      return edge; // Keep edge as-is if nodes not found
+    if (!parentNode || !childNode) {
+      return edge;
     }
 
-    // Calculate center positions of nodes
-    const sourceCenterX = sourceNode.position.x + NODE_WIDTH / 2;
-    const sourceCenterY = sourceNode.position.y + NODE_HEIGHT / 2;
-    const targetCenterX = targetNode.position.x + NODE_WIDTH / 2;
-    const targetCenterY = targetNode.position.y + NODE_HEIGHT / 2;
+    // Calculate center coordinates of nodes
+    const parentX = parentNode.position.x + NODE_WIDTH / 2;
+    const parentY = parentNode.position.y + NODE_HEIGHT / 2;
+    const childX = childNode.position.x + NODE_WIDTH / 2;
+    const childY = childNode.position.y + NODE_HEIGHT / 2;
 
-    // Calculate angle from source to target
-    const angle = Math.atan2(
-      targetCenterY - sourceCenterY,
-      targetCenterX - sourceCenterX
-    );
+    // Calculate angle from parent to child (direction vector). atan2 returns angle between the vector and +X axis
+    const angle = Math.atan2(childY - parentY, childX - parentX);
 
-    // Determine which handles to use
-    const sourceHandleSide = getHandleForAngle(angle);
-    const targetHandleSide = getHandleForAngle(angle + Math.PI); // Opposite side
+
+    const parentHandleSide = getHandleForAngle(angle);
+    const childHandleSide = getOppositeHandle(parentHandleSide);
 
     return {
       ...edge,
-      sourceHandle: `source-${sourceHandleSide}`,
-      targetHandle: `target-${targetHandleSide}`,
+      sourceHandle: `source-${parentHandleSide}`,
+      targetHandle: `target-${childHandleSide}`,
     };
   });
 
@@ -147,7 +146,7 @@ function buildNodesAndEdges(
       id: block.id ?? `block-${index}`,
       type: 'note',
       data: { block, accent, onMeasure, onSaveSummary },
-      position: { x: 0, y: 0 }, // Will be set by ELK
+      position: { x: 0, y: 0 },
       style: {
         width: NODE_WIDTH,
         height: NODE_HEIGHT,
@@ -157,7 +156,7 @@ function buildNodesAndEdges(
 
   // Create edges based on parentId relationships
   const edges: Edge[] = blocks
-    .filter(block => block.parentId)  // Only blocks with a parent
+    .filter(block => block.parentId)
     .map(block => ({
       id: `edge-${block.parentId}-${block.id}`,
       source: block.parentId!,
