@@ -17,6 +17,7 @@ import { NoteBlock } from '@/lib/schemas';
 import { NoteBlockNode } from './NoteBlockNode';
 import styles from './NoteBoard.module.css';
 import { useNoteStore } from '@/store/noteStore';
+import { getDeepDiveAccent } from '@/lib/deepDiveHelpers';
 
 type NoteBoardProps = {
   blocks: NoteBlock[];
@@ -140,7 +141,10 @@ function buildNodesAndEdges(
   onSaveSummary: (id: string, summary: string) => void,
 ): { nodes: Node<NoteNodeData>[]; edges: Edge[] } {
   const nodes = blocks.map((block, index) => {
-    const accent = NODE_COLORS[index % NODE_COLORS.length];
+    // Use mode-specific accent for deep dive nodes, default colors for content nodes
+    const accent = block.blockType === 'deep-dive'
+      ? getDeepDiveAccent(block.deepDiveMode)
+      : NODE_COLORS[index % NODE_COLORS.length];
 
     return {
       id: block.id ?? `block-${index}`,
