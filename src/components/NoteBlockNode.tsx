@@ -11,6 +11,7 @@ import { FiEdit3 } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import { useNoteStore } from '@/store/noteStore';
 import { getModeIcon, getModeTitle, type DeepDiveMode } from '@/lib/deepDiveHelpers';
+import { useDeepDive } from '@/hooks/useDeepDive';
 
 const NoteEditor = dynamic(() => import('./NoteEditor').then((mod) => mod.NoteEditor), {
   ssr: false,
@@ -21,6 +22,7 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
   const { block, accent, onMeasure, onSaveSummary } = data;
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
+  const { requestDeepDive } = useDeepDive();
 
   const baseKey = useMemo(
     () => `${block.id ?? 'block'}:${block.visualType}:${block.d2Code ?? ''}`,
@@ -37,8 +39,7 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
   const showToolbar = selected && block.blockType === 'content';
 
   const handleDeepDive = (mode: DeepDiveMode) => {
-    // TODO: Wire up deep dive hook in Phase 5
-    console.log('Deep dive requested:', mode, 'for node:', id);
+    requestDeepDive(id, mode);
   };
 
   const hideDiagram = () => {

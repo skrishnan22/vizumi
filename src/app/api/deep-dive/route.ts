@@ -19,7 +19,9 @@ type DeepDiveRequest = {
 
 export async function POST(req: Request) {
     try {
-        const { mode, blockTitle, blockSummary } = await req.json()
+        const body = await req.json();
+
+        const { mode, blockTitle, blockSummary } = body as DeepDiveRequest;
 
         if (!['eli5', 'analogy', 'mental-model'].includes(mode)) {
             return new Response('Invalid mode', { status: 400 });
@@ -63,7 +65,7 @@ Now, provide your ${mode.toUpperCase()} explanation for this specific section. F
             prompt: fullPrompt,
         });
 
-        return result.toTextStreamResponse();
+        return result.toUIMessageStreamResponse();
     } catch (error) {
         console.error('Deep dive error:', error);
         return new Response('Internal server error', { status: 500 });

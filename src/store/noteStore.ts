@@ -8,13 +8,12 @@ type NoteStore = {
   autoLayoutEnabled: boolean;
   sessionId: string | null;
   isDeepDiveStreaming: boolean;
-  currentDeepDiveBlockId: string | null;
   setBlocks: (blocks: NoteBlock[]) => void;
   setAutoLayoutEnabled: (value: boolean) => void;
   setSessionId: (sessionId: string) => void;
   addBlock: (block: NoteBlock) => void;
   updateBlockSummary: (id: string, summary: string) => void;
-  setDeepDiveStreaming: (isStreaming: boolean, blockId?: string) => void;
+  setDeepDiveStreaming: (isStreaming: boolean) => void;
 };
 
 export const useNoteStore = create<NoteStore>((set) => ({
@@ -22,7 +21,6 @@ export const useNoteStore = create<NoteStore>((set) => ({
   autoLayoutEnabled: true,
   sessionId: null,
   isDeepDiveStreaming: false,
-  currentDeepDiveBlockId: null,
   setBlocks: (blocks) => set({ blocks }),
   setAutoLayoutEnabled: (value) => set({ autoLayoutEnabled: value }),
   setSessionId: (sessionId) => set({ sessionId }),
@@ -33,6 +31,6 @@ export const useNoteStore = create<NoteStore>((set) => ({
         block.id === id ? { ...block, summary } : block,
       ),
     })),
-  setDeepDiveStreaming: (isStreaming, blockId) =>
-    set({ isDeepDiveStreaming: isStreaming, currentDeepDiveBlockId: blockId || null }),
+  setDeepDiveStreaming: (isStreaming) =>
+    set({ isDeepDiveStreaming: isStreaming }),
 }));
