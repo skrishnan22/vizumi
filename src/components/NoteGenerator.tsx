@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
-import { NoteSchema, NoteBlockSchema } from '@/lib/schemas';
-import type { NoteBlock } from '@/lib/schemas';
+import { LLMNoteSchema, LLMNoteBlockSchema } from '@/lib/schemas';
+import type { LLMNoteBlock, NoteBlock } from '@/lib/schemas';
 import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
 import { useNoteStore } from '@/store/noteStore';
@@ -15,7 +15,7 @@ type NoteGeneratorProps = {
 export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
     const { object, submit, isLoading, error } = useObject({
         api: '/api/generate',
-        schema: NoteSchema,
+        schema: LLMNoteSchema,
     });
 
     const [url, setUrl] = useState(initialUrl);
@@ -23,21 +23,22 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
 
     const blocks = Array.isArray(object?.blocks)
         ? object.blocks.reduce((acc, block) => {
-            const result = NoteBlockSchema.safeParse(block);
+            const result = LLMNoteBlockSchema.safeParse(block);
             if (result.success) {
                 acc.push(result.data);
             }
             return acc;
-        }, [] as NoteBlock[])
+        }, [] as LLMNoteBlock[])
             // Assign parentId: first block is root, all others are children of first block
+            // Also add blockType since LLM doesn't generate it
             .map((block, index) => {
                 if (index === 0) {
                     // Root block - no parent
-                    return { ...block, parentId: undefined };
+                    return { ...block, parentId: undefined, blockType: 'content' as const };
                 } else {
                     // All other blocks are children of the first block
                     const rootId = object?.blocks?.[0]?.id;
-                    return { ...block, parentId: rootId };
+                    return { ...block, parentId: rootId, blockType: 'content' as const };
                 }
             })
         : [];

@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { streamObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { NoteSchema } from '@/lib/schemas';
+import { LLMNoteSchema } from '@/lib/schemas';
 import { SYSTEM_PROMPT_3 } from '@/lib/prompts';
 
 // Configure OpenRouter as a custom OpenAI provider
@@ -26,13 +26,13 @@ export async function POST() {
     }
     // const result = await streamObject({
     //     model: openrouter('openai/gpt-oss-20b:free'),
-    //     schema: NoteSchema,
+    //     schema: LLMNoteSchema,
     //     prompt: `${SYSTEM_PROMPT}\n\nHere is the text to process:\n\n${content}`,
     // });
 
     const result = streamObject({
         model: openrouter('x-ai/grok-4.1-fast'),
-        schema: NoteSchema,
+        schema: LLMNoteSchema,
         prompt: `This is the system prompt: ${SYSTEM_PROMPT_3}. Here is the text to process:\n\n${content}`,
     });
     console.log(JSON.stringify(result, null, 2))
