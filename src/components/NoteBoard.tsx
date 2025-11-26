@@ -27,6 +27,8 @@ const elk = new ELK();
 
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 440;
+const DEEP_DIVE_VERTICAL_GAP = 100; // Gap below parent node
+const DEEP_DIVE_HORIZONTAL_GAP = 30; // Gap between sibling deep dives
 const NODE_COLORS = [
   '#FFF6D9',
   '#E5F4FF',
@@ -47,7 +49,7 @@ export type NoteNodeData = {
 const elkOptions = {
   'elk.algorithm': 'org.eclipse.elk.radial',
   'elk.radial.radius': '150',
-  'elk.spacing.nodeNode': '150', // Increased spacing for deep dive nodes
+  'elk.spacing.nodeNode': '80',
 };
 
 function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
@@ -76,6 +78,7 @@ async function getLayoutedElements(
   nodes: Node<NoteNodeData>[],
   edges: Edge[],
 ) {
+
   const graph = {
     id: 'root',
     layoutOptions: elkOptions,
@@ -105,30 +108,36 @@ async function getLayoutedElements(
   });
 
   const layoutedEdges = edges.map((edge) => {
-    const parentNode = layoutedNodes.find((n) => n.id === edge.source);
-    const childNode = layoutedNodes.find((n) => n.id === edge.target);
+    const sourceNode = layoutedNodes.find((n) => n.id === edge.source);
+    const targetNode = layoutedNodes.find((n) => n.id === edge.target);
 
-    if (!parentNode || !childNode) {
+    if (!sourceNode || !targetNode) {
       return edge;
     }
 
-    // Calculate center coordinates of nodes
-    const parentX = parentNode.position.x + NODE_WIDTH / 2;
-    const parentY = parentNode.position.y + NODE_HEIGHT / 2;
-    const childX = childNode.position.x + NODE_WIDTH / 2;
-    const childY = childNode.position.y + NODE_HEIGHT / 2;
+    const isDeepDiveEdge = targetNode.data.block.blockType === 'deep-dive';
 
-    // Calculate angle from parent to child (direction vector). atan2 returns angle between the vector and +X axis
-    const angle = Math.atan2(childY - parentY, childX - parentX);
+    const sourceX = sourceNode.position.x + NODE_WIDTH / 2;
+    const sourceY = sourceNode.position.y + NODE_HEIGHT / 2;
+    const targetX = targetNode.position.x + NODE_WIDTH / 2;
+    const targetY = targetNode.position.y + NODE_HEIGHT / 2;
 
-
-    const parentHandleSide = getHandleForAngle(angle);
-    const childHandleSide = getOppositeHandle(parentHandleSide);
+    const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
+    const sourceHandleSide = getHandleForAngle(angle);
+    const targetHandleSide = getOppositeHandle(sourceHandleSide);
 
     return {
       ...edge,
-      sourceHandle: `source-${parentHandleSide}`,
-      targetHandle: `target-${childHandleSide}`,
+      sourceHandle: `source-${sourceHandleSide}`,
+      targetHandle: `target-${targetHandleSide}`,
+      // Different styling for deep dive edges
+      style: isDeepDiveEdge
+        ? { stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '5,5' }
+        : { stroke: '#64748b', strokeWidth: 3 },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: isDeepDiveEdge ? '#94a3b8' : '#64748b',
+      },
     };
   });
 
@@ -231,12 +240,11 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     [internalOnNodesChange, setAutoLayoutEnabled],
   );
 
+
   useEffect(() => {
-    console.log('🔄 Layout effect triggered. storeBlocks count:', storeBlocks.length);
     if (!storeBlocks.length) return;
 
     const applyLayout = async () => {
-      console.log('📐 Running ELK layout for', storeBlocks.length, 'blocks');
       // Build nodes and edges from storeBlocks
       const { nodes: builtNodes, edges: builtEdges } = buildNodesAndEdges(
         storeBlocks,
@@ -244,11 +252,8 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
         handleSaveSummary,
       );
 
-      console.log('📊 Built', builtNodes.length, 'nodes and', builtEdges.length, 'edges');
-
       // Apply ELK layout
       const layouted = await getLayoutedElements(builtNodes, builtEdges);
-      console.log('✅ Layout complete, setting nodes and edges');
       setNodes(layouted.nodes);
       setEdges(layouted.edges);
     };
