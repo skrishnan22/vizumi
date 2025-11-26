@@ -47,7 +47,7 @@ export type NoteNodeData = {
 const elkOptions = {
   'elk.algorithm': 'org.eclipse.elk.radial',
   'elk.radial.radius': '150',
-  'elk.spacing.nodeNode': '80',
+  'elk.spacing.nodeNode': '150', // Increased spacing for deep dive nodes
 };
 
 function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
@@ -189,6 +189,15 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
   const updateBlockSummary = useNoteStore((state) => state.updateBlockSummary);
   const setBlocksInStore = useNoteStore((state) => state.setBlocks);
 
+  const [nodes, setNodes, internalOnNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  useEffect(() => {
+    if (blocks.length && !storeBlocks.length) {
+      setBlocksInStore(blocks);
+    }
+  }, [blocks, storeBlocks.length, setBlocksInStore]);
+
   const onMeasure = useCallback((nodeId: string, height: number) => {
     setContentHeights((prev) => {
       if (Math.abs((prev[nodeId] ?? 0) - height) < 1) {
@@ -198,26 +207,12 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     });
   }, []);
 
-  const blocksForLayout = storeBlocks.length ? storeBlocks : blocks;
-  const storeBlockCount = storeBlocks.length;
-
   const handleSaveSummary = useCallback(
     (nodeId: string, summary: string) => {
-      if (!storeBlockCount && blocks.length) {
-        setBlocksInStore(blocks);
-      }
       updateBlockSummary(nodeId, summary);
     },
-    [blocks, setBlocksInStore, storeBlockCount, updateBlockSummary],
+    [updateBlockSummary],
   );
-
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => buildNodesAndEdges(blocksForLayout, onMeasure, handleSaveSummary),
-    [blocksForLayout, onMeasure, handleSaveSummary],
-  );
-
-  const [nodes, setNodes, internalOnNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -236,16 +231,30 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     [internalOnNodesChange, setAutoLayoutEnabled],
   );
 
-  // Apply ELK layout when blocks change
   useEffect(() => {
+    console.log('🔄 Layout effect triggered. storeBlocks count:', storeBlocks.length);
+    if (!storeBlocks.length) return;
+
     const applyLayout = async () => {
-      const layouted = await getLayoutedElements(initialNodes, initialEdges);
+      console.log('📐 Running ELK layout for', storeBlocks.length, 'blocks');
+      // Build nodes and edges from storeBlocks
+      const { nodes: builtNodes, edges: builtEdges } = buildNodesAndEdges(
+        storeBlocks,
+        onMeasure,
+        handleSaveSummary,
+      );
+
+      console.log('📊 Built', builtNodes.length, 'nodes and', builtEdges.length, 'edges');
+
+      // Apply ELK layout
+      const layouted = await getLayoutedElements(builtNodes, builtEdges);
+      console.log('✅ Layout complete, setting nodes and edges');
       setNodes(layouted.nodes);
       setEdges(layouted.edges);
     };
 
     applyLayout();
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
+  }, [storeBlocks, onMeasure, handleSaveSummary, setNodes, setEdges]);
 
   if (!blocks.length) {
     return null;
