@@ -19,7 +19,7 @@ const NoteEditor = dynamic(() => import('./NoteEditor').then((mod) => mod.NoteEd
 });
 
 export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
-  const { block, accent, onMeasure, onSaveSummary } = data;
+  const { block, accent, onMeasure, onSaveSummary, onOpenDrawer } = data;
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
   const { requestDeepDive } = useDeepDive();
@@ -174,6 +174,20 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
                 Save
               </button>
             </div>
+          </div>
+        ) : block.blockType === 'deep-dive' ? (
+          <div className={styles.deepDiveContent}>
+            <div className={styles.clippedText}>
+              <ReactMarkdown>{block.summary}</ReactMarkdown>
+            </div>
+            <button
+              type="button"
+              className={styles.readMoreButton}
+              onClick={() => onOpenDrawer?.(id)}
+              aria-label="Read more"
+            >
+              Read more →
+            </button>
           </div>
         ) : (
           <div className={styles.nodeBody}>

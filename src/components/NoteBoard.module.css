@@ -293,6 +293,7 @@
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -361,9 +362,54 @@
 /* Deep Dive Node Styling */
 .nodeCard[data-block-type="deep-dive"] {
   border-left: 4px solid currentColor;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.85)
-  );
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.95),
+      rgba(255, 255, 255, 0.85));
 }
 
+/* Deep Dive Content Clipping */
+.deepDiveContent {
+  max-height: 300px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clippedText {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
+  color: #1c1a17;
+  font-size: 1.05rem;
+}
+
+.readMoreButton {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: #1c1a17;
+  font-size: 0.9rem;
+  font-family: var(--font-hand), 'Patrick Hand', cursive;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.readMoreButton:hover {
+  background: rgba(0, 0, 0, 0.15);
+  transform: translateX(2px);
+}
+
+.readMoreButton:active {
+  transform: translateX(0);
+}

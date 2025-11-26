@@ -43,7 +43,9 @@ export type NoteNodeData = {
   accent: string;
   onMeasure?: (id: string, height: number) => void;
   onSaveSummary?: (id: string, summary: string) => void;
+  onOpenDrawer?: (id: string) => void;
 };
+
 
 
 const elkOptions = {
@@ -148,6 +150,7 @@ function buildNodesAndEdges(
   blocks: NoteBlock[],
   onMeasure: (id: string, height: number) => void,
   onSaveSummary: (id: string, summary: string) => void,
+  onOpenDrawer: (id: string) => void,
 ): { nodes: Node<NoteNodeData>[]; edges: Edge[] } {
   const nodes = blocks.map((block, index) => {
     // Use mode-specific accent for deep dive nodes, default colors for content nodes
@@ -158,7 +161,7 @@ function buildNodesAndEdges(
     return {
       id: block.id ?? `block-${index}`,
       type: 'note',
-      data: { block, accent, onMeasure, onSaveSummary },
+      data: { block, accent, onMeasure, onSaveSummary, onOpenDrawer },
       position: { x: 0, y: 0 },
       style: {
         width: NODE_WIDTH,
@@ -192,6 +195,7 @@ const nodeTypes = {
 
 export function NoteBoard({ blocks }: NoteBoardProps) {
   const [contentHeights, setContentHeights] = useState<Record<string, number>>({});
+  const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
   const autoLayoutEnabled = useNoteStore((state) => state.autoLayoutEnabled);
   const setAutoLayoutEnabled = useNoteStore((state) => state.setAutoLayoutEnabled);
   const storeBlocks = useNoteStore((state) => state.blocks);
@@ -250,6 +254,7 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
         storeBlocks,
         onMeasure,
         handleSaveSummary,
+        setSelectedDeepDiveId,
       );
 
       // Apply ELK layout
