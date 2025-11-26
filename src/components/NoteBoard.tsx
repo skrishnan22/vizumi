@@ -49,9 +49,10 @@ export type NoteNodeData = {
 
 
 const elkOptions = {
-  'elk.algorithm': 'org.eclipse.elk.radial',
-  'elk.radial.radius': '150',
-  'elk.spacing.nodeNode': '80',
+  'elk.algorithm': 'org.eclipse.elk.mrtree',
+  'elk.direction': 'DOWN', // Children below parents
+  'elk.spacing.nodeNode': '300',
+  'elk.mrtree.searchDepth': '5',
 };
 
 function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
@@ -131,7 +132,7 @@ async function getLayoutedElements(
     return {
       ...edge,
       sourceHandle: `source-${sourceHandleSide}`,
-      targetHandle: `target-${targetHandleSide}`,
+      targetHandle: `target-top`,
       // Different styling for deep dive edges
       style: isDeepDiveEdge
         ? { stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '5,5' }
