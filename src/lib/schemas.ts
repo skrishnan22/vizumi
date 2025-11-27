@@ -20,7 +20,8 @@ export const NoteBlockSchema = z.object({
   d2Code: z.string().optional().describe("Valid D2 diagram code if visualType is 'diagram'. MUST NOT include markdown code fences."),
   imageQuery: z.string().optional().describe("Search query for a stock photo if visualType is 'icon' or fallback"),
   blockType: z.enum(['content', 'deep-dive']).default('content').describe("Type of block: original content or AI-generated deep dive"),
-  deepDiveMode: z.enum(['eli5', 'analogy', 'mental-model']).optional().describe("Deep dive explanation mode if blockType is 'deep-dive'")
+  deepDiveMode: z.enum(['eli5', 'analogy', 'mental-model']).optional().describe("Deep dive explanation mode if blockType is 'deep-dive'"),
+  isStreaming: z.boolean().optional().describe("Whether the block content is currently being streamed")
 });
 
 // Schema for LLM response

@@ -53,11 +53,12 @@ export function useDeepDive() {
         addBlock({
             id: deepDiveBlockId,
             parentId: parentNodeId,
-            title: `${getModeIcon(mode)} ${getModeTitle(mode)}`,
-            summary: "Generating explanation...", // Placeholder
+            title: `${getModeTitle(mode)}`,
+            summary: "...", // Placeholder
             visualType: 'none',
             blockType: 'deep-dive',
             deepDiveMode: mode,
+            isStreaming: true,
         });
 
         try {
@@ -78,6 +79,9 @@ export function useDeepDive() {
                 );
             }
         } finally {
+            if (currentDeepDiveBlockIdRef.current) {
+                useNoteStore.getState().setBlockStreaming(currentDeepDiveBlockIdRef.current, false);
+            }
             currentDeepDiveBlockIdRef.current = null;
         }
     };

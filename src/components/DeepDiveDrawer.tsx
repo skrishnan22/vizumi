@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { NoteBlock } from "@/lib/schemas";
 import ReactMarkdown from "react-markdown";
-import { getModeIcon, getModeTitle, getDeepDiveAccent } from "@/lib/deepDiveHelpers";
+import { getModeIcon, getModeTitle, getDeepDiveAccent, getDeepDiveColors, DEEP_DIVE_COLORS } from "@/lib/deepDiveHelpers";
 
 interface DeepDiveDrawerProps {
     isOpen: boolean;
@@ -19,7 +19,10 @@ interface DeepDiveDrawerProps {
 export function DeepDiveDrawer({ isOpen, onClose, block, parentBlock }: DeepDiveDrawerProps) {
     const isDeepDive = block?.blockType === 'deep-dive';
     const mode = isDeepDive ? block.deepDiveMode : undefined;
-    const accentColor = isDeepDive ? getDeepDiveAccent(mode) : '#64748b';
+
+    // Get colors and icon
+    const colors = isDeepDive ? getDeepDiveColors(mode) : DEEP_DIVE_COLORS.default;
+    const Icon = isDeepDive ? getModeIcon(mode) : null;
 
     // Title logic:
     // 1. If deep dive, show parent title (context)
@@ -28,21 +31,26 @@ export function DeepDiveDrawer({ isOpen, onClose, block, parentBlock }: DeepDive
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent className="w-[400px] sm:w-[800px] sm:max-w-3xl overflow-y-auto p-0 border-l border-stone-200 shadow-2xl">
+            <SheetContent
+                className="w-[400px] sm:w-[800px] sm:max-w-3xl overflow-y-auto p-0 shadow-2xl transition-all duration-300"
+                style={{
+                    borderLeft: isDeepDive ? `4px solid ${colors.border}` : undefined
+                }}
+            >
                 {/* Header Section */}
                 <div className="bg-stone-50 border-b border-stone-100 p-8 sticky top-0 z-10">
                     <SheetHeader className="space-y-4">
                         <div className="flex items-center gap-2">
-                            {isDeepDive && (
+                            {isDeepDive && Icon && (
                                 <span
                                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium tracking-wide uppercase"
                                     style={{
-                                        backgroundColor: `${accentColor}15`,
-                                        color: accentColor,
-                                        border: `1px solid ${accentColor}30`
+                                        backgroundColor: colors.bg,
+                                        color: colors.text,
+                                        border: `1px solid ${colors.border}`
                                     }}
                                 >
-                                    {getModeIcon(mode)} {getModeTitle(mode)}
+                                    <Icon className="w-3.5 h-3.5" /> {getModeTitle(mode)}
                                 </span>
                             )}
                         </div>

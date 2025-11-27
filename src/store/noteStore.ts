@@ -14,6 +14,7 @@ type NoteStore = {
   addBlock: (block: NoteBlock) => void;
   updateBlockSummary: (id: string, summary: string) => void;
   setDeepDiveStreaming: (isStreaming: boolean) => void;
+  setBlockStreaming: (id: string, isStreaming: boolean) => void;
 };
 
 export const useNoteStore = create<NoteStore>((set) => ({
@@ -33,4 +34,10 @@ export const useNoteStore = create<NoteStore>((set) => ({
     })),
   setDeepDiveStreaming: (isStreaming) =>
     set({ isDeepDiveStreaming: isStreaming }),
+  setBlockStreaming: (id, isStreaming) =>
+    set((state) => ({
+      blocks: state.blocks.map((block) =>
+        block.id === id ? { ...block, isStreaming } : block,
+      ),
+    })),
 }));

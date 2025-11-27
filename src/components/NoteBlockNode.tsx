@@ -7,10 +7,10 @@ import styles from './NoteBoard.module.css';
 import { DiagramRenderer } from './DiagramRenderer';
 import { DiagramModal } from './DiagramModal';
 import type { NoteNodeData } from './NoteBoard';
-import { FiEdit3 } from 'react-icons/fi';
+import { Edit3, ChevronRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useNoteStore } from '@/store/noteStore';
-import { getModeIcon, getModeTitle, type DeepDiveMode } from '@/lib/deepDiveHelpers';
+import { getModeIcon, getModeTitle, type DeepDiveMode, getDeepDiveColors } from '@/lib/deepDiveHelpers';
 import { useDeepDive } from '@/hooks/useDeepDive';
 
 const NoteEditor = dynamic(() => import('./NoteEditor').then((mod) => mod.NoteEditor), {
@@ -74,8 +74,50 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
     return () => observer.disconnect();
   }, [measureHeight]);
 
+  // Determine colors and icons
+  const isDeepDive = block.blockType === 'deep-dive';
+  const deepDiveColors = isDeepDive ? getDeepDiveColors(block.deepDiveMode) : null;
+  const backgroundColor = isDeepDive ? deepDiveColors?.bg : accent;
+  const borderColor = isDeepDive ? deepDiveColors?.border : 'transparent';
+  const textColor = isDeepDive ? deepDiveColors?.text : 'inherit';
+
+  const BadgeIcon = isDeepDive ? getModeIcon(block.deepDiveMode) : null;
+
+  // Helper to render toolbar button with icon
+  const renderToolbarButton = (mode: DeepDiveMode, title: string) => {
+    const Icon = getModeIcon(mode);
+    const colors = getDeepDiveColors(mode);
+
+    return (
+      <button
+        onClick={() => handleDeepDive(mode)}
+        disabled={isDeepDiveStreaming}
+        className={styles.toolbarButton}
+        title={title}
+        style={{
+          backgroundColor: colors.bg,
+          color: colors.text,
+          border: `1px solid ${colors.border}`,
+          fontWeight: 500
+        }}
+      >
+        <Icon className="w-4 h-4" /> {getModeTitle(mode)}
+      </button>
+    );
+  };
+
   return (
-    <div className={styles.nodeCard} style={{ background: accent }} ref={nodeRef} data-block-type={block.blockType}>
+    <div
+      className={styles.nodeCard}
+      style={{
+        backgroundColor,
+        borderColor,
+        borderWidth: isDeepDive ? 2 : 0,
+        color: textColor
+      }}
+      ref={nodeRef}
+      data-block-type={block.blockType}
+    >
       {/* Multiple handles on all sides for radial layout */}
       <Handle type="source" position={Position.Top} id="source-top" style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} id="source-right" style={{ opacity: 0 }} />
@@ -90,30 +132,9 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
       {/* Deep Dive Toolbar - only shows for content blocks when selected */}
       <NodeToolbar isVisible={showToolbar} position={Position.Top} offset={10}>
         <div className={styles.deepDiveToolbar}>
-          <button
-            onClick={() => handleDeepDive('eli5')}
-            disabled={isDeepDiveStreaming}
-            className={styles.toolbarButton}
-            title="Explain Like I'm 5"
-          >
-            {getModeIcon('eli5')} ELI5
-          </button>
-          <button
-            onClick={() => handleDeepDive('analogy')}
-            disabled={isDeepDiveStreaming}
-            className={styles.toolbarButton}
-            title="Create an Analogy"
-          >
-            {getModeIcon('analogy')} Analogy
-          </button>
-          <button
-            onClick={() => handleDeepDive('mental-model')}
-            disabled={isDeepDiveStreaming}
-            className={styles.toolbarButton}
-            title="Build a Mental Model"
-          >
-            {getModeIcon('mental-model')} Mental Model
-          </button>
+          {renderToolbarButton('eli5', "Explain Like I'm 5")}
+          {renderToolbarButton('analogy', "Create an Analogy")}
+          {renderToolbarButton('mental-model', "Build a Mental Model")}
         </div>
       </NodeToolbar>
 
@@ -131,13 +152,13 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
       />
       <div className={styles.nodeInner}>
         {/* Badge for deep dive nodes */}
-        {block.blockType === 'deep-dive' && block.deepDiveMode && (
-          <div className={styles.deepDiveBadge}>
-            {getModeIcon(block.deepDiveMode)}
+        {isDeepDive && BadgeIcon && (
+          <div className={styles.deepDiveBadge} style={{ color: deepDiveColors?.accent }}>
+            <BadgeIcon className="w-5 h-5" />
           </div>
         )}
         <div className={styles.nodeHeader}>
-          <h3 className={styles.nodeTitle}>{block.title}</h3>
+          <h3 className={styles.nodeTitle} style={{ color: isDeepDive ? textColor : undefined }}>{block.title}</h3>
           <button
             type="button"
             className={styles.editButton}
@@ -146,8 +167,9 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
               setIsEditing(true);
             }}
             aria-label="Edit summary"
+            style={{ color: isDeepDive ? textColor : undefined }}
           >
-            <FiEdit3 size={16} />
+            <Edit3 size={16} />
           </button>
         </div>
         {isEditing ? (
@@ -180,14 +202,22 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
             <div className={styles.clippedText}>
               <ReactMarkdown>{block.summary}</ReactMarkdown>
             </div>
-            <button
-              type="button"
-              className={styles.readMoreButton}
-              onClick={() => onOpenDrawer?.(id)}
-              aria-label="Read more"
-            >
-              Read more →
-            </button>
+            {block.isStreaming ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2 animate-pulse">
+                <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                Generating...
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={styles.readMoreButton}
+                onClick={() => onOpenDrawer?.(id)}
+                aria-label="Read more"
+                style={{ color: deepDiveColors?.accent }}
+              >
+                Read more <ChevronRight className="w-3 h-3 inline ml-1" />
+              </button>
+            )}
           </div>
         ) : (
           <div className={styles.nodeBody}>
