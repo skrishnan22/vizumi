@@ -15,6 +15,7 @@ import 'reactflow/dist/style.css';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { NoteBlock } from '@/lib/schemas';
 import { NoteBlockNode } from './NoteBlockNode';
+import { DeepDiveDrawer } from './DeepDiveDrawer';
 import styles from './NoteBoard.module.css';
 import { useNoteStore } from '@/store/noteStore';
 import { getDeepDiveAccent } from '@/lib/deepDiveHelpers';
@@ -206,6 +207,11 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
   const [nodes, setNodes, internalOnNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
+  const selectedBlock = useMemo(() =>
+    storeBlocks.find(b => b.id === selectedDeepDiveId) ?? null,
+    [storeBlocks, selectedDeepDiveId]
+  );
+
   useEffect(() => {
     if (blocks.length && !storeBlocks.length) {
       setBlocksInStore(blocks);
@@ -298,6 +304,11 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
           />
         </ReactFlow>
       </div>
+      <DeepDiveDrawer
+        isOpen={!!selectedDeepDiveId}
+        onClose={() => setSelectedDeepDiveId(null)}
+        block={selectedBlock}
+      />
     </section>
   );
 }
