@@ -212,6 +212,11 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     [storeBlocks, selectedDeepDiveId]
   );
 
+  const parentBlock = useMemo(() => {
+    if (!selectedBlock?.parentId) return null;
+    return storeBlocks.find(b => b.id === selectedBlock.parentId) ?? null;
+  }, [selectedBlock, storeBlocks]);
+
   useEffect(() => {
     if (blocks.length && !storeBlocks.length) {
       setBlocksInStore(blocks);
@@ -308,6 +313,7 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
         isOpen={!!selectedDeepDiveId}
         onClose={() => setSelectedDeepDiveId(null)}
         block={selectedBlock}
+        parentBlock={parentBlock}
       />
     </section>
   );
