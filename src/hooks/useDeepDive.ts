@@ -54,7 +54,7 @@ export function useDeepDive() {
             id: deepDiveBlockId,
             parentId: parentNodeId,
             title: `${getModeTitle(mode)}`,
-            summary: "...", // Placeholder
+            summary: "", // Placeholder
             visualType: 'none',
             blockType: 'deep-dive',
             deepDiveMode: mode,

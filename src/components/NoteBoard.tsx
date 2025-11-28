@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -10,6 +10,7 @@ import ReactFlow, {
   type Node,
   type Edge,
   MarkerType,
+  type ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import ELK from 'elkjs/lib/elk.bundled.js';
@@ -207,6 +208,9 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
   const [nodes, setNodes, internalOnNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+  const prevBlocksLengthRef = useRef(storeBlocks.length);
+
   const selectedBlock = useMemo(() =>
     storeBlocks.find(b => b.id === selectedDeepDiveId) ?? null,
     [storeBlocks, selectedDeepDiveId]
@@ -260,6 +264,9 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
   useEffect(() => {
     if (!storeBlocks.length) return;
 
+    const isNewBlock = storeBlocks.length > prevBlocksLengthRef.current;
+    prevBlocksLengthRef.current = storeBlocks.length;
+
     const applyLayout = async () => {
       // Build nodes and edges from storeBlocks
       const { nodes: builtNodes, edges: builtEdges } = buildNodesAndEdges(
@@ -273,10 +280,25 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
       const layouted = await getLayoutedElements(builtNodes, builtEdges);
       setNodes(layouted.nodes);
       setEdges(layouted.edges);
+
+      // If a new block was added (and it's a deep dive), shift focus to it
+      if (isNewBlock && rfInstance) {
+        const newBlock = storeBlocks[storeBlocks.length - 1];
+        if (newBlock.blockType === 'deep-dive') {
+          // Small delay to ensure the node is rendered and layout is applied in React Flow
+          setTimeout(() => {
+            rfInstance.fitView({
+              nodes: [{ id: newBlock.id }],
+              duration: 1200,
+              padding: 0.2,
+            });
+          }, 100);
+        }
+      }
     };
 
     applyLayout();
-  }, [storeBlocks, onMeasure, handleSaveSummary, setNodes, setEdges]);
+  }, [storeBlocks, onMeasure, handleSaveSummary, setNodes, setEdges, rfInstance]);
 
   if (!blocks.length) {
     return null;
@@ -300,6 +322,7 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
           panOnScroll
           panOnDrag
           fitView
+          onInit={setRfInstance}
         >
           <Background
             variant={BackgroundVariant.Dots}
