@@ -28,7 +28,7 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
     () => `${block.id ?? 'block'}:${block.visualType}:${block.d2Code ?? ''}`,
     [block.id, block.visualType, block.d2Code],
   );
-  const diagramAvailable = block.visualType === 'diagram' && Boolean(block.d2Code?.trim());
+  const diagramAvailable = block.d2Code && Boolean(block.d2Code?.trim());
   const [hiddenKeys, setHiddenKeys] = useState<Record<string, boolean>>({});
   const shouldShowDiagram = diagramAvailable && !hiddenKeys[baseKey];
   const [isEditing, setIsEditing] = useState(false);
