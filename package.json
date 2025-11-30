@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "build:evals": "vite build -c vite.config.evals.ts",
-    "eval": "npm run build:evals && node dist/evals/d2-eval.mjs"
+    "eval": "npm run build:evals && node dist/evals/d2-eval.mjs",
+    "analyze:d2": "tsx evals/analyze-d2.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.69",
@@ -21,10 +22,12 @@
     "ai": "^5.0.97",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
     "elkjs": "^0.11.0",
     "html-react-parser": "^5.2.10",
     "lucide-react": "^0.555.0",
     "next": "16.0.3",
+    "p-limit": "^7.2.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-icons": "^5.2.1",

@@ -29,7 +29,7 @@ export async function POST() {
     // });
 
     const result = streamObject({
-        model: openrouter('x-ai/grok-4.1-fast'),
+        model: openrouter('openai/gpt-4.1'),
         schema: LLMNoteSchema,
         prompt: `This is the system prompt: ${SYSTEM_PROMPT_3}. Here is the text to process:\n\n${content}`,
     });

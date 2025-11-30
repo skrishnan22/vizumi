@@ -7,7 +7,20 @@ import {
   SYSTEM_PROMPT_2,
   SYSTEM_PROMPT_3,
 } from '../src/lib/prompts.js';
+import { generateObject } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import dotenv from 'dotenv';
 import { renderD2ToSvg } from '../src/lib/d2.js';
+import pLimit from 'p-limit';
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
+
+
+console.log("OPENROUTER_API_KEY", process.env.OPENROUTER_API_KEY);
+const openrouter = createOpenAI({
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
 type SystemPromptConfig = {
   id: string;
@@ -35,7 +48,7 @@ type EvalIterationMetadata = {
 
 type EvalIterationResult = {
   metadata: EvalIterationMetadata;
-  rawResponse: string;
+  // rawResponse: string;
   jsonParsed: boolean;
   jsonParseError?: string;
   schemaValidated: boolean;
@@ -53,121 +66,6 @@ type D2DiagramCheck = {
   error?: string;
 };
 
-const D2_THEMES = [
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#ffec99" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#a5d8ff" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#b2f2bb" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#ffc9c9" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#e5dbff" } }`,
-];
-
-function extractD2ErrorMessage(error: unknown): string {
-  const rawMessage =
-    error instanceof Error ? error.message : 'Unknown rendering error';
-
-  const tryParse = (text: string) => {
-    try {
-      return JSON.parse(text);
-    } catch {
-      return null;
-    }
-  };
-
-  const trimmed = rawMessage.trim();
-  let parsed = tryParse(trimmed);
-
-  if (!parsed) {
-    const bracketIndex = trimmed.indexOf('[');
-    if (bracketIndex !== -1) {
-      parsed = tryParse(trimmed.slice(bracketIndex));
-    }
-  }
-
-  if (Array.isArray(parsed)) {
-    const formatted = parsed
-      .map((item) => {
-        if (item && typeof item === 'object') {
-          if (typeof item.errmsg === 'string') {
-            return item.errmsg;
-          }
-          if (typeof item.message === 'string') {
-            return item.message;
-          }
-        }
-        return JSON.stringify(item);
-      })
-      .filter(Boolean)
-      .join(' ');
-
-    if (formatted) {
-      return `Unable to render diagram: ${formatted}`;
-    }
-  }
-
-  return `Unable to render diagram: ${trimmed}`;
-}
-
-function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash);
-}
-
-type RenderSuccess = {
-  ok: true;
-  svg: string;
-};
-
-type RenderFailure = {
-  ok: false;
-  error: string;
-};
-
-// async function renderD2ToSvg(code: string): Promise<RenderSuccess | RenderFailure> {
-//   try {
-//     const trimmed = code?.trim();
-//     if (!trimmed) {
-//       return { ok: false, error: 'Diagram code is required.' };
-//     }
-
-//     const themeIndex = hashCode(trimmed) % D2_THEMES.length;
-//     const selectedTheme = D2_THEMES[themeIndex];
-//     const diagramSource = `${selectedTheme}\n\n${trimmed}`;
-
-//     const compiled = await d2.compile(diagramSource, {
-//       options: {
-//         sketch: true,
-//         themeID: 101,
-//         pad: 24,
-//       },
-//     });
-
-//     const svg = await d2.render(compiled.diagram, {
-//       ...compiled.renderOptions,
-//       sketch: true,
-//       themeID: 101,
-//       pad: 24,
-//       noXMLTag: true,
-//     });
-
-//     return { ok: true, svg };
-//   } catch (error) {
-//     return {
-//       ok: false,
-//       error: extractD2ErrorMessage(error),
-//     };
-//   }
-// }
-
 const SYSTEM_PROMPTS: SystemPromptConfig[] = [
   { id: 'prompt_v1', text: SYSTEM_PROMPT },
   { id: 'prompt_v2', text: SYSTEM_PROMPT_2 },
@@ -175,9 +73,11 @@ const SYSTEM_PROMPTS: SystemPromptConfig[] = [
 ];
 
 const DEFAULT_MODELS = [
-  'x-ai/grok-4.1-mini',
-  'x-ai/grok-4.1-fast',
-  'openai/o4-mini',
+  'x-ai/grok-4.1-fast:free',
+  'openai/gpt-oss-20b:free',
+  "openai/gpt-4.1-mini",
+  "z-ai/glm-4.5-air:free",
+  "google/gemini-2.5-flash-lite",
 ];
 
 const CONFIG: EvalConfig = {
@@ -209,26 +109,43 @@ async function loadContentItems(contentDir: string): Promise<ContentItem[]> {
   return items;
 }
 
-async function generateNotesPlaceholder(
+
+async function generateNotes(
   _metadata: EvalIterationMetadata,
   content: string,
   prompt: string,
+  model: string,
+  dryRun: boolean,
 ): Promise<string> {
-  // TODO: Replace this placeholder with a real call to the model client.
-  const mock = {
-    blocks: [
-      {
-        id: 'block-1',
-        title: 'Placeholder block',
-        summary: 'This is a mock summary for content length ' + content.length,
-        visualType: 'diagram',
-        d2Code: 'x -> y',
-      },
-    ],
-    _debugPromptPrefix: prompt.slice(0, 16),
-  };
+  if (dryRun) {
+    // TODO: Replace this placeholder with a real call to the model client.
+    const mock = {
+      blocks: [
+        {
+          id: 'block-1',
+          title: 'Placeholder block',
+          summary: 'This is a mock summary for content length ' + content.length,
+          visualType: 'diagram',
+          d2Code: 'x -> y',
+        },
+      ],
+      _debugPromptPrefix: prompt.slice(0, 16),
+    };
 
-  return JSON.stringify(mock);
+    return JSON.stringify(mock);
+  }
+
+  try {
+    const result = await generateObject({
+      model: openrouter(model),
+      schema: LLMNoteSchema,
+      prompt: `This is the system prompt: ${prompt}\n\nHere is the text to process:\n\n${content}`,
+    });
+    return JSON.stringify(result.object);
+  } catch (error) {
+    console.error('Error generating notes:', error);
+    throw error;
+  }
 }
 
 function validateLLMResponse(raw: string): {
@@ -265,10 +182,12 @@ function validateLLMResponse(raw: string): {
   }
 }
 
-async function evaluateD2Diagrams(note?: LLMNote): Promise<D2DiagramCheck[]> {
+async function evaluateD2Diagrams(index: number, total: number, note?: LLMNote,): Promise<D2DiagramCheck[]> {
   if (!note) {
     return [];
   }
+
+  console.log(`[${index + 1}/${total}] Evaluating D2 diagrams`);
 
   const diagramBlocks = note.blocks.filter(
     (block) => block.visualType === 'diagram',
@@ -328,13 +247,26 @@ async function persistResults(
   console.log(`Saved ${results.length} records to ${outputPath}`);
 }
 
+async function appendResult(
+  result: EvalIterationResult,
+  outputPath: string,
+) {
+  await fs.appendFile(outputPath, `${JSON.stringify(result)}\n`, 'utf-8');
+}
+
+
 async function run() {
+  const dryRun = process.argv.includes('--dry-run');
+  const concurrency = 10;
+
   console.log('Starting D2 evaluation harness');
   console.log('Eval config:', {
     contentDir: CONFIG.contentDir,
     promptCount: CONFIG.prompts.length,
     modelCount: CONFIG.models.length,
     outputPath: CONFIG.outputPath,
+    dryRun,
+    concurrency,
   });
 
   const contentItems = await loadContentItems(CONFIG.contentDir);
@@ -344,57 +276,112 @@ async function run() {
     return;
   }
 
-  const iterationResults: EvalIterationResult[] = [];
+  // Clear/create output file
+  await fs.mkdir(path.dirname(CONFIG.outputPath), { recursive: true });
+  await fs.writeFile(CONFIG.outputPath, '', 'utf-8');
 
+  // Flatten jobs into array
+  type Job = {
+    content: ContentItem;
+    prompt: SystemPromptConfig;
+    model: string;
+  };
+
+  const jobs: Job[] = [];
   for (const content of contentItems) {
     for (const prompt of CONFIG.prompts) {
       for (const model of CONFIG.models) {
-        const metadata = {
-          contentId: content.id,
-          promptId: prompt.id,
-          modelId: model,
-        };
-
-        console.log(
-          `Evaluating content=${metadata.contentId} prompt=${metadata.promptId} model=${metadata.modelId}`,
-        );
-
-        const rawResponse = await generateNotesPlaceholder(
-          metadata,
-          content.text,
-          prompt.text,
-        );
-        const validation = validateLLMResponse(rawResponse);
-
-        const d2Checks = await evaluateD2Diagrams(validation.value);
-
-        iterationResults.push({
-          metadata,
-          rawResponse,
-          jsonParsed: validation.jsonParsed,
-          jsonParseError: validation.jsonParseError,
-          schemaValidated: validation.schemaValidated,
-          schemaError: validation.schemaError,
-          parsedValue: validation.value,
-          d2Checks,
-          timestamp: new Date().toISOString(),
-        });
-
-        console.log(
-          `Result: parsed=${validation.jsonParsed} schema=${validation.schemaValidated
-          }${validation.schemaError ? ` error=${validation.schemaError}` : ''}`,
-        );
+        jobs.push({ content, prompt, model });
       }
     }
   }
 
-  console.log(`Completed ${iterationResults.length} evaluation iterations.`);
+  console.log(`Total jobs: ${jobs.length}`);
 
-  const d2ChecksTotal = iterationResults.reduce(
+  const limit = pLimit(concurrency);
+  const d2Limit = pLimit(1);
+
+  const promises = [];
+  for (let index = 0; index < jobs.length; index++) {
+    const job = jobs[index];
+    promises.push(
+      limit(async () => {
+        const metadata = {
+          contentId: job.content.id,
+          promptId: job.prompt.id,
+          modelId: job.model,
+        };
+
+        console.log(
+          `[${index + 1}/${jobs.length}] Evaluating content=${metadata.contentId} prompt=${metadata.promptId} model=${metadata.modelId}`,
+        );
+
+        try {
+          const rawResponse = await generateNotes(
+            metadata,
+            job.content.text,
+            job.prompt.text,
+            job.model,
+            dryRun,
+          );
+
+          const validation = validateLLMResponse(rawResponse);
+          const d2Checks = await d2Limit(() => evaluateD2Diagrams(index, jobs.length, validation.value));
+
+          const result: EvalIterationResult = {
+            metadata,
+            // rawResponse,
+            jsonParsed: validation.jsonParsed,
+            jsonParseError: validation.jsonParseError,
+            schemaValidated: validation.schemaValidated,
+            schemaError: validation.schemaError,
+            // parsedValue: validation.value,
+            d2Checks,
+            timestamp: new Date().toISOString(),
+          };
+
+          await appendResult(result, CONFIG.outputPath);
+
+          console.log(
+            `[${index + 1}/${jobs.length}] ✓ Saved. parsed=${validation.jsonParsed} schema=${validation.schemaValidated}${validation.schemaError ? ` error=${validation.schemaError}` : ''}`,
+          );
+
+          return { status: 'fulfilled', value: result };
+        } catch (error) {
+          console.error(
+            `[${index + 1}/${jobs.length}] ✗ Failed:`,
+            error instanceof Error ? error.message : error,
+          );
+          return { status: 'rejected', reason: error };
+        }
+      }),
+    );
+  }
+
+  // Wait for all jobs
+  const results = await Promise.allSettled(promises);
+  console.log("all jobs completed", results);
+  // Count successes and failures
+  const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
+  const rejected = results.filter((r) => r.status === 'rejected').length;
+
+  console.log(`\nCompleted ${fulfilled}/${jobs.length} evaluation iterations.`);
+  if (rejected > 0) {
+    console.warn(`Failed: ${rejected} iterations.`);
+  }
+
+  // Load results from file for stats
+  const fileContent = await fs.readFile(CONFIG.outputPath, 'utf-8');
+  const savedResults = fileContent
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line) => JSON.parse(line) as EvalIterationResult);
+
+  const d2ChecksTotal = savedResults.reduce(
     (sum, result) => sum + result.d2Checks.length,
     0,
   );
-  const d2Failures = iterationResults.reduce(
+  const d2Failures = savedResults.reduce(
     (sum, result) =>
       sum + result.d2Checks.filter((check) => !check.success).length,
     0,
@@ -402,8 +389,7 @@ async function run() {
   console.log(
     `D2 diagrams evaluated: ${d2ChecksTotal}. Failures: ${d2Failures}.`,
   );
-
-  await persistResults(iterationResults, CONFIG.outputPath);
+  console.log(`Results saved to ${CONFIG.outputPath}`);
 }
 
 run().catch((error) => {
