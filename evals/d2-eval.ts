@@ -7,6 +7,7 @@ import {
   SYSTEM_PROMPT_2,
   SYSTEM_PROMPT_3,
 } from '../src/lib/prompts.js';
+import { SYSTEM_PROMPT_OPTIMIZED } from '../src/lib/prompts-optimized.js';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import dotenv from 'dotenv';
@@ -68,16 +69,19 @@ type D2DiagramCheck = {
 
 const SYSTEM_PROMPTS: SystemPromptConfig[] = [
   { id: 'prompt_v1', text: SYSTEM_PROMPT },
-  { id: 'prompt_v2', text: SYSTEM_PROMPT_2 },
+  { id: 'prompt_v2', text: SYSTEM_PROMPT_OPTIMIZED },
   { id: 'prompt_v3', text: SYSTEM_PROMPT_3 },
 ];
 
 const DEFAULT_MODELS = [
   'x-ai/grok-4.1-fast:free',
   'openai/gpt-oss-20b:free',
-  "openai/gpt-4.1-mini",
+  "openai/gpt-4o-mini",
   "z-ai/glm-4.5-air:free",
   "google/gemini-2.5-flash-lite",
+  "moonshotai/kimi-k2-thinking",
+  "deepseek/deepseek-chat-v3.1"
+
 ];
 
 const CONFIG: EvalConfig = {
@@ -139,7 +143,9 @@ async function generateNotes(
     const result = await generateObject({
       model: openrouter(model),
       schema: LLMNoteSchema,
-      prompt: `This is the system prompt: ${prompt}\n\nHere is the text to process:\n\n${content}`,
+      system: prompt,
+      prompt: `Here is the text to process:\n\n${content}`,
+      maxRetries: 5
     });
     return JSON.stringify(result.object);
   } catch (error) {

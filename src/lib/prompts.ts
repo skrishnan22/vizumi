@@ -51,10 +51,6 @@ Database -> API: Data
 API -> User: Response
 \`\`\`
 
-### OUTPUT FORMAT
-You must output a JSON object matching the defined schema.
-- \`blocks\`: Array of note blocks.
-- \`d2Code\`: The raw D2 string. **DO NOT** wrap it in markdown code fences (like \`\`\`d2 ... \`\`\`). Just the raw string.
 
 ### THINKING PROCESS (Chain of Thought)
 Before generating the JSON, strictly follow this thought process for each block:
@@ -228,21 +224,6 @@ Use sparingly—only to clarify comparison diagrams.
 
 ---
 
-# OUTPUT FORMAT (STRICT SCHEMA)
-
-You must output **ONLY** this JSON object:
-
-{
-"blocks": [
-{
-"title": "string",
-"summaryMd": "markdown string",
-"visualType": "none" | "diagram" | "icon",
-"d2Code": "raw D2 code or empty string"
-}
-]
-}
-
 Rules:
 - If visualType = "none", d2Code MUST be "".
 - If visualType = "diagram", d2Code MUST contain valid D2.
@@ -326,8 +307,6 @@ Only use these shapes. Do not hallucinate unsupported shapes.
   }
   \`\`\`
 
-// ... existing prompt code ...
-
 ### 3. D2 SYNTAX "LINTER" (CRITICAL RULES)
 You must check your code against these specific error patterns before outputting:
 
@@ -351,21 +330,7 @@ You must check your code against these specific error patterns before outputting
 * **BAD:** "A -> B: Sends Data"
 * **GOOD:** "A -> B: \"Sends Data\""
 
-### 4. OUTPUT SCHEMA
-Return a single JSON object. Do not include markdown formatting outside the JSON string.
 
-\`\`\`json
-{
-  "blocks": [
-    {
-      "id": "unique_id",
-      "summary_markdown": "Markdown summary here. Use **bold** for terms.",
-      "visual_type": "process | hierarchy | cycle | architecture | none",
-      "d2_code": "raw string of d2 code (or null if none)"
-    }
-  ]
-}
-\`\`\`
 
 ### 5. THINKING PROCESS (Apply this logic)
 1. **Chunking**: Split text into logical concepts.
@@ -381,19 +346,4 @@ Return a single JSON object. Do not include markdown formatting outside the JSON
    - define nodes (quote them!).
    - define connections.
    - check against "Supported Shapes".
-
-### EXAMPLE
-**Input:** "Authentication works by the user sending credentials to the API. The API checks the Database. If valid, it returns a Token."
-
-**Output:**
-{
-  "blocks": [
-    {
-      "id": "auth_flow",
-      "summary_markdown": "**Authentication** is a verification process. The **User** submits credentials, the **API** verifies against a **Database**, and issues a **Token** upon success.",
-      "visual_type": "process",
-      "d2_code": "direction: right\n\"User\" -> \"API\": \"Send Credentials\"\n\"API\" -> \"DB\": \"Query User\"\n\"DB\" -> \"API\": \"Result\"\n\"API\" -> \"User\": \"Return Token\"\n\"DB\": { shape: cylinder }\n\"User\": { shape: person }"
-    }
-  ]
-}
 `;

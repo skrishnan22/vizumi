@@ -45,18 +45,19 @@ async function run() {
     const stats = {
         totalDiagrams: 0,
         totalFailures: 0,
-        byPrompt: {} as Record<string, { total: number; failures: number }>,
-        byModel: {} as Record<string, { total: number; failures: number }>,
-        byCombination: {} as Record<string, { total: number; failures: number; promptId: string; modelId: string }>,
+        totalSuccesses: 0,
+        byPrompt: {} as Record<string, { total: number; failures: number; successes: number }>,
+        byModel: {} as Record<string, { total: number; failures: number; successes: number }>,
+        byCombination: {} as Record<string, { total: number; failures: number; successes: number; promptId: string; modelId: string }>,
     };
 
     for (const result of results) {
         const { promptId, modelId } = result.metadata;
         const comboKey = `${promptId}::${modelId}`;
 
-        if (!stats.byPrompt[promptId]) stats.byPrompt[promptId] = { total: 0, failures: 0 };
-        if (!stats.byModel[modelId]) stats.byModel[modelId] = { total: 0, failures: 0 };
-        if (!stats.byCombination[comboKey]) stats.byCombination[comboKey] = { total: 0, failures: 0, promptId, modelId };
+        if (!stats.byPrompt[promptId]) stats.byPrompt[promptId] = { total: 0, failures: 0, successes: 0 };
+        if (!stats.byModel[modelId]) stats.byModel[modelId] = { total: 0, failures: 0, successes: 0 };
+        if (!stats.byCombination[comboKey]) stats.byCombination[comboKey] = { total: 0, failures: 0, successes: 0, promptId, modelId };
 
         for (const check of result.d2Checks) {
             stats.totalDiagrams++;
@@ -69,24 +70,21 @@ async function run() {
                 stats.byPrompt[promptId].failures++;
                 stats.byModel[modelId].failures++;
                 stats.byCombination[comboKey].failures++;
+            } else {
+                stats.totalSuccesses++;
+                stats.byPrompt[promptId].successes++;
+                stats.byModel[modelId].successes++;
+                stats.byCombination[comboKey].successes++;
             }
         }
     }
 
-    // --- HTML Generation ---
 
     const prompts = Object.keys(stats.byPrompt).sort();
     const models = Object.keys(stats.byModel).sort();
 
-    const promptErrorRates = prompts.map(p => {
-        const s = stats.byPrompt[p];
-        return s.total > 0 ? parseFloat(((s.failures / s.total) * 100).toFixed(1)) : 0;
-    });
-
-    const modelErrorRates = models.map(m => {
-        const s = stats.byModel[m];
-        return s.total > 0 ? parseFloat(((s.failures / s.total) * 100).toFixed(1)) : 0;
-    });
+    const promptSuccessCounts = prompts.map(p => stats.byPrompt[p].successes);
+    const modelSuccessCounts = models.map(m => stats.byModel[m].successes);
 
     // Sketchy/Marker Palette
     const palette = [
@@ -98,13 +96,13 @@ async function run() {
         '#6366f1', // Indigo
     ];
 
-    // Grouped Bar Chart Data (Success Rate by Prompt/Model)
+    // Grouped Bar Chart Data (Success Count by Prompt/Model)
     const groupedDatasets = models.map((model, index) => {
         const data = prompts.map(prompt => {
             const key = `${prompt}::${model}`;
             const s = stats.byCombination[key];
-            if (!s || s.total === 0) return 0;
-            return parseFloat((((s.total - s.failures) / s.total) * 100).toFixed(1)); // Success Rate
+            if (!s) return 0;
+            return s.successes;
         });
 
         const color = palette[index % palette.length];
@@ -200,13 +198,13 @@ async function run() {
                 <span class="metric-label">Total Diagrams</span>
                 <span class="metric-value">${stats.totalDiagrams}</span>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">Total Failures</span>
-                <span class="metric-value" style="color: ${stats.totalFailures > 0 ? '#dc2626' : 'inherit'}">${stats.totalFailures}</span>
-            </div>
              <div class="metric-card">
-                <span class="metric-label">Error Rate</span>
-                <span class="metric-value">${stats.totalDiagrams > 0 ? ((stats.totalFailures / stats.totalDiagrams) * 100).toFixed(1) : 0}%</span>
+                <span class="metric-label">Total Successes</span>
+                <span class="metric-value" style="color: #059669">${stats.totalSuccesses}</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Success Rate</span>
+                <span class="metric-value">${stats.totalDiagrams > 0 ? ((stats.totalSuccesses / stats.totalDiagrams) * 100).toFixed(1) : 0}%</span>
             </div>
         </div>
 
@@ -254,6 +252,7 @@ async function run() {
                         <th>Prompt</th>
                         <th>Model</th>
                         <th>Diagrams</th>
+                        <th>Successes</th>
                         <th>Failures</th>
                         <th>Status</th>
                     </tr>
@@ -261,15 +260,18 @@ async function run() {
                 <tbody>
                     ${results.map(r => {
         const failures = r.d2Checks.filter(c => !c.success).length;
+        const successes = r.d2Checks.filter(c => c.success).length;
         const total = r.d2Checks.length;
-        const statusClass = failures === 0 ? 'success' : 'failure';
+        const statusClass = failures === 0 && total > 0 ? 'success' : (total === 0 ? '' : 'failure');
+        const statusText = failures === 0 && total > 0 ? 'PASS' : (total === 0 ? 'NO DATA' : 'FAIL');
         return `
                         <tr data-prompt="${r.metadata.promptId}" data-model="${r.metadata.modelId}">
                             <td><strong>${r.metadata.promptId}</strong></td>
                             <td>${r.metadata.modelId}</td>
                             <td>${total}</td>
+                            <td style="color: #059669; font-weight: bold;">${successes}</td>
                             <td class="${failures > 0 ? 'failure-text' : ''}">${failures}</td>
-                            <td><span class="status-badge ${statusClass}">${failures === 0 ? 'PASS' : 'FAIL'}</span></td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         </tr>
                         `;
     }).join('')}
@@ -303,7 +305,7 @@ async function run() {
                 datalabels: {
                     color: '#1f2937',
                     font: { weight: 'bold', size: 12 },
-                    formatter: (value) => value > 0 ? value + '%' : '',
+                    formatter: (value) => value > 0 ? value : '',
                     anchor: 'end',
                     align: 'top',
                     offset: -5
@@ -313,9 +315,9 @@ async function run() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
                     grid: { color: '#f3f4f6', borderDash: [4, 4] },
-                    border: { display: false }
+                    border: { display: false },
+                    title: { display: true, text: 'Total Successful Diagrams' }
                 },
                 x: {
                     grid: { display: false },
@@ -332,17 +334,17 @@ async function run() {
             }
         };
 
-        // Prompt Error Rate Chart
+        // Prompt Success Chart
         const promptCtx = document.getElementById('promptChart').getContext('2d');
         new Chart(promptCtx, {
             type: 'bar',
             data: {
                 labels: ${JSON.stringify(prompts)},
                 datasets: [{
-                    label: 'Error Rate (%)',
-                    data: ${JSON.stringify(promptErrorRates)},
-                    borderColor: '#ef4444',
-                    backgroundColor: createDiagonalPattern('#ef4444'),
+                    label: 'Success Count',
+                    data: ${JSON.stringify(promptSuccessCounts)},
+                    borderColor: '#10b981',
+                    backgroundColor: createDiagonalPattern('#10b981'),
                 }]
             },
             options: {
@@ -351,7 +353,7 @@ async function run() {
                     ...commonOptions.plugins,
                     title: {
                         display: true,
-                        text: 'Error Rate by Prompt',
+                        text: 'Success Volume by Prompt',
                         font: { family: '"Patrick Hand", cursive', size: 20, weight: 'normal' },
                         color: '#111',
                         padding: { bottom: 20 }
@@ -360,15 +362,15 @@ async function run() {
             }
         });
 
-        // Model Error Rate Chart
+        // Model Success Chart
         const modelCtx = document.getElementById('modelChart').getContext('2d');
         new Chart(modelCtx, {
             type: 'bar',
             data: {
                 labels: ${JSON.stringify(models)},
                 datasets: [{
-                    label: 'Error Rate (%)',
-                    data: ${JSON.stringify(modelErrorRates)},
+                    label: 'Success Count',
+                    data: ${JSON.stringify(modelSuccessCounts)},
                     borderColor: '#3b82f6',
                     backgroundColor: createDiagonalPattern('#3b82f6'),
                 }]
@@ -379,7 +381,7 @@ async function run() {
                     ...commonOptions.plugins,
                     title: {
                         display: true,
-                        text: 'Error Rate by Model',
+                        text: 'Success Volume by Model',
                         font: { family: '"Patrick Hand", cursive', size: 20, weight: 'normal' },
                         color: '#111',
                         padding: { bottom: 20 }
@@ -388,7 +390,7 @@ async function run() {
             }
         });
 
-        // Grouped Bar Chart (Success Rate)
+        // Grouped Bar Chart (Success Count)
         const groupedData = ${JSON.stringify(groupedDatasets)};
         // Apply patterns to grouped data
         groupedData.forEach(dataset => {
@@ -408,7 +410,7 @@ async function run() {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Success Rate (%) by Prompt & Model',
+                        text: 'Success Volume by Prompt & Model',
                         font: { family: '"Patrick Hand", cursive', size: 20, weight: 'normal' },
                         color: '#111',
                         padding: { bottom: 20 }
@@ -418,7 +420,7 @@ async function run() {
                         font: { weight: 'bold', size: 11 },
                         anchor: 'center',
                         align: 'center',
-                        formatter: (value) => value > 0 ? Math.round(value) + '%' : ''
+                        formatter: (value) => value > 0 ? value : ''
                     },
                     legend: {
                         position: 'top',
@@ -428,9 +430,9 @@ async function run() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 100,
                         grid: { color: '#f3f4f6', borderDash: [4, 4] },
-                        border: { display: false }
+                        border: { display: false },
+                        title: { display: true, text: 'Total Successful Diagrams' }
                     },
                     x: {
                         grid: { display: false },
