@@ -1,11 +1,13 @@
 import path from 'path';
 import fs from 'fs/promises';
 
-import { LLMNoteSchema, type LLMNote } from '../src/lib/schemas.js';
+import { LLMNoteSchema, ReflectionSchema, type LLMNote } from '../src/lib/schemas.js';
+import { z } from 'zod';
 import {
   SYSTEM_PROMPT,
   SYSTEM_PROMPT_2,
   SYSTEM_PROMPT_3,
+  REFLECTION_PROMPT,
 } from '../src/lib/prompts.js';
 import { SYSTEM_PROMPT_OPTIMIZED } from '../src/lib/prompts-optimized.js';
 import { generateObject } from 'ai';
@@ -65,6 +67,7 @@ type D2DiagramCheck = {
   visualType: string;
   success: boolean;
   error?: string;
+  d2Code?: string;
 };
 
 const SYSTEM_PROMPTS: SystemPromptConfig[] = [
@@ -75,7 +78,7 @@ const SYSTEM_PROMPTS: SystemPromptConfig[] = [
 
 const DEFAULT_MODELS = [
   'x-ai/grok-4.1-fast:free',
-  'openai/gpt-oss-20b:free',
+  // 'openai/gpt-oss-20b:free',
   "openai/gpt-4o-mini",
   "z-ai/glm-4.5-air:free",
   "google/gemini-2.5-flash-lite",
@@ -120,6 +123,9 @@ async function generateNotes(
   prompt: string,
   model: string,
   dryRun: boolean,
+  useReflection: boolean,
+  index: number,
+  total: number,
 ): Promise<string> {
   if (dryRun) {
     // TODO: Replace this placeholder with a real call to the model client.
@@ -140,19 +146,100 @@ async function generateNotes(
   }
 
   try {
-    const result = await generateObject({
+    const firstPass = await generateObject({
       model: openrouter(model),
       schema: LLMNoteSchema,
       system: prompt,
       prompt: `Here is the text to process:\n\n${content}`,
-      maxRetries: 5
+      maxRetries: 5,
     });
-    return JSON.stringify(result.object);
+
+    const initialNotes = firstPass.object;
+
+    if (!useReflection) {
+      return JSON.stringify(initialNotes);
+    }
+
+    console.log(`[${index + 1}/${total}] Applying reflection...`);
+    return await applyReflection(initialNotes, model, index, total);
   } catch (error) {
     console.error('Error generating notes:', error);
     throw error;
   }
 }
+
+async function applyReflection(initialNotes: LLMNote, model: string, index: number, total: number): Promise<string> {
+  const d2Limit = pLimit(1);
+
+  await Promise.all(
+    initialNotes.blocks.map((block) =>
+      d2Limit(async () => {
+        if (block.d2Code) {
+          try {
+            const check = await renderD2ToSvg(block.d2Code);
+            if (!check.ok) {
+              // Inject error into the block for the LLM to see
+              block.__d2_error__ = check.error;
+            }
+          } catch (e) {
+            block.__d2_error__ = `validation error: ${e}`;
+          }
+        }
+      })
+    )
+  );
+
+  // 3. Reflection Pass
+  // Filter to only blocks with errors to save tokens
+  const blocksWithErrors = initialNotes.blocks.filter((b: any) => b.__d2_error__);
+
+  if (blocksWithErrors.length === 0) {
+    // console.log('  > No D2 errors found, skipping reflection.');
+    return JSON.stringify(initialNotes);
+  }
+
+  // console.log(`  > Reflection pass on ${blocksWithErrors.length} blocks...`);
+
+  // Only pass the JSON with injected errors, NO original content
+  const reflectionInput = `
+GENERATED NOTES (Partial Draft - Only blocks with errors):
+${JSON.stringify({ blocks: blocksWithErrors }, null, 2)}
+`;
+  console.log(`[${index + 1}/${total}] Reflection input:\n${reflectionInput}`);
+  const secondPass = await generateObject({
+    model: openrouter(model),
+    schema: ReflectionSchema,
+    system: REFLECTION_PROMPT,
+    prompt: reflectionInput,
+    maxRetries: 5,
+  });
+
+  const corrections = secondPass.object.corrections;
+  console.log(`[${index + 1}/${total}] Reflection output:\n${JSON.stringify(corrections, null, 2)}`);
+  // Merge corrections back into initialNotes
+  if (corrections.length > 0) {
+    // Create a map for faster lookup
+    const correctionMap = new Map(corrections.map(c => [c.blockId, c]));
+
+    initialNotes.blocks = initialNotes.blocks.map(block => {
+      const correction = correctionMap.get(block.id);
+      if (correction) {
+
+        return {
+          ...block,
+          d2Code: correction.d2Code,
+          visualType: correction.visualType || block.visualType,
+          // Remove the error field since it's theoretically fixed
+          __d2_error__: undefined
+        };
+      }
+      return block;
+    });
+  }
+
+  return JSON.stringify(initialNotes);
+}
+
 
 function validateLLMResponse(raw: string): {
   jsonParsed: boolean;
@@ -230,6 +317,7 @@ async function evaluateD2Diagrams(index: number, total: number, note?: LLMNote,)
         visualType: block.visualType,
         success: false,
         error: renderResult.error,
+        d2Code: block.d2Code,
       });
     }
   }
@@ -237,21 +325,6 @@ async function evaluateD2Diagrams(index: number, total: number, note?: LLMNote,)
   return results;
 }
 
-async function persistResults(
-  results: EvalIterationResult[],
-  outputPath: string,
-) {
-  await fs.mkdir(path.dirname(outputPath), { recursive: true });
-
-  if (results.length === 0) {
-    console.warn('No evaluation results to persist.');
-    return;
-  }
-
-  const lines = results.map((result) => JSON.stringify(result));
-  await fs.writeFile(outputPath, `${lines.join('\n')}\n`, 'utf-8');
-  console.log(`Saved ${results.length} records to ${outputPath}`);
-}
 
 async function appendResult(
   result: EvalIterationResult,
@@ -260,9 +333,57 @@ async function appendResult(
   await fs.appendFile(outputPath, `${JSON.stringify(result)}\n`, 'utf-8');
 }
 
+const EvalIterationResultSchema = z.object({
+  metadata: z.object({
+    contentId: z.string(),
+    promptId: z.string(),
+    modelId: z.string(),
+  }),
+});
+
+function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    typeof (error as NodeJS.ErrnoException).code === 'string'
+  );
+}
+
+async function loadCompletedSignatures(outputPath: string): Promise<Set<string>> {
+  const signatures = new Set<string>();
+  try {
+    const content = await fs.readFile(outputPath, 'utf-8');
+    const lines = content.split('\n').filter((line) => line.trim());
+    for (const line of lines) {
+      try {
+        const json = JSON.parse(line);
+        const result = EvalIterationResultSchema.safeParse(json);
+
+        if (result.success) {
+          const { metadata } = result.data;
+          const signature = `${metadata.contentId}|${metadata.promptId}|${metadata.modelId}`;
+          signatures.add(signature);
+        } else {
+          console.warn('Skipping invalid line in results file:', result.error.message);
+        }
+      } catch (e) {
+        console.warn('Failed to parse line in output file:', e);
+      }
+    }
+  } catch (error) {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
+
+      return signatures;
+    }
+    console.warn('Error reading existing results:', error);
+  }
+  return signatures;
+}
+
 
 async function run() {
   const dryRun = process.argv.includes('--dry-run');
+  const useReflection = process.argv.includes('--reflection');
   const concurrency = 10;
 
   console.log('Starting D2 evaluation harness');
@@ -272,6 +393,7 @@ async function run() {
     modelCount: CONFIG.models.length,
     outputPath: CONFIG.outputPath,
     dryRun,
+    useReflection,
     concurrency,
   });
 
@@ -284,7 +406,12 @@ async function run() {
 
   // Clear/create output file
   await fs.mkdir(path.dirname(CONFIG.outputPath), { recursive: true });
-  await fs.writeFile(CONFIG.outputPath, '', 'utf-8');
+  // await fs.writeFile(CONFIG.outputPath, '', 'utf-8'); // REMOVED: Do not clear file to allow resuming
+
+  const completedSignatures = await loadCompletedSignatures(CONFIG.outputPath);
+  if (completedSignatures.size > 0) {
+    console.log(`Found ${completedSignatures.size} completed jobs in ${CONFIG.outputPath}. Resuming...`);
+  }
 
   // Flatten jobs into array
   type Job = {
@@ -297,6 +424,10 @@ async function run() {
   for (const content of contentItems) {
     for (const prompt of CONFIG.prompts) {
       for (const model of CONFIG.models) {
+        const signature = `${content.id}|${prompt.id}|${model}`;
+        if (completedSignatures.has(signature)) {
+          continue;
+        }
         jobs.push({ content, prompt, model });
       }
     }
@@ -329,6 +460,9 @@ async function run() {
             job.prompt.text,
             job.model,
             dryRun,
+            useReflection,
+            index,
+            jobs.length,
           );
 
           const validation = validateLLMResponse(rawResponse);

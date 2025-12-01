@@ -7,7 +7,8 @@ export const LLMNoteBlockSchema = z.object({
   summary: z.string().describe("Markdown formatted summary of the content. Use bolding for key terms."),
   visualType: z.string().describe("The type of visual aid to generate for this block"),
   d2Code: z.string().optional().describe("Valid D2 diagram code if visualType is 'diagram'. MUST NOT include markdown code fences."),
-  imageQuery: z.string().optional().describe("Search query for a stock photo if visualType is 'icon' or fallback")
+  imageQuery: z.string().optional().describe("Search query for a stock photo if visualType is 'icon' or fallback"),
+  __d2_error__: z.string().optional().describe("Error message if D2 diagram generation failed")
 });
 
 // Full schema for internal use - includes metadata fields assigned by our code
@@ -27,6 +28,15 @@ export const NoteBlockSchema = z.object({
 // Schema for LLM response
 export const LLMNoteSchema = z.object({
   blocks: z.array(LLMNoteBlockSchema).describe("A list of note blocks representing the study material")
+});
+
+export const ReflectionSchema = z.object({
+  corrections: z.array(z.object({
+    blockId: z.string().describe("The ID of the block to update"),
+    d2Code: z.string().describe("The corrected D2 code"),
+    visualType: z.string().optional().describe("Updated visual type if changed"),
+    reason: z.string().optional().describe("Brief reason for the change")
+  })).describe("List of blocks that need correction. Omit blocks that are already correct.")
 });
 
 export const NoteSchema = z.object({
