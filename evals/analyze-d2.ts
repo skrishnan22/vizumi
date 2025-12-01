@@ -19,6 +19,16 @@ type EvalIterationResult = {
     timestamp: string;
 };
 
+function getWeightedScore(successes: number, total: number): number {
+    if (total === 0) return 0;
+    const z = 1.96; // 95% confidence
+    const p = successes / total;
+    const left = p + (z * z) / (2 * total);
+    const right = z * Math.sqrt((p * (1 - p) / total) + (z * z) / (4 * total * total));
+    const under = 1 + (z * z) / total;
+    return Math.round(((left - right) / under) * 100);
+}
+
 async function run() {
     const inputPath = path.join(process.cwd(), 'evals', 'results', 'd2-eval.jsonl');
     const outputPath = path.join(process.cwd(), 'evals', 'results', 'report.html');
@@ -83,8 +93,8 @@ async function run() {
     const prompts = Object.keys(stats.byPrompt).sort();
     const models = Object.keys(stats.byModel).sort();
 
-    const promptSuccessCounts = prompts.map(p => stats.byPrompt[p].successes);
-    const modelSuccessCounts = models.map(m => stats.byModel[m].successes);
+    const promptSuccessCounts = prompts.map(p => getWeightedScore(stats.byPrompt[p].successes, stats.byPrompt[p].total));
+    const modelSuccessCounts = models.map(m => getWeightedScore(stats.byModel[m].successes, stats.byModel[m].total));
 
     // Sketchy/Marker Palette
     const palette = [
@@ -102,7 +112,7 @@ async function run() {
             const key = `${prompt}::${model}`;
             const s = stats.byCombination[key];
             if (!s) return 0;
-            return s.successes;
+            return getWeightedScore(s.successes, s.total);
         });
 
         const color = palette[index % palette.length];
@@ -253,6 +263,7 @@ async function run() {
                         <th>Model</th>
                         <th>Diagrams</th>
                         <th>Successes</th>
+                        <th>Weighted Score</th>
                         <th>Failures</th>
                         <th>Status</th>
                     </tr>
@@ -270,6 +281,7 @@ async function run() {
                             <td>${r.metadata.modelId}</td>
                             <td>${total}</td>
                             <td style="color: #059669; font-weight: bold;">${successes}</td>
+                            <td><strong>${getWeightedScore(successes, total)}%</strong></td>
                             <td class="${failures > 0 ? 'failure-text' : ''}">${failures}</td>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         </tr>
@@ -317,7 +329,7 @@ async function run() {
                     beginAtZero: true,
                     grid: { color: '#f3f4f6', borderDash: [4, 4] },
                     border: { display: false },
-                    title: { display: true, text: 'Total Successful Diagrams' }
+                    title: { display: true, text: 'Weighted Success Score (%)' }
                 },
                 x: {
                     grid: { display: false },
@@ -341,7 +353,7 @@ async function run() {
             data: {
                 labels: ${JSON.stringify(prompts)},
                 datasets: [{
-                    label: 'Success Count',
+                    label: 'Weighted Score (%)',
                     data: ${JSON.stringify(promptSuccessCounts)},
                     borderColor: '#10b981',
                     backgroundColor: createDiagonalPattern('#10b981'),
@@ -353,7 +365,7 @@ async function run() {
                     ...commonOptions.plugins,
                     title: {
                         display: true,
-                        text: 'Success Volume by Prompt',
+                        text: 'Weighted Score by Prompt',
                         font: { family: '"Patrick Hand", cursive', size: 20, weight: 'normal' },
                         color: '#111',
                         padding: { bottom: 20 }
@@ -369,7 +381,7 @@ async function run() {
             data: {
                 labels: ${JSON.stringify(models)},
                 datasets: [{
-                    label: 'Success Count',
+                    label: 'Weighted Score (%)',
                     data: ${JSON.stringify(modelSuccessCounts)},
                     borderColor: '#3b82f6',
                     backgroundColor: createDiagonalPattern('#3b82f6'),
@@ -381,7 +393,7 @@ async function run() {
                     ...commonOptions.plugins,
                     title: {
                         display: true,
-                        text: 'Success Volume by Model',
+                        text: 'Weighted Score by Model',
                         font: { family: '"Patrick Hand", cursive', size: 20, weight: 'normal' },
                         color: '#111',
                         padding: { bottom: 20 }
@@ -410,7 +422,7 @@ async function run() {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Success Volume by Prompt & Model',
+                        text: 'Weighted Score by Prompt & Model',
                         font: { family: '"Patrick Hand", cursive', size: 20, weight: 'normal' },
                         color: '#111',
                         padding: { bottom: 20 }
@@ -432,7 +444,7 @@ async function run() {
                         beginAtZero: true,
                         grid: { color: '#f3f4f6', borderDash: [4, 4] },
                         border: { display: false },
-                        title: { display: true, text: 'Total Successful Diagrams' }
+                        title: { display: true, text: 'Weighted Success Score (%)' }
                     },
                     x: {
                         grid: { display: false },
