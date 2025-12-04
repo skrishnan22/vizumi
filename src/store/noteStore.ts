@@ -15,6 +15,10 @@ type NoteStore = {
   updateBlockSummary: (id: string, summary: string) => void;
   setDeepDiveStreaming: (isStreaming: boolean) => void;
   setBlockStreaming: (id: string, isStreaming: boolean) => void;
+  // Y.js Integration
+  nodes: any[]; // Using any[] for now to avoid circular deps, but ideally Node[]
+  edges: any[];
+  setGraph: (nodes: any[], edges: any[]) => void;
 };
 
 export const useNoteStore = create<NoteStore>((set) => ({
@@ -40,4 +44,8 @@ export const useNoteStore = create<NoteStore>((set) => ({
         block.id === id ? { ...block, isStreaming } : block,
       ),
     })),
+  // Y.js Integration
+  nodes: [],
+  edges: [],
+  setGraph: (nodes, edges) => set({ nodes, edges }),
 }));

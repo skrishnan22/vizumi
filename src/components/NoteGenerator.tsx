@@ -19,6 +19,7 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
     });
 
     const [url, setUrl] = useState(initialUrl);
+    const [noteId] = useState(() => crypto.randomUUID());
     const setBlocksInStore = useNoteStore((state) => state.setBlocks);
 
     const blocks = Array.isArray(object?.blocks)
@@ -80,7 +81,7 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
                 <div className={styles.error}>Error: {error.message}</div>
             )}
 
-            {blocks.length > 0 ? <NoteBoard blocks={blocks} /> : null}
+            {blocks.length > 0 ? <NoteBoard noteId={noteId} blocks={blocks} /> : null}
         </section>
     );
 }

@@ -20,8 +20,11 @@ import { DeepDiveDrawer } from './DeepDiveDrawer';
 import styles from './NoteBoard.module.css';
 import { useNoteStore } from '@/store/noteStore';
 import { getDeepDiveAccent } from '@/lib/deepDiveHelpers';
+import { useNoteDoc } from '@/hooks/useNoteDoc';
+import { updateNodePosition, setNodes as setNodesYjs, setEdges as setEdgesYjs } from '@/lib/yjs/actions';
 
 type NoteBoardProps = {
+  noteId: string;
   blocks: NoteBlock[];
 };
 
@@ -196,7 +199,9 @@ const nodeTypes = {
   note: NoteBlockNode,
 };
 
-export function NoteBoard({ blocks }: NoteBoardProps) {
+export function NoteBoard({ noteId, blocks }: NoteBoardProps) {
+  useNoteDoc(noteId); // Bind Y.Doc
+
   const [contentHeights, setContentHeights] = useState<Record<string, number>>({});
   const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
   const autoLayoutEnabled = useNoteStore((state) => state.autoLayoutEnabled);
@@ -205,8 +210,21 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
   const updateBlockSummary = useNoteStore((state) => state.updateBlockSummary);
   const setBlocksInStore = useNoteStore((state) => state.setBlocks);
 
+  // Y.js Store Data
+  const storeNodes = useNoteStore((state) => state.nodes);
+  const storeEdges = useNoteStore((state) => state.edges);
+
   const [nodes, setNodes, internalOnNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdgesLocal, onEdgesChange] = useEdgesState([]);
+
+  // Sync Store -> Local State
+  useEffect(() => {
+    if (storeNodes.length > 0) setNodes(storeNodes);
+  }, [storeNodes, setNodes]);
+
+  useEffect(() => {
+    if (storeEdges.length > 0) setEdgesLocal(storeEdges);
+  }, [storeEdges, setEdgesLocal]);
 
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const prevBlocksLengthRef = useRef(storeBlocks.length);
@@ -246,6 +264,14 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       internalOnNodesChange(changes);
+
+      // Persist changes to Y.Doc
+      changes.forEach((change) => {
+        if (change.type === 'position' && change.position) {
+          updateNodePosition(noteId, change.id, change.position);
+        }
+      });
+
       if (
         changes.some(
           (change) =>
@@ -257,7 +283,7 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
         setAutoLayoutEnabled(false);
       }
     },
-    [internalOnNodesChange, setAutoLayoutEnabled],
+    [internalOnNodesChange, setAutoLayoutEnabled, noteId],
   );
 
 
@@ -278,8 +304,10 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
 
       // Apply ELK layout
       const layouted = await getLayoutedElements(builtNodes, builtEdges);
-      setNodes(layouted.nodes);
-      setEdges(layouted.edges);
+
+      // Write to Y.Doc (Source of Truth)
+      setNodesYjs(noteId, layouted.nodes);
+      setEdgesYjs(noteId, layouted.edges);
 
       // If a new block was added (and it's a deep dive), shift focus to it
       if (isNewBlock && rfInstance) {
@@ -298,11 +326,11 @@ export function NoteBoard({ blocks }: NoteBoardProps) {
     };
 
     applyLayout();
-  }, [storeBlocks, onMeasure, handleSaveSummary, setNodes, setEdges, rfInstance]);
+  }, [storeBlocks, onMeasure, handleSaveSummary, rfInstance, noteId]);
 
-  if (!blocks.length) {
-    return null;
-  }
+  // if (!blocks.length) {
+  //   return null;
+  // }
 
   return (
     <section className={styles.boardSection} aria-label="Generated visual notes">
