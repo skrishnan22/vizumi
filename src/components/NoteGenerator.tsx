@@ -23,15 +23,25 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
     const [noteId] = useState(() => crypto.randomUUID());
     const setNoteId = useNoteStore((state) => state.setNoteId);
 
-    // Set noteId in store so useDeepDive can access it
+    // Set noteId in store once on mount
     useEffect(() => {
         setNoteId(noteId);
+        // Cleanup: Clear noteId when component unmounts
+        return () => setNoteId(null);
     }, [noteId, setNoteId]);
 
-    // Track which blocks we've already synced to avoid re-syncing on every render
-    const syncedBlockCountRef = useRef(0);
+    /**
+     * Track synced block IDs to prevent re-syncing.
+     *
+     * Why useRef instead of useState?
+     * - During streaming, blocks array changes frequently
+     * - We only want to sync INCREMENTAL changes (new blocks)
+     * - Using state would trigger extra re-renders
+     * - Ref lets us track "side effect state" without affecting render cycle
+     */
+    const syncedBlockIdsRef = useRef<Set<string>>(new Set());
 
-    const blocks: NoteBlock[] = Array.isArray(object?.blocks)
+    const blocks = Array.isArray(object?.blocks)
         ? object.blocks.reduce((acc, block) => {
             const result = LLMNoteBlockSchema.safeParse(block);
             if (result.success) {
@@ -39,11 +49,9 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
             }
             return acc;
         }, [] as LLMNoteBlock[])
-            // Assign parentId: first block is root, all others are children of first block
-            // Also add blockType since LLM doesn't generate it
             .map((block, index) => {
                 if (index === 0) {
-                    // Root block - no parent
+                    // Root block - no parent.adding blockType since LLM doesn't generate it
                     return { ...block, parentId: undefined, blockType: 'content' as const };
                 } else {
                     // All other blocks are children of the first block
@@ -53,14 +61,24 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
             })
         : [];
 
-    // Sync blocks to Y.Doc when they change
+    // Sync blocks to Y.Doc incrementally as they arrive.This is efficient because layout calculation is async and batched
     useEffect(() => {
-        // Only sync if we have new blocks
-        if (blocks.length > syncedBlockCountRef.current) {
+        if (blocks.length === 0) return;
+
+        const newBlocks = blocks.filter(block => !syncedBlockIdsRef.current.has(block.id));
+
+        if (newBlocks.length > 0) {
             syncBlocksToYDoc(noteId, blocks);
-            syncedBlockCountRef.current = blocks.length;
+
+            newBlocks.forEach(block => syncedBlockIdsRef.current.add(block.id));
         }
     }, [blocks, noteId]);
+
+    useEffect(() => {
+        if (isLoading) {
+            syncedBlockIdsRef.current.clear();
+        }
+    }, [isLoading]);
 
     return (
         <section className={styles.wrapper}>
