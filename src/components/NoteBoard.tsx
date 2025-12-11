@@ -19,56 +19,33 @@ import { NoteBlockNode } from './NoteBlockNode';
 import { DeepDiveDrawer } from './DeepDiveDrawer';
 import styles from './NoteBoard.module.css';
 import { useNoteStore } from '@/store/noteStore';
-import { getDeepDiveAccent } from '@/lib/deepDiveHelpers';
 import { useNoteDoc } from '@/hooks/useNoteDoc';
-import { updateNodePosition, setNodes as setNodesYjs, setEdges as setEdgesYjs } from '@/lib/yjs/actions';
+import { updateNodePosition, updateNodeData, setNodes as setNodesYjs, setEdges as setEdgesYjs } from '@/lib/yjs/actions';
+import { NoteNodeData, NODE_WIDTH, NODE_HEIGHT } from '@/lib/yjs/utils';
 
 type NoteBoardProps = {
   noteId: string;
-  blocks: NoteBlock[];
+  blocks?: NoteBlock[]; // Now optional - deprecated, kept for initial seeding
 };
 
 const elk = new ELK();
 
-const NODE_WIDTH = 320;
-const NODE_HEIGHT = 440;
-const DEEP_DIVE_VERTICAL_GAP = 100; // Gap below parent node
-const DEEP_DIVE_HORIZONTAL_GAP = 30; // Gap between sibling deep dives
-const NODE_COLORS = [
-  '#FFF6D9',
-  '#E5F4FF',
-  '#EAFBE7',
-  '#FFF0F5',
-  '#F3E8FF',
-  '#FFEFE0',
-];
-
-export type NoteNodeData = {
-  block: NoteBlock;
-  accent: string;
-  onMeasure?: (id: string, height: number) => void;
-  onSaveSummary?: (id: string, summary: string) => void;
-  onOpenDrawer?: (id: string) => void;
-};
-
-
-
 const elkOptions = {
   'elk.algorithm': 'org.eclipse.elk.mrtree',
-  'elk.direction': 'DOWN', // Children below parents
+  'elk.direction': 'DOWN',
   'elk.spacing.nodeNode': '300',
   'elk.mrtree.searchDepth': '5',
 };
 
 function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
   if (angleInRadians >= -Math.PI / 4 && angleInRadians < Math.PI / 4) {
-    return 'right';  // -45° to 45°
+    return 'right';
   } else if (angleInRadians >= Math.PI / 4 && angleInRadians < 3 * Math.PI / 4) {
-    return 'bottom'; // 45° to 135°
+    return 'bottom';
   } else if (angleInRadians >= 3 * Math.PI / 4 || angleInRadians < -3 * Math.PI / 4) {
-    return 'left';   // 135° to -135° (wraps around at ±180°)
+    return 'left';
   } else {
-    return 'top';    // -135° to -45°
+    return 'top';
   }
 }
 
@@ -86,6 +63,9 @@ async function getLayoutedElements(
   nodes: Node<NoteNodeData>[],
   edges: Edge[],
 ) {
+  if (nodes.length === 0) {
+    return { nodes: [], edges: [] };
+  }
 
   const graph = {
     id: 'root',
@@ -123,7 +103,7 @@ async function getLayoutedElements(
       return edge;
     }
 
-    const isDeepDiveEdge = targetNode.data.block.blockType === 'deep-dive';
+    const isDeepDiveEdge = targetNode.data?.block?.blockType === 'deep-dive';
 
     const sourceX = sourceNode.position.x + NODE_WIDTH / 2;
     const sourceY = sourceNode.position.y + NODE_HEIGHT / 2;
@@ -132,13 +112,11 @@ async function getLayoutedElements(
 
     const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
     const sourceHandleSide = getHandleForAngle(angle);
-    const targetHandleSide = getOppositeHandle(sourceHandleSide);
 
     return {
       ...edge,
       sourceHandle: `source-${sourceHandleSide}`,
       targetHandle: `target-top`,
-      // Different styling for deep dive edges
       style: isDeepDiveEdge
         ? { stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '5,5' }
         : { stroke: '#64748b', strokeWidth: 3 },
@@ -152,126 +130,68 @@ async function getLayoutedElements(
   return { nodes: layoutedNodes, edges: layoutedEdges };
 }
 
-function buildNodesAndEdges(
-  blocks: NoteBlock[],
-  onMeasure: (id: string, height: number) => void,
-  onSaveSummary: (id: string, summary: string) => void,
-  onOpenDrawer: (id: string) => void,
-): { nodes: Node<NoteNodeData>[]; edges: Edge[] } {
-  const nodes = blocks.map((block, index) => {
-    // Use mode-specific accent for deep dive nodes, default colors for content nodes
-    const accent = block.blockType === 'deep-dive'
-      ? getDeepDiveAccent(block.deepDiveMode)
-      : NODE_COLORS[index % NODE_COLORS.length];
-
-    return {
-      id: block.id ?? `block-${index}`,
-      type: 'note',
-      data: { block, accent, onMeasure, onSaveSummary, onOpenDrawer },
-      position: { x: 0, y: 0 },
-      style: {
-        width: NODE_WIDTH,
-        height: NODE_HEIGHT,
-      },
-    };
-  });
-
-  // Create edges based on parentId relationships
-  const edges: Edge[] = blocks
-    .filter(block => block.parentId)
-    .map(block => ({
-      id: `edge-${block.parentId}-${block.id}`,
-      source: block.parentId!,
-      target: block.id ?? `block-${blocks.indexOf(block)}`,
-      type: 'default',
-      animated: false,
-      style: { stroke: '#64748b', strokeWidth: 3 },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: '#64748b',
-      },
-    }));
-
-  return { nodes, edges };
-}
-
 const nodeTypes = {
   note: NoteBlockNode,
 };
 
-export function NoteBoard({ noteId, blocks }: NoteBoardProps) {
-  useNoteDoc(noteId); // Bind Y.Doc
+// Re-export NoteNodeData for components that import from here
+export type { NoteNodeData } from '@/lib/yjs/utils';
 
-  const [contentHeights, setContentHeights] = useState<Record<string, number>>({});
+export function NoteBoard({ noteId }: NoteBoardProps) {
+  useNoteDoc(noteId); // Bind Y.Doc and sync to store
+
   const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
-  const autoLayoutEnabled = useNoteStore((state) => state.autoLayoutEnabled);
   const setAutoLayoutEnabled = useNoteStore((state) => state.setAutoLayoutEnabled);
-  const storeBlocks = useNoteStore((state) => state.blocks);
-  const updateBlockSummary = useNoteStore((state) => state.updateBlockSummary);
-  const setBlocksInStore = useNoteStore((state) => state.setBlocks);
 
-  // Y.js Store Data
+  // Y.js Store Data - the source of truth
   const storeNodes = useNoteStore((state) => state.nodes);
   const storeEdges = useNoteStore((state) => state.edges);
 
   const [nodes, setNodes, internalOnNodesChange] = useNodesState([]);
   const [edges, setEdgesLocal, onEdgesChange] = useEdgesState([]);
 
-  // Sync Store -> Local State
-  useEffect(() => {
-    if (storeNodes.length > 0) setNodes(storeNodes);
-  }, [storeNodes, setNodes]);
-
-  useEffect(() => {
-    if (storeEdges.length > 0) setEdgesLocal(storeEdges);
-  }, [storeEdges, setEdgesLocal]);
-
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
-  const prevBlocksLengthRef = useRef(storeBlocks.length);
+  const prevNodesLengthRef = useRef(0);
+  const layoutAppliedRef = useRef(false);
 
-  const selectedBlock = useMemo(() =>
-    storeBlocks.find(b => b.id === selectedDeepDiveId) ?? null,
-    [storeBlocks, selectedDeepDiveId]
-  );
+  // Find selected block and parent from storeNodes
+  const selectedBlock = useMemo(() => {
+    const node = storeNodes.find((n: any) => n.id === selectedDeepDiveId);
+    return (node?.data?.block as NoteBlock) ?? null;
+  }, [storeNodes, selectedDeepDiveId]);
 
   const parentBlock = useMemo(() => {
     if (!selectedBlock?.parentId) return null;
-    return storeBlocks.find(b => b.id === selectedBlock.parentId) ?? null;
-  }, [selectedBlock, storeBlocks]);
+    const parentNode = storeNodes.find((n: any) => n.id === selectedBlock.parentId);
+    return (parentNode?.data?.block as NoteBlock) ?? null;
+  }, [selectedBlock, storeNodes]);
 
-  useEffect(() => {
-    if (blocks.length && !storeBlocks.length) {
-      setBlocksInStore(blocks);
-    }
-  }, [blocks, storeBlocks.length, setBlocksInStore]);
-
+  // Callback for measuring node heights
   const onMeasure = useCallback((nodeId: string, height: number) => {
-    setContentHeights((prev) => {
-      if (Math.abs((prev[nodeId] ?? 0) - height) < 1) {
-        return prev;
-      }
-      return { ...prev, [nodeId]: height };
-    });
+    // Not used currently, but kept for future dynamic height adjustment
   }, []);
 
+  // Callback for saving summary edits
   const handleSaveSummary = useCallback(
     (nodeId: string, summary: string) => {
-      updateBlockSummary(nodeId, summary);
+      updateNodeData(noteId, nodeId, { summary });
     },
-    [updateBlockSummary],
+    [noteId],
   );
 
+  // Handle node changes (dragging, selecting, resizing)
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       internalOnNodesChange(changes);
 
-      // Persist changes to Y.Doc
+      // Persist position changes to Y.Doc
       changes.forEach((change) => {
         if (change.type === 'position' && change.position) {
           updateNodePosition(noteId, change.id, change.position);
         }
       });
 
+      // Disable auto-layout when user interacts
       if (
         changes.some(
           (change) =>
@@ -286,37 +206,56 @@ export function NoteBoard({ noteId, blocks }: NoteBoardProps) {
     [internalOnNodesChange, setAutoLayoutEnabled, noteId],
   );
 
+  // Inject callbacks into nodes before rendering
+  const nodesWithCallbacks = useMemo(() => {
+    return storeNodes.map((node: Node<NoteNodeData>) => ({
+      ...node,
+      data: {
+        ...node.data,
+        onMeasure,
+        onSaveSummary: handleSaveSummary,
+        onOpenDrawer: setSelectedDeepDiveId,
+      },
+    }));
+  }, [storeNodes, onMeasure, handleSaveSummary]);
 
+  // Apply layout when nodes change
   useEffect(() => {
-    if (!storeBlocks.length) return;
+    const nodesCount = storeNodes.length;
+    const edgesCount = storeEdges.length;
 
-    const isNewBlock = storeBlocks.length > prevBlocksLengthRef.current;
-    prevBlocksLengthRef.current = storeBlocks.length;
+    // Skip if no nodes
+    if (nodesCount === 0) return;
+
+    const isNewNode = nodesCount > prevNodesLengthRef.current;
+    prevNodesLengthRef.current = nodesCount;
+
+    // Only re-layout if we have new nodes or it's the first layout
+    const shouldLayout = isNewNode || !layoutAppliedRef.current;
+    if (!shouldLayout) {
+      // Just sync local state without re-layout
+      setNodes(nodesWithCallbacks);
+      setEdgesLocal(storeEdges);
+      return;
+    }
 
     const applyLayout = async () => {
-      // Build nodes and edges from storeBlocks
-      const { nodes: builtNodes, edges: builtEdges } = buildNodesAndEdges(
-        storeBlocks,
-        onMeasure,
-        handleSaveSummary,
-        setSelectedDeepDiveId,
-      );
+      // Apply ELK layout to nodes
+      const layouted = await getLayoutedElements(nodesWithCallbacks, storeEdges);
 
-      // Apply ELK layout
-      const layouted = await getLayoutedElements(builtNodes, builtEdges);
-
-      // Write to Y.Doc (Source of Truth)
+      // Write layouted positions back to Y.Doc
       setNodesYjs(noteId, layouted.nodes);
       setEdgesYjs(noteId, layouted.edges);
 
-      // If a new block was added (and it's a deep dive), shift focus to it
-      if (isNewBlock && rfInstance) {
-        const newBlock = storeBlocks[storeBlocks.length - 1];
-        if (newBlock.blockType === 'deep-dive') {
-          // Small delay to ensure the node is rendered and layout is applied in React Flow
+      layoutAppliedRef.current = true;
+
+      // Focus on new deep dive node if one was added
+      if (isNewNode && rfInstance) {
+        const newNode = storeNodes[storeNodes.length - 1] as Node<NoteNodeData>;
+        if (newNode?.data?.block?.blockType === 'deep-dive') {
           setTimeout(() => {
             rfInstance.fitView({
-              nodes: [{ id: newBlock.id }],
+              nodes: [{ id: newNode.id }],
               duration: 1200,
               padding: 0.2,
             });
@@ -326,11 +265,20 @@ export function NoteBoard({ noteId, blocks }: NoteBoardProps) {
     };
 
     applyLayout();
-  }, [storeBlocks, onMeasure, handleSaveSummary, rfInstance, noteId]);
+  }, [storeNodes, storeEdges, nodesWithCallbacks, noteId, rfInstance, setNodes, setEdgesLocal]);
 
-  // if (!blocks.length) {
-  //   return null;
-  // }
+  // Sync from store to local ReactFlow state
+  useEffect(() => {
+    if (nodesWithCallbacks.length > 0) {
+      setNodes(nodesWithCallbacks);
+    }
+  }, [nodesWithCallbacks, setNodes]);
+
+  useEffect(() => {
+    if (storeEdges.length > 0) {
+      setEdgesLocal(storeEdges);
+    }
+  }, [storeEdges, setEdgesLocal]);
 
   return (
     <section className={styles.boardSection} aria-label="Generated visual notes">
