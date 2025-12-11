@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { LLMNoteSchema, LLMNoteBlockSchema } from '@/lib/schemas';
 import type { LLMNoteBlock, NoteBlock } from '@/lib/schemas';
 import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
+import { syncBlocksToYDoc } from '@/lib/yjs/actions';
 import { useNoteStore } from '@/store/noteStore';
 
 type NoteGeneratorProps = {
@@ -20,9 +21,17 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
 
     const [url, setUrl] = useState(initialUrl);
     const [noteId] = useState(() => crypto.randomUUID());
-    const setBlocksInStore = useNoteStore((state) => state.setBlocks);
+    const setNoteId = useNoteStore((state) => state.setNoteId);
 
-    const blocks = Array.isArray(object?.blocks)
+    // Set noteId in store so useDeepDive can access it
+    useEffect(() => {
+        setNoteId(noteId);
+    }, [noteId, setNoteId]);
+
+    // Track which blocks we've already synced to avoid re-syncing on every render
+    const syncedBlockCountRef = useRef(0);
+
+    const blocks: NoteBlock[] = Array.isArray(object?.blocks)
         ? object.blocks.reduce((acc, block) => {
             const result = LLMNoteBlockSchema.safeParse(block);
             if (result.success) {
@@ -44,9 +53,14 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
             })
         : [];
 
+    // Sync blocks to Y.Doc when they change
     useEffect(() => {
-        setBlocksInStore(blocks);
-    }, [blocks, setBlocksInStore]);
+        // Only sync if we have new blocks
+        if (blocks.length > syncedBlockCountRef.current) {
+            syncBlocksToYDoc(noteId, blocks);
+            syncedBlockCountRef.current = blocks.length;
+        }
+    }, [blocks, noteId]);
 
     return (
         <section className={styles.wrapper}>
