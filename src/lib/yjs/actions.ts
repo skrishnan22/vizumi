@@ -5,7 +5,7 @@ import { blockToNode, buildEdgesFromBlocks, NoteNodeData } from './utils';
 import { calculateLayout } from '@/lib/layout/elkLayout';
 
 export function updateNode(noteId: string, nodeId: string, patch: Partial<Node>) {
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
     doc.transact(() => {
         const yNodes = doc.getMap('nodes');
         const existing = yNodes.get(nodeId) as Node | undefined;
@@ -21,7 +21,7 @@ export function updateNodePosition(noteId: string, nodeId: string, position: { x
 }
 
 export function addNode(noteId: string, node: Node) {
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
     doc.transact(() => {
         const yNodes = doc.getMap('nodes');
         yNodes.set(node.id, node);
@@ -29,7 +29,7 @@ export function addNode(noteId: string, node: Node) {
 }
 
 export function removeNode(noteId: string, nodeId: string) {
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
     doc.transact(() => {
         const yNodes = doc.getMap('nodes');
         yNodes.delete(nodeId);
@@ -37,7 +37,7 @@ export function removeNode(noteId: string, nodeId: string) {
 }
 
 export function setEdges(noteId: string, edges: Edge[]) {
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
     doc.transact(() => {
         const yEdges = doc.getMap('edges');
         yEdges.clear();
@@ -48,7 +48,7 @@ export function setEdges(noteId: string, edges: Edge[]) {
 }
 
 export function setNodes(noteId: string, nodes: Node[]) {
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
     doc.transact(() => {
         const yNodes = doc.getMap('nodes');
         yNodes.clear();
@@ -78,7 +78,7 @@ export async function addNodeFromBlock(
         onOpenDrawer?: (id: string) => void;
     }
 ): Promise<void> {
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
 
     // Get existing nodes and edges
     const yNodes = doc.getMap('nodes');
@@ -132,7 +132,7 @@ export function updateNodeData(
     nodeId: string,
     dataPatch: Partial<NoteBlock>
 ): void {
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
     doc.transact(() => {
         const yNodes = doc.getMap('nodes');
         const existing = yNodes.get(nodeId) as Node<NoteNodeData> | undefined;
@@ -173,7 +173,7 @@ export async function syncBlocksToYDoc(
 
     const layouted = await calculateLayout(nodes, edges);
 
-    const doc = getOrCreateYDoc(noteId);
+    const { doc } = getOrCreateYDoc(noteId);
     doc.transact(() => {
         const yNodes = doc.getMap('nodes');
         const yEdges = doc.getMap('edges');

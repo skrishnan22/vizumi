@@ -19,13 +19,16 @@ import type { NoteNodeData } from '@/lib/yjs/utils';
  */
 export function useNoteDoc(noteId: string) {
     const [doc, setDoc] = useState<Y.Doc | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isEmpty, setIsEmpty] = useState(false);
     const setGraph = useNoteStore((s) => s.setGraph);
 
     useEffect(() => {
         if (!noteId) return;
 
-        const ydoc = getOrCreateYDoc(noteId);
+        const { doc: ydoc, persistence } = getOrCreateYDoc(noteId);
         setDoc(ydoc);
+        setIsLoading(true);
 
         // Sync Y.Doc → Zustand
         const syncToStore = () => {
@@ -39,18 +42,30 @@ export function useNoteDoc(noteId: string) {
             setGraph(nodes, edges);
         };
 
-        // Initial sync on mount
-        syncToStore();
+        // Wait for IndexedDB sync before initial render
+        const handleSynced = () => {
+            setIsLoading(false);
 
-        // Listen for Y.Doc updates
+            // Check if the note is empty after loading from IndexedDB
+            const yNodes = ydoc.getMap('nodes');
+            setIsEmpty(yNodes.size === 0);
+
+            // Initial sync to store
+            syncToStore();
+        };
+
+        // Listen for persistence sync
+        persistence.once('synced', handleSynced);
+
+        // Listen for Y.Doc updates after initial load
         // React 18 automatically batches multiple setGraph calls in the same tick
-        // No manual debouncing needed!
         ydoc.on('update', syncToStore);
 
         return () => {
             ydoc.off('update', syncToStore);
+            persistence.off('synced', handleSynced);
         };
     }, [noteId, setGraph]);
 
-    return doc;
+    return { doc, isLoading, isEmpty };
 }

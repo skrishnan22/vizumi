@@ -30,7 +30,7 @@ const nodeTypes = {
 } as const;
 
 export function NoteBoard({ noteId }: NoteBoardProps) {
-  useNoteDoc(noteId); // Bind Y.Doc and sync to store
+  const { isLoading, isEmpty } = useNoteDoc(noteId); // Bind Y.Doc and sync to store
 
   const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(
     null
@@ -127,6 +127,49 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
       },
     }));
   }, [nodes, onMeasure, handleSaveSummary, handleOpenDrawer]);
+
+  // Loading state while IndexedDB syncs
+  if (isLoading) {
+    return (
+      <section
+        className={styles.boardSection}
+        aria-label="Loading note"
+      >
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading note...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Empty state if note doesn't exist
+  if (isEmpty) {
+    return (
+      <section
+        className={styles.boardSection}
+        aria-label="Note not found"
+      >
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center max-w-md px-6">
+            <div className="text-6xl mb-4">📝</div>
+            <h2 className="text-2xl font-semibold mb-2">Note not found</h2>
+            <p className="text-gray-600 mb-6">
+              This note doesn't exist or hasn't been created yet.
+            </p>
+            <a
+              href="/"
+              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create a new note
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
