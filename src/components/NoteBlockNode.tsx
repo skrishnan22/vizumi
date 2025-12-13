@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { NodeResizer, Handle, Position, NodeToolbar, type NodeProps } from 'reactflow';
 import styles from './NoteBoard.module.css';
 import { DiagramRenderer } from './DiagramRenderer';
 import { DiagramModal } from './DiagramModal';
-import type { NoteNodeData } from './NoteBoard';
+import type { NoteNodeData } from '@/lib/yjs/utils';
 import { Edit3, ChevronRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useNoteStore } from '@/store/noteStore';
@@ -18,7 +18,14 @@ const NoteEditor = dynamic(() => import('./NoteEditor').then((mod) => mod.NoteEd
   loading: () => <div className={`${styles.editorLoading} nodrag nopan`}>Preparing editor…</div>,
 });
 
-export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
+/**
+ * NoteBlockNode component - Wrapped in memo for performance.
+ *
+ * React.memo prevents re-renders when props haven't changed.
+ * Combined with stable callbacks from parent, this ensures only
+ * nodes with actual changes re-render (not ALL nodes on every update).
+ */
+function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>) {
   const { block, accent, onMeasure, onSaveSummary, onOpenDrawer } = data;
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
@@ -256,3 +263,21 @@ export function NoteBlockNode({ id, data, selected }: NodeProps<NoteNodeData>) {
     </div>
   );
 }
+
+/**
+ * Memoized export of NoteBlockNode.
+ *
+ * React.memo does shallow comparison of props:
+ * - id (string): Compared by value
+ * - data.block, data.accent: Compared by reference
+ * - data.onMeasure, data.onSaveSummary, data.onOpenDrawer: Stable callback references
+ * - selected (boolean): Compared by value
+ *
+ * This means a node only re-renders when:
+ * 1. Its own data changes (block content updated)
+ * 2. Selection state changes (user clicks it)
+ * 3. Callbacks change (shouldn't happen - they're stable)
+ *
+ * NOT when other nodes change!
+ */
+export const NoteBlockNode = memo(NoteBlockNodeComponent);

@@ -1,317 +1,187 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { useCallback, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
   NodeChange,
-  useEdgesState,
-  useNodesState,
+  EdgeChange,
   type Node,
   type Edge,
   MarkerType,
   type ReactFlowInstance,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import ELK from 'elkjs/lib/elk.bundled.js';
-import { NoteBlock } from '@/lib/schemas';
-import { NoteBlockNode } from './NoteBlockNode';
-import { DeepDiveDrawer } from './DeepDiveDrawer';
-import styles from './NoteBoard.module.css';
-import { useNoteStore } from '@/store/noteStore';
-import { getDeepDiveAccent } from '@/lib/deepDiveHelpers';
+} from "reactflow";
+import "reactflow/dist/style.css";
+import { NoteBlock } from "@/lib/schemas";
+import { NoteBlockNode } from "./NoteBlockNode";
+import { DeepDiveDrawer } from "./DeepDiveDrawer";
+import styles from "./NoteBoard.module.css";
+import { useNoteStore } from "@/store/noteStore";
+import { useNoteDoc } from "@/hooks/useNoteDoc";
+import { updateNodePosition, updateNodeData } from "@/lib/yjs/actions";
 
 type NoteBoardProps = {
-  blocks: NoteBlock[];
+  noteId: string;
 };
 
-const elk = new ELK();
-
-const NODE_WIDTH = 320;
-const NODE_HEIGHT = 440;
-const DEEP_DIVE_VERTICAL_GAP = 100; // Gap below parent node
-const DEEP_DIVE_HORIZONTAL_GAP = 30; // Gap between sibling deep dives
-const NODE_COLORS = [
-  '#FFF6D9',
-  '#E5F4FF',
-  '#EAFBE7',
-  '#FFF0F5',
-  '#F3E8FF',
-  '#FFEFE0',
-];
-
-export type NoteNodeData = {
-  block: NoteBlock;
-  accent: string;
-  onMeasure?: (id: string, height: number) => void;
-  onSaveSummary?: (id: string, summary: string) => void;
-  onOpenDrawer?: (id: string) => void;
-};
-
-
-
-const elkOptions = {
-  'elk.algorithm': 'org.eclipse.elk.mrtree',
-  'elk.direction': 'DOWN', // Children below parents
-  'elk.spacing.nodeNode': '300',
-  'elk.mrtree.searchDepth': '5',
-};
-
-function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
-  if (angleInRadians >= -Math.PI / 4 && angleInRadians < Math.PI / 4) {
-    return 'right';  // -45° to 45°
-  } else if (angleInRadians >= Math.PI / 4 && angleInRadians < 3 * Math.PI / 4) {
-    return 'bottom'; // 45° to 135°
-  } else if (angleInRadians >= 3 * Math.PI / 4 || angleInRadians < -3 * Math.PI / 4) {
-    return 'left';   // 135° to -135° (wraps around at ±180°)
-  } else {
-    return 'top';    // -135° to -45°
-  }
-}
-
-function getOppositeHandle(handle: 'top' | 'right' | 'bottom' | 'left'): 'top' | 'right' | 'bottom' | 'left' {
-  const opposites = {
-    'right': 'left',
-    'left': 'right',
-    'top': 'bottom',
-    'bottom': 'top',
-  } as const;
-  return opposites[handle];
-}
-
-async function getLayoutedElements(
-  nodes: Node<NoteNodeData>[],
-  edges: Edge[],
-) {
-
-  const graph = {
-    id: 'root',
-    layoutOptions: elkOptions,
-    children: nodes.map((node) => ({
-      id: node.id,
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT,
-    })),
-    edges: edges.map((edge) => ({
-      id: edge.id,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
-  };
-
-  const layoutedGraph = await elk.layout(graph);
-
-  const layoutedNodes = nodes.map((node) => {
-    const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
-    return {
-      ...node,
-      position: {
-        x: layoutedNode?.x ?? 0,
-        y: layoutedNode?.y ?? 0,
-      },
-    };
-  });
-
-  const layoutedEdges = edges.map((edge) => {
-    const sourceNode = layoutedNodes.find((n) => n.id === edge.source);
-    const targetNode = layoutedNodes.find((n) => n.id === edge.target);
-
-    if (!sourceNode || !targetNode) {
-      return edge;
-    }
-
-    const isDeepDiveEdge = targetNode.data.block.blockType === 'deep-dive';
-
-    const sourceX = sourceNode.position.x + NODE_WIDTH / 2;
-    const sourceY = sourceNode.position.y + NODE_HEIGHT / 2;
-    const targetX = targetNode.position.x + NODE_WIDTH / 2;
-    const targetY = targetNode.position.y + NODE_HEIGHT / 2;
-
-    const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
-    const sourceHandleSide = getHandleForAngle(angle);
-    const targetHandleSide = getOppositeHandle(sourceHandleSide);
-
-    return {
-      ...edge,
-      sourceHandle: `source-${sourceHandleSide}`,
-      targetHandle: `target-top`,
-      // Different styling for deep dive edges
-      style: isDeepDiveEdge
-        ? { stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '5,5' }
-        : { stroke: '#64748b', strokeWidth: 3 },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: isDeepDiveEdge ? '#94a3b8' : '#64748b',
-      },
-    };
-  });
-
-  return { nodes: layoutedNodes, edges: layoutedEdges };
-}
-
-function buildNodesAndEdges(
-  blocks: NoteBlock[],
-  onMeasure: (id: string, height: number) => void,
-  onSaveSummary: (id: string, summary: string) => void,
-  onOpenDrawer: (id: string) => void,
-): { nodes: Node<NoteNodeData>[]; edges: Edge[] } {
-  const nodes = blocks.map((block, index) => {
-    // Use mode-specific accent for deep dive nodes, default colors for content nodes
-    const accent = block.blockType === 'deep-dive'
-      ? getDeepDiveAccent(block.deepDiveMode)
-      : NODE_COLORS[index % NODE_COLORS.length];
-
-    return {
-      id: block.id ?? `block-${index}`,
-      type: 'note',
-      data: { block, accent, onMeasure, onSaveSummary, onOpenDrawer },
-      position: { x: 0, y: 0 },
-      style: {
-        width: NODE_WIDTH,
-        height: NODE_HEIGHT,
-      },
-    };
-  });
-
-  // Create edges based on parentId relationships
-  const edges: Edge[] = blocks
-    .filter(block => block.parentId)
-    .map(block => ({
-      id: `edge-${block.parentId}-${block.id}`,
-      source: block.parentId!,
-      target: block.id ?? `block-${blocks.indexOf(block)}`,
-      type: 'default',
-      animated: false,
-      style: { stroke: '#64748b', strokeWidth: 3 },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: '#64748b',
-      },
-    }));
-
-  return { nodes, edges };
-}
-
+// Must be defined outside component or memoized to prevent ReactFlow warnings
 const nodeTypes = {
   note: NoteBlockNode,
-};
+} as const;
 
-export function NoteBoard({ blocks }: NoteBoardProps) {
-  const [contentHeights, setContentHeights] = useState<Record<string, number>>({});
-  const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
-  const autoLayoutEnabled = useNoteStore((state) => state.autoLayoutEnabled);
-  const setAutoLayoutEnabled = useNoteStore((state) => state.setAutoLayoutEnabled);
-  const storeBlocks = useNoteStore((state) => state.blocks);
-  const updateBlockSummary = useNoteStore((state) => state.updateBlockSummary);
-  const setBlocksInStore = useNoteStore((state) => state.setBlocks);
+export function NoteBoard({ noteId }: NoteBoardProps) {
+  const { isLoading, isEmpty } = useNoteDoc(noteId); // Bind Y.Doc and sync to store
 
-  const [nodes, setNodes, internalOnNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
-  const prevBlocksLengthRef = useRef(storeBlocks.length);
-
-  const selectedBlock = useMemo(() =>
-    storeBlocks.find(b => b.id === selectedDeepDiveId) ?? null,
-    [storeBlocks, selectedDeepDiveId]
+  const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(
+    null
   );
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+
+  const nodes = useNoteStore((state) => state.nodes);
+  const edges = useNoteStore((state) => state.edges);
+  const setAutoLayoutEnabled = useNoteStore(
+    (state) => state.setAutoLayoutEnabled
+  );
+  const updateNode = useNoteStore((state) => state.updateNode);
+
+  // Find selected block and parent from nodes
+  const selectedBlock = useMemo(() => {
+    const node = nodes.find((n) => n.id === selectedDeepDiveId);
+    return (node?.data?.block as NoteBlock) ?? null;
+  }, [nodes, selectedDeepDiveId]);
 
   const parentBlock = useMemo(() => {
     if (!selectedBlock?.parentId) return null;
-    return storeBlocks.find(b => b.id === selectedBlock.parentId) ?? null;
-  }, [selectedBlock, storeBlocks]);
+    const parentNode = nodes.find((n) => n.id === selectedBlock.parentId);
+    return (parentNode?.data?.block as NoteBlock) ?? null;
+  }, [selectedBlock, nodes]);
 
-  useEffect(() => {
-    if (blocks.length && !storeBlocks.length) {
-      setBlocksInStore(blocks);
-    }
-  }, [blocks, storeBlocks.length, setBlocksInStore]);
-
+  // Callback for measuring node heights
   const onMeasure = useCallback((nodeId: string, height: number) => {
-    setContentHeights((prev) => {
-      if (Math.abs((prev[nodeId] ?? 0) - height) < 1) {
-        return prev;
-      }
-      return { ...prev, [nodeId]: height };
-    });
+    // Not used currently, but kept for future dynamic height adjustment
   }, []);
 
+  // Callback for saving summary edits
   const handleSaveSummary = useCallback(
     (nodeId: string, summary: string) => {
-      updateBlockSummary(nodeId, summary);
+      updateNodeData(noteId, nodeId, { summary });
     },
-    [updateBlockSummary],
+    [noteId]
   );
 
+  // Callback for opening deep dive drawer
+  // Wrap in useCallback to keep reference stable
+  const handleOpenDrawer = useCallback((nodeId: string) => {
+    setSelectedDeepDiveId(nodeId);
+  }, []);
+
+  /**
+   * Handle node changes from ReactFlow.
+   *
+   * In controlled mode, ReactFlow needs us to apply ALL changes to state,
+   * otherwise the UI won't update. We use a two-phase approach:
+   *
+   * Phase 1 (During drag): Update Zustand immediately for visual feedback
+   * Phase 2 (After drag): Persist to Y.Doc for permanent storage
+   */
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      internalOnNodesChange(changes);
-      if (
-        changes.some(
-          (change) =>
-            change.type === 'position' ||
-            change.type === 'dimensions' ||
-            change.type === 'select',
-        )
-      ) {
-        setAutoLayoutEnabled(false);
-      }
+      changes.forEach((change) => {
+        if (change.type === "position" && change.position) {
+          if (change.dragging) {
+            updateNode(change.id, { position: change.position });
+          } else {
+            updateNodePosition(noteId, change.id, change.position);
+            // Disable auto-layout since user manually positioned
+            setAutoLayoutEnabled(false);
+          }
+        }
+      });
     },
-    [internalOnNodesChange, setAutoLayoutEnabled],
+    [noteId, setAutoLayoutEnabled, updateNode]
   );
 
+  // Handle edge changes (selection, etc.)
+  const handleEdgesChange = useCallback((_changes: EdgeChange[]) => {}, []);
 
-  useEffect(() => {
-    if (!storeBlocks.length) return;
-
-    const isNewBlock = storeBlocks.length > prevBlocksLengthRef.current;
-    prevBlocksLengthRef.current = storeBlocks.length;
-
-    const applyLayout = async () => {
-      // Build nodes and edges from storeBlocks
-      const { nodes: builtNodes, edges: builtEdges } = buildNodesAndEdges(
-        storeBlocks,
+  /**
+   * Inject stable callbacks into nodes.
+   *
+   * Important: This creates new node objects on every nodes change.
+   * However, all callbacks are wrapped in useCallback, so they have stable references.
+   * Combined with React.memo on NoteBlockNode, this minimizes unnecessary re-renders.
+   *
+   * Why this pattern?
+   * - Nodes need access to callbacks for user interactions
+   * - Callbacks are stable (useCallback), so shallow comparison in React.memo works
+   * - Alternative would be a Context, but that complicates node components
+   */
+  const nodesWithCallbacks = useMemo(() => {
+    return nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
         onMeasure,
-        handleSaveSummary,
-        setSelectedDeepDiveId,
-      );
+        onSaveSummary: handleSaveSummary,
+        onOpenDrawer: handleOpenDrawer,
+      },
+    }));
+  }, [nodes, onMeasure, handleSaveSummary, handleOpenDrawer]);
 
-      // Apply ELK layout
-      const layouted = await getLayoutedElements(builtNodes, builtEdges);
-      setNodes(layouted.nodes);
-      setEdges(layouted.edges);
+  // Loading state while IndexedDB syncs
+  if (isLoading) {
+    return (
+      <section
+        className={styles.boardSection}
+        aria-label="Loading note"
+      >
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading note...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-      // If a new block was added (and it's a deep dive), shift focus to it
-      if (isNewBlock && rfInstance) {
-        const newBlock = storeBlocks[storeBlocks.length - 1];
-        if (newBlock.blockType === 'deep-dive') {
-          // Small delay to ensure the node is rendered and layout is applied in React Flow
-          setTimeout(() => {
-            rfInstance.fitView({
-              nodes: [{ id: newBlock.id }],
-              duration: 1200,
-              padding: 0.2,
-            });
-          }, 100);
-        }
-      }
-    };
-
-    applyLayout();
-  }, [storeBlocks, onMeasure, handleSaveSummary, setNodes, setEdges, rfInstance]);
-
-  if (!blocks.length) {
-    return null;
+  // Empty state if note doesn't exist
+  if (isEmpty) {
+    return (
+      <section
+        className={styles.boardSection}
+        aria-label="Note not found"
+      >
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center max-w-md px-6">
+            <div className="text-6xl mb-4">📝</div>
+            <h2 className="text-2xl font-semibold mb-2">Note not found</h2>
+            <p className="text-gray-600 mb-6">
+              This note doesn't exist or hasn't been created yet.
+            </p>
+            <a
+              href="/"
+              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create a new note
+            </a>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
-    <section className={styles.boardSection} aria-label="Generated visual notes">
+    <section
+      className={styles.boardSection}
+      aria-label="Generated visual notes"
+    >
       <div className={styles.flowShell}>
         <ReactFlow
-          nodes={nodes}
+          nodes={nodesWithCallbacks}
           edges={edges}
           onNodesChange={handleNodesChange}
-          onEdgesChange={onEdgesChange}
+          onEdgesChange={handleEdgesChange}
           nodeTypes={nodeTypes}
           className={styles.flowCanvas}
           defaultViewport={{ x: 0, y: 0, zoom: 1 }}
