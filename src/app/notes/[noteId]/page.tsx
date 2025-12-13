@@ -1,4 +1,4 @@
-import { NoteBoard } from '@/components/NoteBoard';
+import { NotePageContent } from '@/components/NotePageContent';
 
 type Props = {
   params: Promise<{ noteId: string }>;
@@ -7,9 +7,5 @@ type Props = {
 export default async function NotePage({ params }: Props) {
   const { noteId } = await params;
 
-  return (
-    <main className="min-h-screen bg-white">
-      <NoteBoard noteId={noteId} />
-    </main>
-  );
+  return <NotePageContent noteId={noteId} />;
 }
