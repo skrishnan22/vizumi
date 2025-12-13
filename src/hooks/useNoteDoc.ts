@@ -57,6 +57,11 @@ export function useNoteDoc(noteId: string) {
         // Listen for persistence sync
         persistence.once('synced', handleSynced);
 
+        // If already synced (e.g., cached doc), call handler immediately
+        if (persistence.synced) {
+            handleSynced();
+        }
+
         // Listen for Y.Doc updates after initial load
         // React 18 automatically batches multiple setGraph calls in the same tick
         ydoc.on('update', syncToStore);
