@@ -8,19 +8,20 @@ import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
 import { syncBlocksToYDoc } from '@/lib/yjs/actions';
 import { useNoteStore } from '@/store/noteStore';
+import { createNoteMetadata } from '@/lib/db/actions';
+import Link from 'next/link';
 
 type NoteGeneratorProps = {
-    initialUrl?: string;
+    noteId: string;
 };
 
-export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
+export function NoteGenerator({ noteId }: NoteGeneratorProps) {
     const { object, submit, isLoading, error } = useObject({
         api: '/api/generate',
         schema: LLMNoteSchema,
     });
 
-    const [url, setUrl] = useState(initialUrl);
-    const [noteId] = useState(() => crypto.randomUUID());
+    const [url, setUrl] = useState('');
     const setNoteId = useNoteStore((state) => state.setNoteId);
 
     // Set noteId in store once on mount
@@ -80,8 +81,52 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
         }
     }, [isLoading]);
 
+    // Handle generation with metadata saving
+    const handleGenerate = async () => {
+        if (!url.trim()) return;
+
+        try {
+            // 1. Fetch metadata
+            const metadataRes = await fetch('/api/url-metadata', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+
+            if (metadataRes.ok) {
+                const { title, ogImage } = await metadataRes.json();
+
+                // 2. Save to metadata index
+                await createNoteMetadata({
+                    noteId,
+                    url,
+                    title,
+                    ogImage
+                });
+            }
+        } catch (error) {
+            console.error('Error saving metadata:', error);
+        }
+
+        // 3. Start generation
+        submit({ url });
+    };
+
     return (
         <section className={styles.wrapper}>
+            {/* Home button */}
+            <div className="absolute top-6 left-6 z-10">
+                <Link
+                    href="/"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span className="font-medium text-gray-700">Home</span>
+                </Link>
+            </div>
+
             <header className={styles.intro}>
                 <p className={styles.introSubtitle}>Sketch your study sheet</p>
                 <h1 className={styles.introTitle}>Visual Note Generator</h1>
@@ -100,7 +145,7 @@ export function NoteGenerator({ initialUrl = '' }: NoteGeneratorProps) {
                 <div className={styles.actions}>
                     <button
                         type="button"
-                        onClick={() => submit({ url })}
+                        onClick={handleGenerate}
                         disabled={isLoading || !url.trim()}
                         className={styles.button}
                     >
