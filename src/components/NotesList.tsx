@@ -24,24 +24,24 @@ export function NotesList() {
 
   if (notes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white rounded-2xl border-2 border-dashed border-gray-300">
-        <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-          <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <div className="col-span-full flex flex-col items-center justify-center py-24 px-6 text-center bg-gray-50 rounded-3xl border border-gray-100">
+        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+          <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-          No notes yet
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
+          Your collection is empty
         </h3>
-        <p className="text-gray-500 max-w-md text-lg">
-          Paste an article URL above to create your first visual note
+        <p className="text-gray-500 max-w-sm mx-auto mb-8 leading-relaxed">
+          Start building your visual knowledge base. Create your first note to see it here.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {notes.map((note) => (
         <NoteCard
           key={note.noteId}

@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { Patrick_Hand } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 
-const patrickHand = Patrick_Hand({
-  weight: "400",
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-hand",
+  variable: "--font-sans",
   display: "swap",
 });
 
@@ -21,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={patrickHand.variable}>
+      <body className={`${outfit.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>

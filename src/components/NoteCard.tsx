@@ -13,20 +13,15 @@ type NoteCardProps = {
   onClick: () => void;
 };
 
-// Generate a consistent gradient based on the title
+// Generate a consistent vibrant gradient based on the title
 function getGradientForTitle(title: string): string {
   const gradients = [
-    'from-blue-400 via-blue-500 to-indigo-600',
-    'from-purple-400 via-pink-500 to-red-500',
-    'from-green-400 via-emerald-500 to-teal-600',
-    'from-orange-400 via-amber-500 to-yellow-500',
-    'from-cyan-400 via-sky-500 to-blue-600',
-    'from-fuchsia-400 via-purple-500 to-violet-600',
-    'from-rose-400 via-pink-500 to-fuchsia-600',
-    'from-indigo-400 via-blue-500 to-cyan-600',
+    'from-orange-100 via-rose-200 to-red-200',    // Sunset
+    'from-cyan-100 via-teal-200 to-emerald-200',  // Ocean (matches new theme)
+    'from-yellow-100 via-lime-200 to-green-200',  // Lemon
+    'from-sky-100 via-blue-200 to-indigo-200',    // Sky
+    'from-sky-100 via-blue-200 to-indigo-200',    // Sky
   ];
-
-  // Use title to consistently pick a gradient
   const hash = title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return gradients[hash % gradients.length]
 }
@@ -40,92 +35,62 @@ export function NoteCard({
   onClick
 }: NoteCardProps) {
   const [imageError, setImageError] = useState(false);
-
   const timeAgo = formatDistanceToNow(new Date(updatedAt), { addSuffix: true });
-
   const domain = new URL(url).hostname.replace('www.', '');
-
-  const firstLetter = title.charAt(0).toUpperCase();
   const gradient = getGradientForTitle(title);
-
   const showFallback = !ogImage || imageError;
-
-  // Unique pattern ID for this card
-  const patternId = `pattern-${noteId}`;
 
   return (
     <button
       onClick={onClick}
-      className="w-full group bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-xl hover:border-blue-200 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left overflow-hidden"
+      className="group flex flex-col w-full h-full bg-white border border-gray-200/60 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-gray-300 hover:-translate-y-1 transition-all duration-300 text-left"
     >
-      <div className="flex items-start gap-5">
-        {/* OG Image or Fallback */}
-        <div className="flex-shrink-0">
-          {showFallback ? (
-            <div className={`w-32 h-32 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow relative overflow-hidden`}>
-              {/* Decorative pattern */}
-              <div className="absolute inset-0 opacity-10">
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  <pattern id={patternId} width="10" height="10" patternUnits="userSpaceOnUse">
-                    <circle cx="5" cy="5" r="1" fill="white" />
-                  </pattern>
-                  <rect width="100" height="100" fill={`url(#${patternId})`} />
+      {/* Card Image Area */}
+      <div className="relative w-full h-48 overflow-hidden bg-gray-50 border-b border-gray-100">
+        {showFallback ? (
+          <div className={`w-full h-full bg-gradient-to-br ${gradient} p-6 relative`}>
+            {/* Abstract Pattern Overlay */}
+            <div className="absolute inset-0 opacity-10 mix-blend-overlay"
+              style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
+
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-white/30 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/40 group-hover:scale-110 transition-transform duration-500">
+                <svg className="w-8 h-8 text-gray-700 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
               </div>
-
-              {/* First letter */}
-              <span className="text-5xl font-bold text-white z-10 drop-shadow-lg">
-                {firstLetter}
-              </span>
-
-              {/* Shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-          ) : (
-            <div className="relative w-32 h-32 rounded-xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
-              <Image
-                src={ogImage}
-                alt={title}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                onError={() => setImageError(true)}
-                unoptimized
-              />
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Image
+            src={ogImage}
+            alt={title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            onError={() => setImageError(true)}
+            unoptimized
+          />
+        )}
 
-        {/* Content */}
-        <div className="flex-1 min-w-0 py-1">
-          <h3 className="font-bold text-gray-900 text-xl mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+        {/* Subtle inner shadow top */}
+        <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-t-3xl pointer-events-none" />
+      </div>
+
+      {/* Content Area */}
+      <div className="flex flex-col flex-1 p-6">
+        <h3 className="font-bold text-zinc-700 text-lg tracking-tight leading-snug mb-3 line-clamp-2">
+          <span className="bg-gradient-to-r from-yellow-300 to-yellow-300 bg-[length:0%_6px] bg-no-repeat bg-left-bottom group-hover:bg-[length:100%_6px] transition-all duration-300 box-decoration-clone">
             {title}
-          </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-            <span className="truncate font-medium">{domain}</span>
-          </div>
+          </span>
+        </h3>
 
-          {/* Timestamp Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full text-xs text-gray-600 font-medium">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+        <div className="mt-auto pt-4 flex items-center justify-between text-sm text-gray-500 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gray-400 truncate max-w-[120px]">{domain}</span>
+          </div>
+          <span className={`text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors bg-blue-50 text-blue-700`}>
             {timeAgo}
-          </div>
-        </div>
-
-        {/* Arrow Icon */}
-        <div className="flex-shrink-0 self-center">
-          <svg
-            className="w-6 h-6 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          </span>
         </div>
       </div>
     </button>
