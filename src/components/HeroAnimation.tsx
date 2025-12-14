@@ -7,7 +7,7 @@ export function HeroAnimation() {
     <div className="relative w-full h-[550px] flex items-center justify-center p-8">
       <div className="relative w-full h-full animate-float">
         <Image
-          src="/hero-illustration-1.png"
+          src="/hero-illustration-2.png"
           alt="Visual Learning Knowledge Graph"
           fill
           sizes="100vw"

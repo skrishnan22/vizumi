@@ -13,10 +13,10 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-6 py-20">
         <header className="flex flex-col md:flex-row items-center justify-between gap-12 mb-24">
           <div className="max-w-2xl z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-sm font-medium mb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-800 text-sm font-medium mb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
               </span>
               AI-Powered Visual Learning
             </div>
