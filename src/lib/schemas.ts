@@ -30,15 +30,6 @@ export const LLMNoteSchema = z.object({
   blocks: z.array(LLMNoteBlockSchema).describe("A list of note blocks representing the study material")
 });
 
-export const ReflectionSchema = z.object({
-  corrections: z.array(z.object({
-    blockId: z.string().describe("The ID of the block to update"),
-    d2Code: z.string().describe("The corrected D2 code"),
-    visualType: z.string().optional().describe("Updated visual type if changed"),
-    reason: z.string().optional().describe("Brief reason for the change")
-  })).describe("List of blocks that need correction. Omit blocks that are already correct.")
-});
-
 export const NoteSchema = z.object({
   blocks: z.array(NoteBlockSchema).describe("A list of note blocks representing the study material")
 });
