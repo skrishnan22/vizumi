@@ -19,6 +19,7 @@ export type NoteNodeData = {
     onMeasure?: (id: string, height: number) => void;
     onSaveSummary?: (id: string, summary: string) => void;
     onOpenDrawer?: (id: string) => void;
+    onSaveRenderedSvg?: (id: string, svg: string) => void;
 };
 
 /**
@@ -32,6 +33,7 @@ export function blockToNode(
         onMeasure?: (id: string, height: number) => void;
         onSaveSummary?: (id: string, summary: string) => void;
         onOpenDrawer?: (id: string) => void;
+        onSaveRenderedSvg?: (id: string, svg: string) => void;
     }
 ): Node<NoteNodeData> {
     const accent = block.blockType === 'deep-dive'
@@ -47,6 +49,7 @@ export function blockToNode(
             onMeasure: callbacks?.onMeasure,
             onSaveSummary: callbacks?.onSaveSummary,
             onOpenDrawer: callbacks?.onOpenDrawer,
+            onSaveRenderedSvg: callbacks?.onSaveRenderedSvg,
         },
         position: { x: 0, y: 0 },
         style: {
