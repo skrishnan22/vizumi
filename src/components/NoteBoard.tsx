@@ -69,6 +69,14 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
     [noteId]
   );
 
+  // Callback for saving rendered SVG
+  const handleSaveRenderedSvg = useCallback(
+    (nodeId: string, svg: string) => {
+      updateNodeData(noteId, nodeId, { renderedSvg: svg });
+    },
+    [noteId]
+  );
+
   // Callback for opening deep dive drawer
   // Wrap in useCallback to keep reference stable
   const handleOpenDrawer = useCallback((nodeId: string) => {
@@ -123,10 +131,11 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
         ...node.data,
         onMeasure,
         onSaveSummary: handleSaveSummary,
+        onSaveRenderedSvg: handleSaveRenderedSvg,
         onOpenDrawer: handleOpenDrawer,
       },
     }));
-  }, [nodes, onMeasure, handleSaveSummary, handleOpenDrawer]);
+  }, [nodes, onMeasure, handleSaveSummary, handleSaveRenderedSvg, handleOpenDrawer]);
 
   // Loading state while IndexedDB syncs
   if (isLoading) {

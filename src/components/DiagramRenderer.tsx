@@ -7,9 +7,11 @@ import type { Element } from 'domhandler';
 
 type DiagramRendererProps = {
   code: string;
+  cachedSvg?: string;
   className?: string;
   onError?: () => void;
   onSuccess?: () => void;
+  onSvgRendered?: (svg: string) => void;
 };
 
 function normalizeAttributes(attribs: Record<string, string> = {}) {
@@ -74,23 +76,34 @@ function StatusMessage({ message }: { message: string }) {
   );
 }
 
-export function DiagramRenderer({ code, className, onError, onSuccess }: DiagramRendererProps) {
+export function DiagramRenderer({ code, cachedSvg, className, onError, onSuccess, onSvgRendered }: DiagramRendererProps) {
   const sanitizedCode = code?.trim() ?? '';
 
   const {
     data: svg,
     error,
     isLoading,
-  } = useSWR(sanitizedCode || null, fetchDiagramSvg, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    errorRetryCount: 0, // Disable retries - render-d2 handles LLM-based fixes internally
-    onSuccess: () => onSuccess?.(),
-    onError: () => onError?.(),
-  });
+  } = useSWR(
+    // Only fetch if we don't have cached SVG
+    cachedSvg ? null : (sanitizedCode || null),
+    fetchDiagramSvg,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      errorRetryCount: 0, // Disable retries - render-d2 handles LLM-based fixes internally
+      onSuccess: (data) => {
+        onSuccess?.();
+        onSvgRendered?.(data);
+      },
+      onError: () => onError?.(),
+    }
+  );
+
+  // Use cached SVG if available, otherwise use fetched SVG
+  const finalSvg = cachedSvg || svg;
 
   const { parsedSvg, parseError } = useMemo(() => {
-    if (!svg) {
+    if (!finalSvg) {
       return { parsedSvg: null, parseError: null };
     }
 
@@ -120,14 +133,14 @@ export function DiagramRenderer({ code, className, onError, onSuccess }: Diagram
     };
 
     try {
-      return { parsedSvg: parse(svg, options), parseError: null };
+      return { parsedSvg: parse(finalSvg, options), parseError: null };
     } catch (err) {
       console.error('Failed to parse rendered D2 SVG', err);
       const message =
         err instanceof Error ? err.message : 'Unable to display this diagram.';
       return { parsedSvg: null, parseError: message };
     }
-  }, [svg]);
+  }, [finalSvg]);
 
   if (!sanitizedCode) {
     return null;

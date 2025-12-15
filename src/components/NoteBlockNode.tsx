@@ -59,6 +59,7 @@ function NoteBlockNodeComponent({
     accent,
     onMeasure,
     onSaveSummary,
+    onSaveRenderedSvg,
     onOpenDrawer,
   } = data;
 
@@ -308,8 +309,10 @@ function NoteBlockNodeComponent({
               <DiagramRenderer
                 key={block.id}
                 code={block.d2Code ?? ""}
+                cachedSvg={block.renderedSvg}
                 className={styles.nodeDiagram}
                 onSuccess={() => requestAnimationFrame(() => measureHeight())}
+                onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
               />
             </div>
           </button>
@@ -318,8 +321,10 @@ function NoteBlockNodeComponent({
       {isModalOpen && block.d2Code && (
         <DiagramModal
           code={block.d2Code}
+          cachedSvg={block.renderedSvg}
           title={block.title || "Diagram"}
           onClose={() => setIsModalOpen(false)}
+          onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
         />
       )}
     </div>

@@ -8,7 +8,8 @@ export const LLMNoteBlockSchema = z.object({
   visualType: z.string().describe("The type of visual aid to generate for this block"),
   d2Code: z.string().optional().describe("Valid D2 diagram code if visualType is 'diagram'. MUST NOT include markdown code fences."),
   imageQuery: z.string().optional().describe("Search query for a stock photo if visualType is 'icon' or fallback"),
-  __d2_error__: z.string().optional().describe("Error message if D2 diagram generation failed")
+  __d2_error__: z.string().optional().describe("Error message if D2 diagram generation failed"),
+  renderedSvg: z.string().optional().describe("Cached SVG output from D2 rendering")
 });
 
 // Full schema for internal use - includes metadata fields assigned by our code
@@ -22,7 +23,8 @@ export const NoteBlockSchema = z.object({
   imageQuery: z.string().optional().describe("Search query for a stock photo if visualType is 'icon' or fallback"),
   blockType: z.enum(['content', 'deep-dive']).default('content').describe("Type of block: original content or AI-generated deep dive"),
   deepDiveMode: z.enum(['eli5', 'analogy', 'mental-model']).optional().describe("Deep dive explanation mode if blockType is 'deep-dive'"),
-  isStreaming: z.boolean().optional().describe("Whether the block content is currently being streamed")
+  isStreaming: z.boolean().optional().describe("Whether the block content is currently being streamed"),
+  renderedSvg: z.string().optional().describe("Cached SVG output from D2 rendering")
 });
 
 // Schema for LLM response

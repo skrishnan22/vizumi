@@ -76,6 +76,7 @@ export async function addNodeFromBlock(
         onMeasure?: (id: string, height: number) => void;
         onSaveSummary?: (id: string, summary: string) => void;
         onOpenDrawer?: (id: string) => void;
+        onSaveRenderedSvg?: (id: string, svg: string) => void;
     }
 ): Promise<void> {
     const { doc } = getOrCreateYDoc(noteId);
@@ -166,6 +167,7 @@ export async function syncBlocksToYDoc(
         onMeasure?: (id: string, height: number) => void;
         onSaveSummary?: (id: string, summary: string) => void;
         onOpenDrawer?: (id: string) => void;
+        onSaveRenderedSvg?: (id: string, svg: string) => void;
     }
 ): Promise<void> {
     const nodes = blocks.map((block, index) => blockToNode(block, index, callbacks));

@@ -7,11 +7,13 @@ import styles from './NoteBoard.module.css';
 
 type DiagramModalProps = {
   code: string;
+  cachedSvg?: string;
   title: string;
   onClose: () => void;
+  onSvgRendered?: (svg: string) => void;
 };
 
-export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
+export function DiagramModal({ code, cachedSvg, title, onClose, onSvgRendered }: DiagramModalProps) {
   const [isMounted, setIsMounted] = useState(false);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -56,7 +58,12 @@ export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
           </button>
         </div>
         <div className={styles.modalBody}>
-          <DiagramRenderer code={code} className={styles.modalDiagram} />
+          <DiagramRenderer
+            code={code}
+            cachedSvg={cachedSvg}
+            className={styles.modalDiagram}
+            onSvgRendered={onSvgRendered}
+          />
         </div>
       </div>
     </div>
