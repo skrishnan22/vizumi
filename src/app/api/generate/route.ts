@@ -18,7 +18,6 @@ export async function POST(req: Request) {
   let source = "local file";
 
   try {
-
     const body = await req.json().catch(() => ({}));
     const { url } = body;
 
@@ -29,9 +28,12 @@ export async function POST(req: Request) {
         source = url;
       } catch (error: any) {
         console.error("Error processing URL:", error);
-        return new Response(JSON.stringify({ error: error.message || "Failed to process URL" }), {
-          status: 400
-        });
+        return new Response(
+          JSON.stringify({ error: error.message || "Failed to process URL" }),
+          {
+            status: 400,
+          }
+        );
       }
     } else {
       return new Response(JSON.stringify({ error: "No URL provided" }), {
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
   }
 
   const result = streamObject({
-    model: openrouter("x-ai/grok-4.1-fast:free"),
+    model: openrouter("x-ai/grok-4.1-fast"),
     schema: LLMNoteSchema,
     prompt: `This is the system prompt: ${SYSTEM_PROMPT_3}. Here is the text to process (Source: ${source}):\n\n${content}`,
   });

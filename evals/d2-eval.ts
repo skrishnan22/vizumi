@@ -1,13 +1,12 @@
 import path from 'path';
 import fs from 'fs/promises';
 
-import { LLMNoteSchema, ReflectionSchema, type LLMNote } from '../src/lib/schemas.js';
+import { LLMNoteSchema, type LLMNote } from '../src/lib/schemas.js';
 import { z } from 'zod';
 import {
   SYSTEM_PROMPT,
   SYSTEM_PROMPT_2,
   SYSTEM_PROMPT_3,
-  REFLECTION_PROMPT,
 } from '../src/lib/prompts.js';
 import { SYSTEM_PROMPT_OPTIMIZED } from '../src/lib/prompts-optimized.js';
 import { generateObject } from 'ai';
@@ -15,8 +14,22 @@ import { createOpenAI } from '@ai-sdk/openai';
 import dotenv from 'dotenv';
 import { renderD2ToSvg } from '../src/lib/d2.js';
 import pLimit from 'p-limit';
+
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
+
+// Local schema for eval reflection (not used in production)
+const ReflectionSchema = z.object({
+  corrections: z.array(z.object({
+    blockId: z.string().describe("The ID of the block to update"),
+    d2Code: z.string().describe("The corrected D2 code"),
+    visualType: z.string().optional().describe("Updated visual type if changed"),
+    reason: z.string().optional().describe("Brief reason for the change")
+  })).describe("List of blocks that need correction. Omit blocks that are already correct.")
+});
+
+const REFLECTION_PROMPT = `You are a D2 syntax expert. Fix only the blocks with __d2_error__ field.
+Return corrections with the fixed d2Code for each broken block.`;
 
 
 console.log("OPENROUTER_API_KEY", process.env.OPENROUTER_API_KEY);

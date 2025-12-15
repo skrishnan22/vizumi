@@ -131,10 +131,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   // Loading state while IndexedDB syncs
   if (isLoading) {
     return (
-      <section
-        className={styles.boardSection}
-        aria-label="Loading note"
-      >
+      <section className={styles.boardSection} aria-label="Loading note">
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
@@ -148,10 +145,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   // Empty state if note doesn't exist
   if (isEmpty) {
     return (
-      <section
-        className={styles.boardSection}
-        aria-label="Note not found"
-      >
+      <section className={styles.boardSection} aria-label="Note not found">
         <div className="flex items-center justify-center h-full">
           <div className="text-center max-w-md px-6">
             <div className="text-6xl mb-4">📝</div>

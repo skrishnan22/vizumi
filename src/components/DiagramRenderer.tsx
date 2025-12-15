@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import useSWR from 'swr';
 import parse, { domToReact, type DOMNode, type HTMLReactParserOptions } from 'html-react-parser';
 import type { Element } from 'domhandler';
@@ -76,13 +76,17 @@ function StatusMessage({ message }: { message: string }) {
 
 export function DiagramRenderer({ code, className, onError, onSuccess }: DiagramRendererProps) {
   const sanitizedCode = code?.trim() ?? '';
-  const shouldFetch = Boolean(sanitizedCode);
+
   const {
     data: svg,
     error,
     isLoading,
-  } = useSWR(shouldFetch ? sanitizedCode : null, fetchDiagramSvg, {
+  } = useSWR(sanitizedCode || null, fetchDiagramSvg, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    errorRetryCount: 0, // Disable retries - render-d2 handles LLM-based fixes internally
+    onSuccess: () => onSuccess?.(),
+    onError: () => onError?.(),
   });
 
   const { parsedSvg, parseError } = useMemo(() => {
@@ -125,16 +129,7 @@ export function DiagramRenderer({ code, className, onError, onSuccess }: Diagram
     }
   }, [svg]);
 
-  // Notify parent of error state
-  useEffect(() => {
-    if (error || parseError || !shouldFetch) {
-      onError?.();
-    } else if (parsedSvg) {
-      onSuccess?.();
-    }
-  }, [error, parseError, parsedSvg, shouldFetch, onError, onSuccess]);
-
-  if (!shouldFetch) {
+  if (!sanitizedCode) {
     return null;
   }
 
