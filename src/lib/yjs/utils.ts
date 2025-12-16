@@ -20,6 +20,7 @@ export type NoteNodeData = {
     onSaveSummary?: (id: string, summary: string) => void;
     onOpenDrawer?: (id: string) => void;
     onSaveRenderedSvg?: (id: string, svg: string) => void;
+    onUpdateBlockData?: (id: string, data: Partial<NoteBlock>) => void;
 };
 
 /**
@@ -34,6 +35,7 @@ export function blockToNode(
         onSaveSummary?: (id: string, summary: string) => void;
         onOpenDrawer?: (id: string) => void;
         onSaveRenderedSvg?: (id: string, svg: string) => void;
+        onUpdateBlockData?: (id: string, data: Partial<NoteBlock>) => void;
     }
 ): Node<NoteNodeData> {
     const accent = block.blockType === 'deep-dive'
@@ -50,6 +52,7 @@ export function blockToNode(
             onSaveSummary: callbacks?.onSaveSummary,
             onOpenDrawer: callbacks?.onOpenDrawer,
             onSaveRenderedSvg: callbacks?.onSaveRenderedSvg,
+            onUpdateBlockData: callbacks?.onUpdateBlockData,
         },
         position: { x: 0, y: 0 },
         style: {

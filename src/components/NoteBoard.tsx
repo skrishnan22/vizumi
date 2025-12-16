@@ -77,6 +77,14 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
     [noteId]
   );
 
+  // Callback for updating block data (generic)
+  const handleUpdateBlockData = useCallback(
+    (nodeId: string, data: Partial<NoteBlock>) => {
+      updateNodeData(noteId, nodeId, data);
+    },
+    [noteId]
+  );
+
   // Callback for opening deep dive drawer
   // Wrap in useCallback to keep reference stable
   const handleOpenDrawer = useCallback((nodeId: string) => {
@@ -132,10 +140,11 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
         onMeasure,
         onSaveSummary: handleSaveSummary,
         onSaveRenderedSvg: handleSaveRenderedSvg,
+        onUpdateBlockData: handleUpdateBlockData,
         onOpenDrawer: handleOpenDrawer,
       },
     }));
-  }, [nodes, onMeasure, handleSaveSummary, handleSaveRenderedSvg, handleOpenDrawer]);
+  }, [nodes, onMeasure, handleSaveSummary, handleSaveRenderedSvg, handleUpdateBlockData, handleOpenDrawer]);
 
   // Loading state while IndexedDB syncs
   if (isLoading) {

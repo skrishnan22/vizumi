@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { D2 } from '@terrastruct/d2';
-import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
-import { D2_SYNTAX_FIX_PROMPT } from '@/lib/prompts';
+import { NextResponse } from "next/server";
+import { D2 } from "@terrastruct/d2";
+import { generateText } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { D2_SYNTAX_FIX_PROMPT } from "@/lib/prompts";
 
 const d2 = new D2();
 
@@ -14,7 +14,9 @@ let compileQueue = Promise.resolve();
 async function withCompileLock<T>(fn: () => Promise<T>): Promise<T> {
   const currentQueue = compileQueue;
   let resolve: () => void;
-  compileQueue = new Promise<void>((r) => { resolve = r; });
+  compileQueue = new Promise<void>((r) => {
+    resolve = r;
+  });
 
   await currentQueue;
   try {
@@ -29,7 +31,7 @@ let _openrouter: ReturnType<typeof createOpenAI> | null = null;
 function getOpenRouter() {
   if (!_openrouter) {
     _openrouter = createOpenAI({
-      baseURL: 'https://openrouter.ai/api/v1',
+      baseURL: "https://openrouter.ai/api/v1",
       apiKey: process.env.OPENROUTER_API_KEY,
     });
   }
@@ -56,7 +58,7 @@ const D2_THEMES = [
 
 function extractD2ErrorMessage(error: unknown): string {
   const rawMessage =
-    error instanceof Error ? error.message : 'Unknown rendering error';
+    error instanceof Error ? error.message : "Unknown rendering error";
 
   const tryParse = (text: string) => {
     try {
@@ -70,7 +72,7 @@ function extractD2ErrorMessage(error: unknown): string {
   let parsed = tryParse(trimmed);
 
   if (!parsed) {
-    const bracketIndex = trimmed.indexOf('[');
+    const bracketIndex = trimmed.indexOf("[");
     if (bracketIndex !== -1) {
       parsed = tryParse(trimmed.slice(bracketIndex));
     }
@@ -79,18 +81,18 @@ function extractD2ErrorMessage(error: unknown): string {
   if (Array.isArray(parsed)) {
     const formatted = parsed
       .map((item) => {
-        if (item && typeof item === 'object') {
-          if (typeof item.errmsg === 'string') {
+        if (item && typeof item === "object") {
+          if (typeof item.errmsg === "string") {
             return item.errmsg;
           }
-          if (typeof item.message === 'string') {
+          if (typeof item.message === "string") {
             return item.message;
           }
         }
         return JSON.stringify(item);
       })
       .filter(Boolean)
-      .join(' ');
+      .join(" ");
 
     if (formatted) {
       return `Unable to render diagram: ${formatted}`;
@@ -105,7 +107,7 @@ function hashCode(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return Math.abs(hash);
@@ -114,13 +116,16 @@ function hashCode(str: string): number {
 /**
  * Attempt to fix D2 syntax errors using LLM with timeout
  */
-async function fixD2SyntaxWithLLM(d2Code: string, errorMessage: string): Promise<string> {
+async function fixD2SyntaxWithLLM(
+  d2Code: string,
+  errorMessage: string
+): Promise<string> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
   try {
     const { text } = await generateText({
-      model: getOpenRouter()('openai/gpt-4o-mini'),
+      model: getOpenRouter()("openai/gpt-4o-mini"),
       system: D2_SYNTAX_FIX_PROMPT,
       prompt: `d2Code: ${JSON.stringify(d2Code)}\nerror: ${errorMessage}`,
       abortSignal: controller.signal,
@@ -128,12 +133,12 @@ async function fixD2SyntaxWithLLM(d2Code: string, errorMessage: string): Promise
 
     // Clean up the response - remove any markdown fences if LLM added them
     let fixedCode = text.trim();
-    if (fixedCode.startsWith('```d2')) {
+    if (fixedCode.startsWith("```d2")) {
       fixedCode = fixedCode.slice(5);
-    } else if (fixedCode.startsWith('```')) {
+    } else if (fixedCode.startsWith("```")) {
       fixedCode = fixedCode.slice(3);
     }
-    if (fixedCode.endsWith('```')) {
+    if (fixedCode.endsWith("```")) {
       fixedCode = fixedCode.slice(0, -3);
     }
 
@@ -143,18 +148,23 @@ async function fixD2SyntaxWithLLM(d2Code: string, errorMessage: string): Promise
   }
 }
 
-type CompileResult = {
-  success: true;
-  svg: string;
-} | {
-  success: false;
-  error: string;
-};
+type CompileResult =
+  | {
+      success: true;
+      svg: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
 
 /**
  * Attempt to compile and render D2 code (serialized to avoid WASM concurrency issues)
  */
-async function tryCompileD2(code: string, theme: string): Promise<CompileResult> {
+async function tryCompileD2(
+  code: string,
+  theme: string
+): Promise<CompileResult> {
   return withCompileLock(async () => {
     const fullDiagramSource = `${theme}\n\n${code.trim()}`;
 
@@ -182,7 +192,7 @@ async function tryCompileD2(code: string, theme: string): Promise<CompileResult>
   });
 }
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
@@ -192,10 +202,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const code = body.code;
 
-    if (typeof code !== 'string' || !code.trim()) {
+    if (typeof code !== "string" || !code.trim()) {
       return NextResponse.json(
-        { error: 'Diagram code is required.' },
-        { status: 400 },
+        { error: "Diagram code is required." },
+        { status: 400 }
       );
     }
 
@@ -207,7 +217,11 @@ export async function POST(req: Request) {
     let currentCode = code.trim();
     console.log(`[render-d2] Attempting compile (${currentCode.length} chars)`);
     let result = await tryCompileD2(currentCode, selectedTheme);
-    console.log(`[render-d2] First compile: ${result.success ? 'success' : 'failed'} (${Date.now() - startTime}ms)`);
+    console.log(
+      `[render-d2] First compile: ${result.success ? "success" : "failed"} (${
+        Date.now() - startTime
+      }ms)`
+    );
 
     if (result.success) {
       return NextResponse.json({ svg: result.svg });
@@ -221,7 +235,9 @@ export async function POST(req: Request) {
       try {
         console.log(`[render-d2] LLM fix attempt ${attempt}...`);
         const fixedCode = await fixD2SyntaxWithLLM(currentCode, lastError);
-        console.log(`[render-d2] LLM returned fix (${Date.now() - startTime}ms)`);
+        console.log(
+          `[render-d2] LLM returned fix (${Date.now() - startTime}ms)`
+        );
 
         // Skip if LLM returned the same code
         if (fixedCode === currentCode) {
@@ -231,7 +247,11 @@ export async function POST(req: Request) {
 
         currentCode = fixedCode;
         result = await tryCompileD2(currentCode, selectedTheme);
-        console.log(`[render-d2] Retry compile: ${result.success ? 'success' : 'failed'} (${Date.now() - startTime}ms)`);
+        console.log(
+          `[render-d2] Retry compile: ${
+            result.success ? "success" : "failed"
+          } (${Date.now() - startTime}ms)`
+        );
 
         if (result.success) {
           return NextResponse.json({ svg: result.svg });
@@ -239,15 +259,23 @@ export async function POST(req: Request) {
 
         lastError = result.error;
       } catch (llmError) {
-        console.error(`[render-d2] LLM fix attempt ${attempt} failed:`, llmError);
+        console.error(
+          `[render-d2] LLM fix attempt ${attempt} failed:`,
+          llmError
+        );
       }
     }
 
     // All attempts failed
-    console.log(`[render-d2] All attempts failed (${Date.now() - startTime}ms)`);
+    console.log(
+      `[render-d2] All attempts failed (${Date.now() - startTime}ms)`
+    );
     return NextResponse.json({ error: lastError }, { status: 500 });
   } catch (error) {
-    console.error(`[render-d2] Unexpected error (${Date.now() - startTime}ms):`, error);
+    console.error(
+      `[render-d2] Unexpected error (${Date.now() - startTime}ms):`,
+      error
+    );
     const message = extractD2ErrorMessage(error);
     return NextResponse.json({ error: message }, { status: 500 });
   }

@@ -11,9 +11,10 @@ type DiagramModalProps = {
   title: string;
   onClose: () => void;
   onSvgRendered?: (svg: string) => void;
+  onRenderFailure?: () => void;
 };
 
-export function DiagramModal({ code, cachedSvg, title, onClose, onSvgRendered }: DiagramModalProps) {
+export function DiagramModal({ code, cachedSvg, title, onClose, onSvgRendered, onRenderFailure }: DiagramModalProps) {
   const [isMounted, setIsMounted] = useState(false);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -63,6 +64,7 @@ export function DiagramModal({ code, cachedSvg, title, onClose, onSvgRendered }:
             cachedSvg={cachedSvg}
             className={styles.modalDiagram}
             onSvgRendered={onSvgRendered}
+            onRenderFailure={onRenderFailure}
           />
         </div>
       </div>

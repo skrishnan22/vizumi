@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-  memo,
-} from "react";
+import { useCallback, useLayoutEffect, useRef, useState, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   NodeResizer,
@@ -60,6 +54,7 @@ function NoteBlockNodeComponent({
     onMeasure,
     onSaveSummary,
     onSaveRenderedSvg,
+    onUpdateBlockData,
     onOpenDrawer,
   } = data;
 
@@ -70,6 +65,12 @@ function NoteBlockNodeComponent({
   const { requestDeepDive } = useDeepDive();
 
   const hasDiagram = block.d2Code && Boolean(block.d2Code?.trim());
+
+  // Callback to clear d2Code when rendering fails
+  const handleDiagramFailure = useCallback(() => {
+    // Clear both d2Code and renderedSvg to prevent retry on next load
+    onUpdateBlockData?.(id, { d2Code: undefined, renderedSvg: undefined });
+  }, [id, onUpdateBlockData]);
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(block.summary);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -313,6 +314,7 @@ function NoteBlockNodeComponent({
                 className={styles.nodeDiagram}
                 onSuccess={() => requestAnimationFrame(() => measureHeight())}
                 onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
+                onRenderFailure={handleDiagramFailure}
               />
             </div>
           </button>
@@ -325,6 +327,7 @@ function NoteBlockNodeComponent({
           title={block.title || "Diagram"}
           onClose={() => setIsModalOpen(false)}
           onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
+          onRenderFailure={handleDiagramFailure}
         />
       )}
     </div>

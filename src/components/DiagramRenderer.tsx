@@ -9,9 +9,9 @@ type DiagramRendererProps = {
   code: string;
   cachedSvg?: string;
   className?: string;
-  onError?: () => void;
   onSuccess?: () => void;
   onSvgRendered?: (svg: string) => void;
+  onRenderFailure?: () => void;
 };
 
 function normalizeAttributes(attribs: Record<string, string> = {}) {
@@ -76,7 +76,7 @@ function StatusMessage({ message }: { message: string }) {
   );
 }
 
-export function DiagramRenderer({ code, cachedSvg, className, onError, onSuccess, onSvgRendered }: DiagramRendererProps) {
+export function DiagramRenderer({ code, cachedSvg, className, onSuccess, onSvgRendered, onRenderFailure }: DiagramRendererProps) {
   const sanitizedCode = code?.trim() ?? '';
 
   const {
@@ -95,7 +95,10 @@ export function DiagramRenderer({ code, cachedSvg, className, onError, onSuccess
         onSuccess?.();
         onSvgRendered?.(data);
       },
-      onError: () => onError?.(),
+      onError: () => {
+        // Clear d2Code from block to prevent retrying on every load
+        onRenderFailure?.();
+      },
     }
   );
 
