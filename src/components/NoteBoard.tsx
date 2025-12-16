@@ -4,15 +4,15 @@ import { useCallback, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
-  NodeChange,
-  EdgeChange,
+  type NodeChange,
+  type EdgeChange,
   type Node,
   type Edge,
   MarkerType,
   type ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { NoteBlock } from "@/lib/schemas";
+import { type NoteBlock } from "@/lib/schemas";
 import { NoteBlockNode } from "./NoteBlockNode";
 import { DeepDiveDrawer } from "./DeepDiveDrawer";
 import styles from "./NoteBoard.module.css";
@@ -152,7 +152,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
       <section className={styles.boardSection} aria-label="Loading note">
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-600">Loading note...</p>
           </div>
         </div>

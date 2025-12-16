@@ -1,4 +1,4 @@
-import { Node, Edge, MarkerType } from 'reactflow';
+import { type Node, type Edge, MarkerType } from 'reactflow';
 import type { NoteBlock } from '@/lib/schemas';
 import { getDeepDiveAccent } from '@/lib/deepDiveHelpers';
 

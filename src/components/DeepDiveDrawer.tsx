@@ -5,7 +5,7 @@ import {
     SheetTitle,
     SheetDescription,
 } from "@/components/ui/sheet";
-import { NoteBlock } from "@/lib/schemas";
+import { type NoteBlock } from "@/lib/schemas";
 import ReactMarkdown from "react-markdown";
 import { getModeIcon, getModeTitle, getDeepDiveAccent, getDeepDiveColors, DEEP_DIVE_COLORS } from "@/lib/deepDiveHelpers";
 

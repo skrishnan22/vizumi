@@ -119,7 +119,7 @@ export async function processUrlMetadata(url: string): Promise<UrlMetadata> {
         const document = dom.window.document;
 
         // Extract title: try og:title first, then regular title
-        let title =
+        const title =
             document.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
             document.querySelector('meta[name="twitter:title"]')?.getAttribute('content') ||
             document.querySelector('title')?.textContent ||

@@ -51,7 +51,7 @@ export function NoteCard({
           <div className={`w-full h-full bg-gradient-to-br ${gradient} p-6 relative`}>
             {/* Abstract Pattern Overlay */}
             <div className="absolute inset-0 opacity-10 mix-blend-overlay"
-              style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
+              style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
 
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-16 h-16 rounded-2xl bg-white/30 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/40 group-hover:scale-110 transition-transform duration-500">
@@ -88,7 +88,7 @@ export function NoteCard({
           <div className="flex items-center gap-2">
             <span className="font-medium text-gray-400 truncate max-w-[120px]">{domain}</span>
           </div>
-          <span className={`text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors bg-blue-50 text-blue-700`}>
+          <span className="text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors bg-blue-50 text-blue-700">
             {timeAgo}
           </span>
         </div>

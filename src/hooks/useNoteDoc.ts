@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import * as Y from 'yjs';
+import type * as Y from 'yjs';
 import { getOrCreateYDoc } from '@/lib/yjs/doc';
 import { useNoteStore } from '@/store/noteStore';
 import type { Node, Edge } from 'reactflow';
