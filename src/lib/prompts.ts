@@ -385,7 +385,7 @@ You MUST validate all of the following before producing the final JSON:
 # FINAL TASK
 
 After internal reasoning and validation, output ONLY the final JSON object.
-`
+`;
 
 export const SYSTEM_PROMPT_3 = `
 You are an expert Information Designer and Cognitive Science Assistant. Your goal is to transform complex text into "Visual Study Notes." You must synthesize content into concise Markdown summaries paired with semantic D2 diagrams that act as mental models.

@@ -10,7 +10,7 @@ export async function createNoteMetadata(
   const fullMetadata: NoteMetadata = {
     ...metadata,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
 
   await db.notes.add(fullMetadata);
@@ -26,7 +26,7 @@ export async function updateNoteMetadata(
 ): Promise<void> {
   await db.notes.update(noteId, {
     ...updates,
-    updatedAt: new Date()
+    updatedAt: new Date(),
   });
 }
 
@@ -47,8 +47,6 @@ export async function getAllNotes(): Promise<NoteMetadata[]> {
 /**
  * Get a single note's metadata by ID
  */
-export async function getNoteMetadata(
-  noteId: string
-): Promise<NoteMetadata | undefined> {
+export async function getNoteMetadata(noteId: string): Promise<NoteMetadata | undefined> {
   return db.notes.get(noteId);
 }

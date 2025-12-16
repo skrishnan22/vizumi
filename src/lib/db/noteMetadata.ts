@@ -1,4 +1,4 @@
-import Dexie, { type Table } from "dexie";
+import Dexie, { type Table } from 'dexie';
 
 export interface NoteMetadata {
   noteId: string; // Primary key, matches Y.Doc guid
@@ -13,9 +13,9 @@ class NotesDatabase extends Dexie {
   notes!: Table<NoteMetadata, string>;
 
   constructor() {
-    super("NotesMetadata");
+    super('NotesMetadata');
     this.version(1).stores({
-      notes: "noteId, url, createdAt, updatedAt",
+      notes: 'noteId, url, createdAt, updatedAt',
     });
   }
 }

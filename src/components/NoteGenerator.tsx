@@ -1,18 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef } from "react";
-import { experimental_useObject as useObject } from "@ai-sdk/react";
-import {
-  LLMNoteSchema,
-  LLMNoteBlockSchema,
-} from "@/lib/schemas";
-import type { LLMNoteBlock, NoteBlock } from "@/lib/schemas";
-import { NoteBoard } from "./NoteBoard";
-import styles from "./NoteGenerator.module.css";
-import { syncBlocksToYDoc } from "@/lib/yjs/actions";
-import { useNoteStore } from "@/store/noteStore";
-import { createNoteMetadata } from "@/lib/db/actions";
-import Link from "next/link";
+import { useEffect, useState, useRef } from 'react';
+import { experimental_useObject as useObject } from '@ai-sdk/react';
+import { LLMNoteSchema, LLMNoteBlockSchema } from '@/lib/schemas';
+import type { LLMNoteBlock } from '@/lib/schemas';
+import { NoteBoard } from './NoteBoard';
+import styles from './NoteGenerator.module.css';
+import { syncBlocksToYDoc } from '@/lib/yjs/actions';
+import { useNoteStore } from '@/store/noteStore';
+import { createNoteMetadata } from '@/lib/db/actions';
+import Link from 'next/link';
 
 type NoteGeneratorProps = {
   noteId: string;
@@ -20,11 +17,11 @@ type NoteGeneratorProps = {
 
 export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   const { object, submit, isLoading, error } = useObject({
-    api: "/api/generate",
+    api: '/api/generate',
     schema: LLMNoteSchema,
   });
 
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState('');
   const setNoteId = useNoteStore((state) => state.setNoteId);
 
   // Set noteId in store once on mount
@@ -56,11 +53,11 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
     .map((block, index) => {
       if (index === 0) {
         // Root block - no parent.adding blockType since LLM doesn't generate it
-        return { ...block, parentId: undefined, blockType: "content" as const };
+        return { ...block, parentId: undefined, blockType: 'content' as const };
       } else {
         // All other blocks are children of the first block
         const rootId = object?.blocks?.[0]?.id;
-        return { ...block, parentId: rootId, blockType: "content" as const };
+        return { ...block, parentId: rootId, blockType: 'content' as const };
       }
     });
 
@@ -68,9 +65,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   useEffect(() => {
     if (blocks.length === 0) return;
 
-    const newBlocks = blocks.filter(
-      (block) => !syncedBlockIdsRef.current.has(block.id)
-    );
+    const newBlocks = blocks.filter((block) => !syncedBlockIdsRef.current.has(block.id));
 
     if (newBlocks.length > 0) {
       syncBlocksToYDoc(noteId, blocks);
@@ -91,9 +86,9 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
 
     try {
       // 1. Fetch metadata
-      const metadataRes = await fetch("/api/url-metadata", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const metadataRes = await fetch('/api/url-metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       });
 
@@ -109,7 +104,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
         });
       }
     } catch (error) {
-      console.error("Error saving metadata:", error);
+      console.error('Error saving metadata:', error);
     }
 
     // 3. Start generation
@@ -124,12 +119,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
           href="/"
           className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -163,7 +153,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
             disabled={isLoading || !url.trim()}
             className={styles.button}
           >
-            {isLoading ? "Sketching notes..." : "Generate Notes"}
+            {isLoading ? 'Sketching notes...' : 'Generate Notes'}
           </button>
         </div>
       </div>

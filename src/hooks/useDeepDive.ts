@@ -2,107 +2,109 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useCompletion } from '@ai-sdk/react';
+import type { Node } from 'reactflow';
 import { useNoteStore } from '@/store/noteStore';
 import { getModeTitle, type DeepDiveMode } from '@/lib/deepDiveHelpers';
 import { addNodeFromBlock, updateNodeData } from '@/lib/yjs/actions';
 import type { NoteBlock } from '@/lib/schemas';
+import type { NoteNodeData } from '@/lib/yjs/utils';
 
 export function useDeepDive() {
-    const noteId = useNoteStore((state) => state.noteId);
-    const storeNodes = useNoteStore((state) => state.nodes);
-    const setDeepDiveStreaming = useNoteStore((state) => state.setDeepDiveStreaming);
+  const noteId = useNoteStore((state) => state.noteId);
+  const storeNodes = useNoteStore((state) => state.nodes);
+  const setDeepDiveStreaming = useNoteStore((state) => state.setDeepDiveStreaming);
 
-    const currentDeepDiveNodeIdRef = useRef<string | null>(null);
+  const currentDeepDiveNodeIdRef = useRef<string | null>(null);
 
-    const { completion, complete, isLoading, error } = useCompletion({
-        api: '/api/deep-dive',
-    });
+  const { completion, complete, isLoading, error } = useCompletion({
+    api: '/api/deep-dive',
+  });
 
-    // Update summary as streaming progresses
-    // React 18 automatically batches these updates - no manual debouncing needed!
-    useEffect(() => {
-        if (currentDeepDiveNodeIdRef.current && completion && noteId) {
-            updateNodeData(noteId, currentDeepDiveNodeIdRef.current, { summary: completion });
+  // Update summary as streaming progresses
+  // React 18 automatically batches these updates - no manual debouncing needed!
+  useEffect(() => {
+    if (currentDeepDiveNodeIdRef.current && completion && noteId) {
+      updateNodeData(noteId, currentDeepDiveNodeIdRef.current, { summary: completion });
+    }
+  }, [completion, noteId]);
+
+  // Sync streaming state to store for UI
+  useEffect(() => {
+    setDeepDiveStreaming(isLoading);
+  }, [isLoading, setDeepDiveStreaming]);
+
+  const requestDeepDive = useCallback(
+    async (parentNodeId: string, mode: DeepDiveMode) => {
+      if (!noteId) {
+        console.error('No noteId available');
+        return;
+      }
+
+      // Find parent node to get its data (block)
+      const parentNode = storeNodes.find((n: Node<NoteNodeData>) => n.id === parentNodeId);
+      if (!parentNode) {
+        console.error('Parent node not found:', parentNodeId);
+        return;
+      }
+      const parentBlock = parentNode.data?.block as NoteBlock | undefined;
+      if (!parentBlock) {
+        console.error('Parent block data not found');
+        return;
+      }
+
+      const deepDiveNodeId = `deep-dive-${parentNodeId}-${mode}-${Date.now()}`;
+      currentDeepDiveNodeIdRef.current = deepDiveNodeId;
+
+      // Create the deep dive block
+      const deepDiveBlock: NoteBlock = {
+        id: deepDiveNodeId,
+        parentId: parentNodeId,
+        title: getModeTitle(mode),
+        summary: '',
+        visualType: 'none',
+        blockType: 'deep-dive',
+        deepDiveMode: mode,
+        isStreaming: true,
+      };
+
+      // Add node to Y.Doc with automatic layout and edge creation
+      // addNodeFromBlock now handles both node and edge, plus layout calculation
+      const currentNodeCount = storeNodes.length;
+      await addNodeFromBlock(noteId, deepDiveBlock, currentNodeCount);
+
+      try {
+        await complete('', {
+          body: {
+            nodeId: parentNodeId,
+            mode,
+            blockTitle: parentBlock.title,
+            blockSummary: parentBlock.summary,
+          },
+        });
+      } catch (err) {
+        console.error('Deep dive request failed:', err);
+        if (currentDeepDiveNodeIdRef.current && noteId) {
+          updateNodeData(noteId, currentDeepDiveNodeIdRef.current, {
+            summary: 'Failed to generate explanation. Please try again.',
+            isStreaming: false,
+          });
         }
-    }, [completion, noteId]);
+      } finally {
+        // Mark streaming as complete
+        if (currentDeepDiveNodeIdRef.current && noteId) {
+          updateNodeData(noteId, currentDeepDiveNodeIdRef.current, {
+            isStreaming: false,
+          });
+        }
+        currentDeepDiveNodeIdRef.current = null;
+      }
+    },
+    [noteId, storeNodes, complete]
+  );
 
-    // Sync streaming state to store for UI
-    useEffect(() => {
-        setDeepDiveStreaming(isLoading);
-    }, [isLoading, setDeepDiveStreaming]);
-
-    const requestDeepDive = useCallback(
-        async (parentNodeId: string, mode: DeepDiveMode) => {
-            if (!noteId) {
-                console.error('No noteId available');
-                return;
-            }
-
-            // Find parent node to get its data (block)
-            const parentNode = storeNodes.find((n: any) => n.id === parentNodeId);
-            if (!parentNode) {
-                console.error('Parent node not found:', parentNodeId);
-                return;
-            }
-            const parentBlock = parentNode.data?.block as NoteBlock | undefined;
-            if (!parentBlock) {
-                console.error('Parent block data not found');
-                return;
-            }
-
-            const deepDiveNodeId = `deep-dive-${parentNodeId}-${mode}-${Date.now()}`;
-            currentDeepDiveNodeIdRef.current = deepDiveNodeId;
-
-            // Create the deep dive block
-            const deepDiveBlock: NoteBlock = {
-                id: deepDiveNodeId,
-                parentId: parentNodeId,
-                title: getModeTitle(mode),
-                summary: '',
-                visualType: 'none',
-                blockType: 'deep-dive',
-                deepDiveMode: mode,
-                isStreaming: true,
-            };
-
-            // Add node to Y.Doc with automatic layout and edge creation
-            // addNodeFromBlock now handles both node and edge, plus layout calculation
-            const currentNodeCount = storeNodes.length;
-            await addNodeFromBlock(noteId, deepDiveBlock, currentNodeCount);
-
-            try {
-                await complete('', {
-                    body: {
-                        nodeId: parentNodeId,
-                        mode,
-                        blockTitle: parentBlock.title,
-                        blockSummary: parentBlock.summary,
-                    },
-                });
-            } catch (err) {
-                console.error('Deep dive request failed:', err);
-                if (currentDeepDiveNodeIdRef.current && noteId) {
-                    updateNodeData(noteId, currentDeepDiveNodeIdRef.current, {
-                        summary: 'Failed to generate explanation. Please try again.',
-                        isStreaming: false,
-                    });
-                }
-            } finally {
-                // Mark streaming as complete
-                if (currentDeepDiveNodeIdRef.current && noteId) {
-                    updateNodeData(noteId, currentDeepDiveNodeIdRef.current, {
-                        isStreaming: false,
-                    });
-                }
-                currentDeepDiveNodeIdRef.current = null;
-            }
-        },
-        [noteId, storeNodes, complete]
-    );
-
-    return {
-        requestDeepDive,
-        isLoading,
-        error,
-    };
+  return {
+    requestDeepDive,
+    isLoading,
+    error,
+  };
 }

@@ -14,7 +14,14 @@ type DiagramModalProps = {
   onRenderFailure?: () => void;
 };
 
-export function DiagramModal({ code, cachedSvg, title, onClose, onSvgRendered, onRenderFailure }: DiagramModalProps) {
+export function DiagramModal({
+  code,
+  cachedSvg,
+  title,
+  onClose,
+  onSvgRendered,
+  onRenderFailure,
+}: DiagramModalProps) {
   const [isMounted, setIsMounted] = useState(false);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -22,14 +29,19 @@ export function DiagramModal({ code, cachedSvg, title, onClose, onSvgRendered, o
         onClose();
       }
     },
-    [onClose],
+    [onClose]
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, [handleKeyDown, isMounted]);
 
   if (!isMounted || typeof document === 'undefined') {
     return null;
@@ -43,10 +55,7 @@ export function DiagramModal({ code, cachedSvg, title, onClose, onSvgRendered, o
       aria-label={`Diagram for ${title}`}
       onClick={onClose}
     >
-      <div
-        className={styles.modalContent}
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>{title}</h3>
           <button

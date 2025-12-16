@@ -175,7 +175,9 @@
   padding: 0.5rem 1.25rem;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .editorButton {
@@ -308,7 +310,9 @@
   background: white;
   border-radius: 12px;
   padding: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(28, 26, 23, 0.15);
 }
 
@@ -320,7 +324,9 @@
   cursor: pointer;
   font-size: 14px;
   font-family: var(--font-hand), 'Patrick Hand', cursive;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
   color: #1c1a17;
   display: flex;
   align-items: center;
@@ -361,7 +367,7 @@
 }
 
 /* Deep Dive Node Styling */
-.nodeCard[data-block-type="deep-dive"] {
+.nodeCard[data-block-type='deep-dive'] {
   border-left: 4px solid currentColor;
 }
 

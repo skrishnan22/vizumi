@@ -87,14 +87,14 @@ If explaining "Caching":
 `;
 
 export function getPromptForMode(mode: 'eli5' | 'analogy' | 'mental-model'): string {
-    switch (mode) {
-        case 'eli5':
-            return ELI5_PROMPT;
-        case 'analogy':
-            return ANALOGY_PROMPT;
-        case 'mental-model':
-            return MENTAL_MODEL_PROMPT;
-        default:
-            return ELI5_PROMPT;
-    }
+  switch (mode) {
+    case 'eli5':
+      return ELI5_PROMPT;
+    case 'analogy':
+      return ANALOGY_PROMPT;
+    case 'mental-model':
+      return MENTAL_MODEL_PROMPT;
+    default:
+      return ELI5_PROMPT;
+  }
 }

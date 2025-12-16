@@ -6,10 +6,7 @@ export async function POST(req: Request) {
     const { url } = body;
 
     if (!url || typeof url !== 'string') {
-      return Response.json(
-        { error: 'URL is required' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'URL is required' }, { status: 400 });
     }
 
     const metadata = await processUrlMetadata(url);
@@ -17,21 +14,14 @@ export async function POST(req: Request) {
     return Response.json({
       title: metadata.title,
       ogImage: metadata.ogImage,
-      url: url
+      url: url,
     });
-
   } catch (error) {
     if (error instanceof UrlProcessingError) {
-      return Response.json(
-        { error: error.message },
-        { status: 400 }
-      );
+      return Response.json({ error: error.message }, { status: 400 });
     }
 
     console.error('URL metadata processing error:', error);
-    return Response.json(
-      { error: 'Failed to process URL' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Failed to process URL' }, { status: 500 });
   }
 }

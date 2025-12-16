@@ -2,132 +2,140 @@ import fs from 'fs/promises';
 import path from 'path';
 
 type EvalIterationResult = {
-    metadata: {
-        contentId: string;
-        promptId: string;
-        modelId: string;
-    };
-    jsonParsed: boolean;
-    schemaValidated: boolean;
-    d2Checks: Array<{
-        blockId: string;
-        title: string;
-        visualType: string;
-        success: boolean;
-        error?: string;
-    }>;
-    timestamp: string;
+  metadata: {
+    contentId: string;
+    promptId: string;
+    modelId: string;
+  };
+  jsonParsed: boolean;
+  schemaValidated: boolean;
+  d2Checks: Array<{
+    blockId: string;
+    title: string;
+    visualType: string;
+    success: boolean;
+    error?: string;
+  }>;
+  timestamp: string;
 };
 
 function getWeightedScore(successes: number, total: number): number {
-    if (total === 0) return 0;
-    const z = 1.96; // 95% confidence
-    const p = successes / total;
-    const left = p + (z * z) / (2 * total);
-    const right = z * Math.sqrt((p * (1 - p) / total) + (z * z) / (4 * total * total));
-    const under = 1 + (z * z) / total;
-    return Math.round(((left - right) / under) * 100);
+  if (total === 0) return 0;
+  const z = 1.96; // 95% confidence
+  const p = successes / total;
+  const left = p + (z * z) / (2 * total);
+  const right = z * Math.sqrt((p * (1 - p)) / total + (z * z) / (4 * total * total));
+  const under = 1 + (z * z) / total;
+  return Math.round(((left - right) / under) * 100);
 }
 
 async function run() {
-    const inputPath = path.join(process.cwd(), 'evals', 'results', 'd2-eval.jsonl');
-    const outputPath = path.join(process.cwd(), 'evals', 'results', 'report.html');
+  const inputPath = path.join(process.cwd(), 'evals', 'results', 'd2-eval.jsonl');
+  const outputPath = path.join(process.cwd(), 'evals', 'results', 'report.html');
 
-    console.log(`Reading results from ${inputPath}`);
+  console.log(`Reading results from ${inputPath}`);
 
-    let fileContent;
-    try {
-        fileContent = await fs.readFile(inputPath, 'utf-8');
-    } catch (e) {
-        console.error(`Error reading file: ${e}`);
-        return;
+  let fileContent;
+  try {
+    fileContent = await fs.readFile(inputPath, 'utf-8');
+  } catch (e) {
+    console.error(`Error reading file: ${e}`);
+    return;
+  }
+
+  const results: EvalIterationResult[] = fileContent
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line) => JSON.parse(line));
+
+  console.log(`Loaded ${results.length} results.`);
+
+  // --- Analysis ---
+
+  const stats = {
+    totalDiagrams: 0,
+    totalFailures: 0,
+    totalSuccesses: 0,
+    byPrompt: {} as Record<string, { total: number; failures: number; successes: number }>,
+    byModel: {} as Record<string, { total: number; failures: number; successes: number }>,
+    byCombination: {} as Record<
+      string,
+      { total: number; failures: number; successes: number; promptId: string; modelId: string }
+    >,
+  };
+
+  for (const result of results) {
+    const { promptId, modelId } = result.metadata;
+    const comboKey = `${promptId}::${modelId}`;
+
+    if (!stats.byPrompt[promptId])
+      stats.byPrompt[promptId] = { total: 0, failures: 0, successes: 0 };
+    if (!stats.byModel[modelId]) stats.byModel[modelId] = { total: 0, failures: 0, successes: 0 };
+    if (!stats.byCombination[comboKey])
+      stats.byCombination[comboKey] = { total: 0, failures: 0, successes: 0, promptId, modelId };
+
+    for (const check of result.d2Checks) {
+      stats.totalDiagrams++;
+      stats.byPrompt[promptId].total++;
+      stats.byModel[modelId].total++;
+      stats.byCombination[comboKey].total++;
+
+      if (!check.success) {
+        stats.totalFailures++;
+        stats.byPrompt[promptId].failures++;
+        stats.byModel[modelId].failures++;
+        stats.byCombination[comboKey].failures++;
+      } else {
+        stats.totalSuccesses++;
+        stats.byPrompt[promptId].successes++;
+        stats.byModel[modelId].successes++;
+        stats.byCombination[comboKey].successes++;
+      }
     }
+  }
 
-    const results: EvalIterationResult[] = fileContent
-        .split('\n')
-        .filter((line) => line.trim())
-        .map((line) => JSON.parse(line));
+  const prompts = Object.keys(stats.byPrompt).sort();
+  const models = Object.keys(stats.byModel).sort();
 
-    console.log(`Loaded ${results.length} results.`);
+  const promptSuccessCounts = prompts.map((p) =>
+    getWeightedScore(stats.byPrompt[p].successes, stats.byPrompt[p].total)
+  );
+  const modelSuccessCounts = models.map((m) =>
+    getWeightedScore(stats.byModel[m].successes, stats.byModel[m].total)
+  );
 
-    // --- Analysis ---
+  // Sketchy/Marker Palette
+  const palette = [
+    '#3b82f6', // Blue
+    '#10b981', // Emerald
+    '#8b5cf6', // Violet
+    '#f59e0b', // Amber
+    '#ec4899', // Pink
+    '#6366f1', // Indigo
+  ];
 
-    const stats = {
-        totalDiagrams: 0,
-        totalFailures: 0,
-        totalSuccesses: 0,
-        byPrompt: {} as Record<string, { total: number; failures: number; successes: number }>,
-        byModel: {} as Record<string, { total: number; failures: number; successes: number }>,
-        byCombination: {} as Record<string, { total: number; failures: number; successes: number; promptId: string; modelId: string }>,
-    };
-
-    for (const result of results) {
-        const { promptId, modelId } = result.metadata;
-        const comboKey = `${promptId}::${modelId}`;
-
-        if (!stats.byPrompt[promptId]) stats.byPrompt[promptId] = { total: 0, failures: 0, successes: 0 };
-        if (!stats.byModel[modelId]) stats.byModel[modelId] = { total: 0, failures: 0, successes: 0 };
-        if (!stats.byCombination[comboKey]) stats.byCombination[comboKey] = { total: 0, failures: 0, successes: 0, promptId, modelId };
-
-        for (const check of result.d2Checks) {
-            stats.totalDiagrams++;
-            stats.byPrompt[promptId].total++;
-            stats.byModel[modelId].total++;
-            stats.byCombination[comboKey].total++;
-
-            if (!check.success) {
-                stats.totalFailures++;
-                stats.byPrompt[promptId].failures++;
-                stats.byModel[modelId].failures++;
-                stats.byCombination[comboKey].failures++;
-            } else {
-                stats.totalSuccesses++;
-                stats.byPrompt[promptId].successes++;
-                stats.byModel[modelId].successes++;
-                stats.byCombination[comboKey].successes++;
-            }
-        }
-    }
-
-
-    const prompts = Object.keys(stats.byPrompt).sort();
-    const models = Object.keys(stats.byModel).sort();
-
-    const promptSuccessCounts = prompts.map(p => getWeightedScore(stats.byPrompt[p].successes, stats.byPrompt[p].total));
-    const modelSuccessCounts = models.map(m => getWeightedScore(stats.byModel[m].successes, stats.byModel[m].total));
-
-    // Sketchy/Marker Palette
-    const palette = [
-        '#3b82f6', // Blue
-        '#10b981', // Emerald
-        '#8b5cf6', // Violet
-        '#f59e0b', // Amber
-        '#ec4899', // Pink
-        '#6366f1', // Indigo
-    ];
-
-    // Grouped Bar Chart Data (Success Count by Prompt/Model)
-    const groupedDatasets = models.map((model, index) => {
-        const data = prompts.map(prompt => {
-            const key = `${prompt}::${model}`;
-            const s = stats.byCombination[key];
-            if (!s) return 0;
-            return getWeightedScore(s.successes, s.total);
-        });
-
-        const color = palette[index % palette.length];
-        return {
-            label: model,
-            data: data,
-            borderColor: color,
-            borderWidth: 2,
-            backgroundColor: 'transparent', // Will be replaced by pattern in JS
-            // Custom property to pass color to pattern generator
-            _color: color
-        };
+  // Grouped Bar Chart Data (Success Count by Prompt/Model)
+  const groupedDatasets = models.map((model, index) => {
+    const data = prompts.map((prompt) => {
+      const key = `${prompt}::${model}`;
+      const s = stats.byCombination[key];
+      if (!s) return 0;
+      return getWeightedScore(s.successes, s.total);
     });
 
-    const html = `
+    const color = palette[index % palette.length];
+    return {
+      label: model,
+      data: data,
+      borderColor: color,
+      borderWidth: 2,
+      backgroundColor: 'transparent', // Will be replaced by pattern in JS
+      // Custom property to pass color to pattern generator
+      _color: color,
+    };
+  });
+
+  const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -236,21 +244,29 @@ async function run() {
             <div class="filter-group">
                 <span class="filter-label">Filter by Prompt</span>
                 <div class="checkbox-group" id="promptFilters">
-                    ${prompts.map(p => `
+                    ${prompts
+                      .map(
+                        (p) => `
                         <label class="checkbox-label">
                             <input type="checkbox" value="${p}" checked onchange="filterTable()"> ${p}
                         </label>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </div>
             </div>
             <div class="filter-group">
                 <span class="filter-label">Filter by Model</span>
                 <div class="checkbox-group" id="modelFilters">
-                    ${models.map(m => `
+                    ${models
+                      .map(
+                        (m) => `
                         <label class="checkbox-label">
                             <input type="checkbox" value="${m}" checked onchange="filterTable()"> ${m}
                         </label>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </div>
             </div>
         </div>
@@ -269,13 +285,16 @@ async function run() {
                     </tr>
                 </thead>
                 <tbody>
-                    ${results.map(r => {
-        const failures = r.d2Checks.filter(c => !c.success).length;
-        const successes = r.d2Checks.filter(c => c.success).length;
-        const total = r.d2Checks.length;
-        const statusClass = failures === 0 && total > 0 ? 'success' : (total === 0 ? '' : 'failure');
-        const statusText = failures === 0 && total > 0 ? 'PASS' : (total === 0 ? 'NO DATA' : 'FAIL');
-        return `
+                    ${results
+                      .map((r) => {
+                        const failures = r.d2Checks.filter((c) => !c.success).length;
+                        const successes = r.d2Checks.filter((c) => c.success).length;
+                        const total = r.d2Checks.length;
+                        const statusClass =
+                          failures === 0 && total > 0 ? 'success' : total === 0 ? '' : 'failure';
+                        const statusText =
+                          failures === 0 && total > 0 ? 'PASS' : total === 0 ? 'NO DATA' : 'FAIL';
+                        return `
                         <tr data-prompt="${r.metadata.promptId}" data-model="${r.metadata.modelId}">
                             <td><strong>${r.metadata.promptId}</strong></td>
                             <td>${r.metadata.modelId}</td>
@@ -286,7 +305,8 @@ async function run() {
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         </tr>
                         `;
-    }).join('')}
+                      })
+                      .join('')}
                 </tbody>
             </table>
         </div>
@@ -479,8 +499,8 @@ async function run() {
 </html>
   `;
 
-    await fs.writeFile(outputPath, html, 'utf-8');
-    console.log(`Report generated at ${outputPath}`);
+  await fs.writeFile(outputPath, html, 'utf-8');
+  console.log(`Report generated at ${outputPath}`);
 }
 
 run().catch(console.error);

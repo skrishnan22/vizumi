@@ -18,59 +18,62 @@ import type { NoteNodeData } from '@/lib/yjs/utils';
  * 4. No debouncing needed - React 18 automatically batches state updates
  */
 export function useNoteDoc(noteId: string) {
-    const [doc, setDoc] = useState<Y.Doc | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isEmpty, setIsEmpty] = useState(false);
-    const setGraph = useNoteStore((s) => s.setGraph);
+  const [doc, setDoc] = useState<Y.Doc | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEmpty, setIsEmpty] = useState(false);
+  const setGraph = useNoteStore((s) => s.setGraph);
 
-    useEffect(() => {
-        if (!noteId) return;
+  useEffect(() => {
+    if (!noteId) return;
 
-        const { doc: ydoc, persistence } = getOrCreateYDoc(noteId);
-        setDoc(ydoc);
-        setIsLoading(true);
+    const { doc: ydoc, persistence } = getOrCreateYDoc(noteId);
 
-        // Sync Y.Doc → Zustand
-        const syncToStore = () => {
-            const yNodes = ydoc.getMap('nodes');
-            const yEdges = ydoc.getMap('edges');
+    // Initialize doc and loading state
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDoc(ydoc);
+    setIsLoading(true);
 
-            // Convert Y.Maps to arrays with proper types
-            const nodes = Array.from(yNodes.values()) as Node<NoteNodeData>[];
-            const edges = Array.from(yEdges.values()) as Edge[];
+    // Sync Y.Doc → Zustand
+    const syncToStore = () => {
+      const yNodes = ydoc.getMap('nodes');
+      const yEdges = ydoc.getMap('edges');
 
-            setGraph(nodes, edges);
-        };
+      // Convert Y.Maps to arrays with proper types
+      const nodes = Array.from(yNodes.values()) as Node<NoteNodeData>[];
+      const edges = Array.from(yEdges.values()) as Edge[];
 
-        // Wait for IndexedDB sync before initial render
-        const handleSynced = () => {
-            setIsLoading(false);
+      setGraph(nodes, edges);
+    };
 
-            // Check if the note is empty after loading from IndexedDB
-            const yNodes = ydoc.getMap('nodes');
-            setIsEmpty(yNodes.size === 0);
+    // Wait for IndexedDB sync before initial render
+    const handleSynced = () => {
+      setIsLoading(false);
 
-            // Initial sync to store
-            syncToStore();
-        };
+      // Check if the note is empty after loading from IndexedDB
+      const yNodes = ydoc.getMap('nodes');
+      setIsEmpty(yNodes.size === 0);
 
-        // Listen for persistence sync
-        persistence.once('synced', handleSynced);
+      // Initial sync to store
+      syncToStore();
+    };
 
-        // If already synced (e.g., cached doc), call handler immediately
-        if (persistence.synced) {
-            handleSynced();
-        }
+    // Listen for persistence sync
+    persistence.once('synced', handleSynced);
 
-        // Listen for Y.Doc updates after initial load
-        // React 18 automatically batches multiple setGraph calls in the same tick
-        ydoc.on('update', syncToStore);
+    // If already synced (e.g., cached doc), call handler immediately
+    if (persistence.synced) {
+      handleSynced();
+    }
 
-        return () => {
-            ydoc.off('update', syncToStore);
-            persistence.off('synced', handleSynced);
-        };
-    }, [noteId, setGraph]);
+    // Listen for Y.Doc updates after initial load
+    // React 18 automatically batches multiple setGraph calls in the same tick
+    ydoc.on('update', syncToStore);
 
-    return { doc, isLoading, isEmpty };
+    return () => {
+      ydoc.off('update', syncToStore);
+      persistence.off('synced', handleSynced);
+    };
+  }, [noteId, setGraph]);
+
+  return { doc, isLoading, isEmpty };
 }

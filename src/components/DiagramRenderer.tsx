@@ -47,9 +47,7 @@ async function fetchDiagramSvg(diagramCode: string) {
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
     const message =
-      typeof payload?.error === 'string'
-        ? payload.error
-        : 'Server failed to render this diagram.';
+      typeof payload?.error === 'string' ? payload.error : 'Server failed to render this diagram.';
     throw new Error(message);
   }
 
@@ -76,7 +74,14 @@ function StatusMessage({ message }: { message: string }) {
   );
 }
 
-export function DiagramRenderer({ code, cachedSvg, className, onSuccess, onSvgRendered, onRenderFailure }: DiagramRendererProps) {
+export function DiagramRenderer({
+  code,
+  cachedSvg,
+  className,
+  onSuccess,
+  onSvgRendered,
+  onRenderFailure,
+}: DiagramRendererProps) {
   const sanitizedCode = code?.trim() ?? '';
 
   const {
@@ -85,7 +90,7 @@ export function DiagramRenderer({ code, cachedSvg, className, onSuccess, onSvgRe
     isLoading,
   } = useSWR(
     // Only fetch if we don't have cached SVG
-    cachedSvg ? null : (sanitizedCode || null),
+    cachedSvg ? null : sanitizedCode || null,
     fetchDiagramSvg,
     {
       revalidateOnFocus: false,
@@ -139,8 +144,7 @@ export function DiagramRenderer({ code, cachedSvg, className, onSuccess, onSvgRe
       return { parsedSvg: parse(finalSvg, options), parseError: null };
     } catch (err) {
       console.error('Failed to parse rendered D2 SVG', err);
-      const message =
-        err instanceof Error ? err.message : 'Unable to display this diagram.';
+      const message = err instanceof Error ? err.message : 'Unable to display this diagram.';
       return { parsedSvg: null, parseError: message };
     }
   }, [finalSvg]);

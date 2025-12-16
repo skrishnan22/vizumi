@@ -49,6 +49,13 @@ const eslintConfig = defineConfig([
       eqeqeq: ['error', 'always', { null: 'ignore' }],
     },
   },
+  // Allow console.log in eval files (must come after general rules to override)
+  {
+    files: ['evals/**/*.ts', 'evals/**/*.js'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
 ]);
 
 export default eslintConfig;

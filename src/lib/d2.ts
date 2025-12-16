@@ -29,8 +29,7 @@ export type D2RenderError = {
 };
 
 export function extractD2ErrorMessage(error: unknown): string {
-  const rawMessage =
-    error instanceof Error ? error.message : 'Unknown rendering error';
+  const rawMessage = error instanceof Error ? error.message : 'Unknown rendering error';
 
   const tryParse = (text: string) => {
     try {
@@ -84,9 +83,7 @@ function hashCode(str: string): number {
   return Math.abs(hash);
 }
 
-export async function renderD2ToSvg(
-  code: string,
-): Promise<D2RenderSuccess | D2RenderError> {
+export async function renderD2ToSvg(code: string): Promise<D2RenderSuccess | D2RenderError> {
   try {
     const trimmed = code?.trim();
     if (!trimmed) {

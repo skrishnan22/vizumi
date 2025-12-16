@@ -1,24 +1,22 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react';
+import Link from 'next/link';
 import ReactFlow, {
   Background,
   BackgroundVariant,
   type NodeChange,
   type EdgeChange,
-  type Node,
-  type Edge,
-  MarkerType,
   type ReactFlowInstance,
-} from "reactflow";
-import "reactflow/dist/style.css";
-import { type NoteBlock } from "@/lib/schemas";
-import { NoteBlockNode } from "./NoteBlockNode";
-import { DeepDiveDrawer } from "./DeepDiveDrawer";
-import styles from "./NoteBoard.module.css";
-import { useNoteStore } from "@/store/noteStore";
-import { useNoteDoc } from "@/hooks/useNoteDoc";
-import { updateNodePosition, updateNodeData } from "@/lib/yjs/actions";
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import { type NoteBlock } from '@/lib/schemas';
+import { NoteBlockNode } from './NoteBlockNode';
+import { DeepDiveDrawer } from './DeepDiveDrawer';
+import styles from './NoteBoard.module.css';
+import { useNoteStore } from '@/store/noteStore';
+import { useNoteDoc } from '@/hooks/useNoteDoc';
+import { updateNodePosition, updateNodeData } from '@/lib/yjs/actions';
 
 type NoteBoardProps = {
   noteId: string;
@@ -32,16 +30,12 @@ const nodeTypes = {
 export function NoteBoard({ noteId }: NoteBoardProps) {
   const { isLoading, isEmpty } = useNoteDoc(noteId); // Bind Y.Doc and sync to store
 
-  const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(
-    null
-  );
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+  const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
+  const [_, setRfInstance] = useState<ReactFlowInstance | null>(null);
 
   const nodes = useNoteStore((state) => state.nodes);
   const edges = useNoteStore((state) => state.edges);
-  const setAutoLayoutEnabled = useNoteStore(
-    (state) => state.setAutoLayoutEnabled
-  );
+  const setAutoLayoutEnabled = useNoteStore((state) => state.setAutoLayoutEnabled);
   const updateNode = useNoteStore((state) => state.updateNode);
 
   // Find selected block and parent from nodes
@@ -57,7 +51,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   }, [selectedBlock, nodes]);
 
   // Callback for measuring node heights
-  const onMeasure = useCallback((nodeId: string, height: number) => {
+  const onMeasure = useCallback(() => {
     // Not used currently, but kept for future dynamic height adjustment
   }, []);
 
@@ -103,7 +97,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       changes.forEach((change) => {
-        if (change.type === "position" && change.position) {
+        if (change.type === 'position' && change.position) {
           if (change.dragging) {
             updateNode(change.id, { position: change.position });
           } else {
@@ -144,7 +138,14 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
         onOpenDrawer: handleOpenDrawer,
       },
     }));
-  }, [nodes, onMeasure, handleSaveSummary, handleSaveRenderedSvg, handleUpdateBlockData, handleOpenDrawer]);
+  }, [
+    nodes,
+    onMeasure,
+    handleSaveSummary,
+    handleSaveRenderedSvg,
+    handleUpdateBlockData,
+    handleOpenDrawer,
+  ]);
 
   // Loading state while IndexedDB syncs
   if (isLoading) {
@@ -169,14 +170,14 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
             <div className="text-6xl mb-4">📝</div>
             <h2 className="text-2xl font-semibold mb-2">Note not found</h2>
             <p className="text-gray-600 mb-6">
-              This note doesn't exist or hasn't been created yet.
+              This note doesn&apos;t exist or hasn&apos;t been created yet.
             </p>
-            <a
+            <Link
               href="/"
               className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Create a new note
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -184,10 +185,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   }
 
   return (
-    <section
-      className={styles.boardSection}
-      aria-label="Generated visual notes"
-    >
+    <section className={styles.boardSection} aria-label="Generated visual notes">
       <div className={styles.flowShell}>
         <ReactFlow
           nodes={nodesWithCallbacks}
