@@ -50,3 +50,10 @@ export async function getAllNotes(): Promise<NoteMetadata[]> {
 export async function getNoteMetadata(noteId: string): Promise<NoteMetadata | undefined> {
   return db.notes.get(noteId);
 }
+
+/**
+ * Get a note by its source URL (for duplicate detection)
+ */
+export async function getNoteByUrl(url: string): Promise<NoteMetadata | undefined> {
+  return db.notes.where('url').equals(url).first();
+}

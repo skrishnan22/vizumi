@@ -8,8 +8,10 @@ import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
 import { syncBlocksToYDoc } from '@/lib/yjs/actions';
 import { useNoteStore } from '@/store/noteStore';
-import { createNoteMetadata } from '@/lib/db/actions';
+import { createNoteMetadata, getNoteByUrl } from '@/lib/db/actions';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger.client';
 
 type NoteGeneratorProps = {
@@ -17,6 +19,7 @@ type NoteGeneratorProps = {
 };
 
 export function NoteGenerator({ noteId }: NoteGeneratorProps) {
+  const router = useRouter();
   const { object, submit, isLoading, error } = useObject({
     api: '/api/generate',
     schema: LLMNoteSchema,
@@ -84,6 +87,19 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   // Handle generation with metadata saving
   const handleGenerate = async () => {
     if (!url.trim()) return;
+
+    const existingNote = await getNoteByUrl(url.trim());
+    if (existingNote) {
+      toast.info('A note already exists for this URL', {
+        description: existingNote.title || 'View the existing note',
+        action: {
+          label: 'View Note',
+          onClick: () => router.push(`/notes/${existingNote.noteId}`),
+        },
+        duration: 8000,
+      });
+      return;
+    }
 
     try {
       // 1. Fetch metadata
