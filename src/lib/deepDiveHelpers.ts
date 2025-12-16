@@ -10,7 +10,7 @@ export const MODE_ICONS: Record<string, LucideIcon> = {
 };
 
 export function getModeIcon(mode?: string): LucideIcon {
-  return MODE_ICONS[mode as string] || MODE_ICONS.default;
+  return (mode && MODE_ICONS[mode]) || MODE_ICONS.default;
 }
 
 export function getModeTitle(mode?: DeepDiveMode): string {
