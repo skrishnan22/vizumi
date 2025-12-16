@@ -56,6 +56,17 @@ const config = {
           4: 'hsl(var(--chart-4))',
           5: 'hsl(var(--chart-5))',
         },
+        vibrant: {
+          orange: 'var(--vibrant-orange)',
+          teal: 'var(--vibrant-teal)',
+          green: 'var(--vibrant-green)',
+        },
+        header: 'var(--header-bg)',
+        chip: {
+          DEFAULT: 'var(--chip-bg)',
+          text: 'var(--chip-text)',
+        },
+        link: 'var(--link-color)',
       },
     },
   },

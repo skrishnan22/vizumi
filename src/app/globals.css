@@ -4,12 +4,44 @@
 
 :root {
   --ink: #1c1a17;
-  --paper: #fdfbf6;
-  --card-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-  --card-border: #ece3cf;
-  --accent-yellow: #fff3c4;
-  --accent-blue: #e0f0ff;
-  --accent-green: #eaf9e5;
+  --paper: #FFFFFF;
+  /* Pure white for the "sheet" */
+  --app-bg: #F5F2EB;
+  /* Warm stone/beige for the desk background */
+  --header-bg: #F0F9FF;
+  /* Light Sky Blue */
+
+  /* Text Colors */
+  --primary-text: #334155;
+  /* Slate 700 */
+  --link-color: #0D9488;
+  /* Teal 600 */
+
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  /* Softer shadow */
+  --card-border: #E5E0D5;
+
+  /* Vibrant Accents (Minimal) */
+  --vibrant-orange: #F97316;
+  /* Orange-500 */
+  --vibrant-teal: #14B8A6;
+  /* Teal-500 */
+  --vibrant-green: #10B981;
+  /* Emerald-500 */
+
+  /* Chip Colors */
+  --chip-bg: #BAE6FD;
+  /* Sky 200 */
+  --chip-text: #0369A1;
+  /* Sky 700 */
+
+  /* Pastels for backgrounds (Keeping these compatible) */
+  --accent-yellow: #FEF3C7;
+  /* Amber-100 */
+  --accent-blue: #E0F2FE;
+  /* Sky-100 */
+  --accent-green: #D1FAE5;
+  /* Emerald-100 */
 }
 
 .nextjs-portal {
@@ -31,9 +63,10 @@ body {
 body {
   min-height: 100vh;
   color: var(--ink);
-  background-color: var(--paper);
-  background-image: radial-gradient(rgba(28, 26, 23, 0.05) 1px, transparent 0);
-  background-size: 32px 32px;
+  background-color: var(--app-bg);
+  background-image: radial-gradient(#d6d3cd 1px, transparent 0);
+  /* Subtle dot pattern on the desk */
+  background-size: 24px 24px;
   font-family: var(--font-hand), 'Patrick Hand', 'Comic Sans', cursive;
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
@@ -79,6 +112,7 @@ a {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -111,6 +145,7 @@ a {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
