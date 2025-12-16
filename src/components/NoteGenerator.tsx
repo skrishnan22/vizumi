@@ -10,6 +10,7 @@ import { syncBlocksToYDoc } from '@/lib/yjs/actions';
 import { useNoteStore } from '@/store/noteStore';
 import { createNoteMetadata } from '@/lib/db/actions';
 import Link from 'next/link';
+import { logger } from '@/lib/logger.client';
 
 type NoteGeneratorProps = {
   noteId: string;
@@ -104,7 +105,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
         });
       }
     } catch (error) {
-      console.error('Error saving metadata:', error);
+      logger.error('Error saving metadata:', error);
     }
 
     // 3. Start generation

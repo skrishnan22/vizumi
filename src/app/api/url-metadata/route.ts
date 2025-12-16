@@ -1,4 +1,5 @@
 import { processUrlMetadata, UrlProcessingError } from '@/lib/url-processor';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
       return Response.json({ error: error.message }, { status: 400 });
     }
 
-    console.error('URL metadata processing error:', error);
+    logger.error({ error }, 'URL metadata processing error');
     return Response.json({ error: 'Failed to process URL' }, { status: 500 });
   }
 }

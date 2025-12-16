@@ -2,11 +2,12 @@ import { streamObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { LLMNoteSchema } from '@/lib/schemas';
 import { SYSTEM_PROMPT, SYSTEM_PROMPT_WITH_D2_REF } from '@/lib/prompts';
+import { processUrl } from '@/lib/url-processor';
+import { logger } from '@/lib/logger';
 
 // Toggle for A/B testing prompts
 // Set to true to use enhanced prompt with D2 pattern library
 const USE_ENHANCED_PROMPT = true;
-import { processUrl } from '@/lib/url-processor';
 
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
         content = await processUrl(url);
         source = url;
       } catch (error: unknown) {
-        console.error('Error processing URL:', error);
+        logger.error({ error, url }, 'Error processing URL');
         const errorMessage = error instanceof Error ? error.message : 'Failed to process URL';
         return new Response(JSON.stringify({ error: errorMessage }), {
           status: 400,
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
       });
     }
   } catch (error) {
-    console.error('Unexpected error in generate route:', error);
+    logger.error({ error }, 'Unexpected error in generate route');
     return new Response('Internal Server Error', { status: 500 });
   }
 

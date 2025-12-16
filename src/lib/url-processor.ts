@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
 import TurndownService from 'turndown';
 import { z } from 'zod';
+import { logger } from './logger';
 
 const UrlSchema = z.url();
 
@@ -71,7 +72,7 @@ export async function processUrl(url: string) {
     if (error instanceof UrlProcessingError) {
       throw error;
     }
-    console.error('Error processing URL:', error);
+    logger.error({ error }, 'Error processing URL');
     throw new UrlProcessingError('An unexpected error occurred while processing the URL.');
   }
 }
@@ -137,7 +138,7 @@ export async function processUrlMetadata(url: string): Promise<UrlMetadata> {
     if (error instanceof UrlProcessingError) {
       throw error;
     }
-    console.error('Error processing URL metadata:', error);
+    logger.error({ error }, 'Error processing URL metadata');
     throw new UrlProcessingError('An unexpected error occurred while processing the URL.');
   }
 }

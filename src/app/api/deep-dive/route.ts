@@ -3,6 +3,7 @@ import path from 'path';
 import { streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { getPromptForMode } from '@/lib/deepDivePrompts';
+import { logger } from '@/lib/logger';
 
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     try {
       fullDocument = await fs.readFile(contentPath, 'utf-8');
     } catch (error) {
-      console.error('Error reading content file:', error);
+      logger.error({ error, contentPath }, 'Error reading content file');
       return new Response('Unable to load source content', { status: 500 });
     }
 
@@ -67,7 +68,7 @@ Now, provide your ${mode.toUpperCase()} explanation for this specific section. F
 
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    console.error('Deep dive error:', error);
+    logger.error({ error }, 'Deep dive error');
     return new Response('Internal server error', { status: 500 });
   }
 }
