@@ -17,6 +17,7 @@ const eslintConfig = defineConfig([
     'dist/**',
     'next-env.d.ts',
     'coverage/**',
+    'evals/datasets',
   ]),
   // Custom rules
   {

@@ -23,3 +23,5 @@ yarn.lock
 .vercel
 coverage
 *.jsonl
+
+evals/datasets
