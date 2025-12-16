@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 import { D2 } from '@terrastruct/d2';
 import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { D2_SYNTAX_FIX_PROMPT } from '@/lib/prompts';
+import { logger } from '@/lib/logger';
 
 const d2 = new D2();
 
@@ -206,12 +206,11 @@ export async function POST(req: Request) {
 
     // First attempt: compile original code
     let currentCode = code.trim();
-    console.log(`[render-d2] Attempting compile (${currentCode.length} chars)`);
+    logger.debug({ codeLength: currentCode.length }, 'Attempting D2 compile');
     let result = await tryCompileD2(currentCode, selectedTheme);
-    console.log(
-      `[render-d2] First compile: ${result.success ? 'success' : 'failed'} (${
-        Date.now() - startTime
-      }ms)`
+    logger.debug(
+      { success: result.success, durationMs: Date.now() - startTime },
+      'First D2 compile completed'
     );
 
     if (result.success) {
@@ -220,26 +219,25 @@ export async function POST(req: Request) {
 
     // If first attempt fails, try LLM-based fixes
     let lastError = result.error;
-    console.log(`[render-d2] Compile error: ${lastError.slice(0, 100)}`);
+    logger.info({ error: lastError.slice(0, 100) }, 'D2 compile failed, attempting LLM fix');
 
     for (let attempt = 1; attempt <= MAX_FIX_ATTEMPTS; attempt++) {
       try {
-        console.log(`[render-d2] LLM fix attempt ${attempt}...`);
+        logger.debug({ attempt }, 'Starting LLM fix attempt');
         const fixedCode = await fixD2SyntaxWithLLM(currentCode, lastError);
-        console.log(`[render-d2] LLM returned fix (${Date.now() - startTime}ms)`);
+        logger.debug({ durationMs: Date.now() - startTime }, 'LLM returned fix');
 
         // Skip if LLM returned the same code
         if (fixedCode === currentCode) {
-          console.log(`[render-d2] LLM returned same code, giving up`);
+          logger.info('LLM returned same code, giving up');
           break;
         }
 
         currentCode = fixedCode;
         result = await tryCompileD2(currentCode, selectedTheme);
-        console.log(
-          `[render-d2] Retry compile: ${
-            result.success ? 'success' : 'failed'
-          } (${Date.now() - startTime}ms)`
+        logger.debug(
+          { success: result.success, durationMs: Date.now() - startTime },
+          'Retry compile completed'
         );
 
         if (result.success) {
@@ -248,15 +246,15 @@ export async function POST(req: Request) {
 
         lastError = result.error;
       } catch (llmError) {
-        console.error(`[render-d2] LLM fix attempt ${attempt} failed:`, llmError);
+        logger.error({ error: llmError, attempt }, 'LLM fix attempt failed');
       }
     }
 
     // All attempts failed
-    console.log(`[render-d2] All attempts failed (${Date.now() - startTime}ms)`);
+    logger.warn({ durationMs: Date.now() - startTime }, 'All D2 compile attempts failed');
     return NextResponse.json({ error: lastError }, { status: 500 });
   } catch (error) {
-    console.error(`[render-d2] Unexpected error (${Date.now() - startTime}ms):`, error);
+    logger.error({ error, durationMs: Date.now() - startTime }, 'Unexpected error in render-d2');
     const message = extractD2ErrorMessage(error);
     return NextResponse.json({ error: message }, { status: 500 });
   }

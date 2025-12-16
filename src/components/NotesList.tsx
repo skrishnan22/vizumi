@@ -53,7 +53,6 @@ export function NotesList() {
       {notes.map((note) => (
         <NoteCard
           key={note.noteId}
-          noteId={note.noteId}
           title={note.title}
           url={note.url}
           ogImage={note.ogImage}

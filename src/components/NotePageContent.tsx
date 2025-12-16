@@ -3,6 +3,10 @@
 import { NoteBoard } from './NoteBoard';
 import { useNoteDoc } from '@/hooks/useNoteDoc';
 import Link from 'next/link';
+import { ErrorBoundary } from 'react-error-boundary';
+import { toast } from 'sonner';
+import { ErrorFallback } from './ErrorFallback';
+import { clientLogger } from '@/lib/client-logger';
 
 type NotePageContentProps = {
   noteId: string;
@@ -42,7 +46,21 @@ export function NotePageContent({ noteId }: NotePageContentProps) {
         </Link>
       </div>
 
-      <NoteBoard noteId={noteId} />
+      <ErrorBoundary
+        fallbackRender={({ resetErrorBoundary }) => (
+          <ErrorFallback
+            title="Failed to render board"
+            message="The note board encountered an error. Please try again."
+            onReset={resetErrorBoundary}
+          />
+        )}
+        onError={(error, errorInfo) => {
+          clientLogger.error('NoteBoard error:', error, errorInfo);
+          toast.error('Something went wrong. Please try again.');
+        }}
+      >
+        <NoteBoard noteId={noteId} />
+      </ErrorBoundary>
     </main>
   );
 }

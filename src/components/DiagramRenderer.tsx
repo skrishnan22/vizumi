@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import useSWR from 'swr';
 import parse, { domToReact, type DOMNode, type HTMLReactParserOptions } from 'html-react-parser';
 import type { Element } from 'domhandler';
+import { logger } from '@/lib/logger.client';
 
 type DiagramRendererProps = {
   code: string;
@@ -143,7 +144,7 @@ export function DiagramRenderer({
     try {
       return { parsedSvg: parse(finalSvg, options), parseError: null };
     } catch (err) {
-      console.error('Failed to parse rendered D2 SVG', err);
+      logger.error('Failed to parse rendered D2 SVG', err);
       const message = err instanceof Error ? err.message : 'Unable to display this diagram.';
       return { parsedSvg: null, parseError: message };
     }
@@ -154,12 +155,12 @@ export function DiagramRenderer({
   }
 
   if (error) {
-    console.warn('Diagram rendering failed:', error.message);
+    logger.warn('Diagram rendering failed:', error.message);
     return null;
   }
 
   if (parseError) {
-    console.warn('Diagram parsing failed:', parseError);
+    logger.warn('Diagram parsing failed:', parseError);
     return null;
   }
 

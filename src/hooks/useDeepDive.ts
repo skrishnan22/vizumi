@@ -8,6 +8,7 @@ import { getModeTitle, type DeepDiveMode } from '@/lib/deepDiveHelpers';
 import { addNodeFromBlock, updateNodeData } from '@/lib/yjs/actions';
 import type { NoteBlock } from '@/lib/schemas';
 import type { NoteNodeData } from '@/lib/yjs/utils';
+import { logger } from '@/lib/logger.client';
 
 export function useDeepDive() {
   const noteId = useNoteStore((state) => state.noteId);
@@ -36,19 +37,19 @@ export function useDeepDive() {
   const requestDeepDive = useCallback(
     async (parentNodeId: string, mode: DeepDiveMode) => {
       if (!noteId) {
-        console.error('No noteId available');
+        logger.error('No noteId available');
         return;
       }
 
       // Find parent node to get its data (block)
       const parentNode = storeNodes.find((n: Node<NoteNodeData>) => n.id === parentNodeId);
       if (!parentNode) {
-        console.error('Parent node not found:', parentNodeId);
+        logger.error('Parent node not found:', parentNodeId);
         return;
       }
       const parentBlock = parentNode.data?.block as NoteBlock | undefined;
       if (!parentBlock) {
-        console.error('Parent block data not found');
+        logger.error('Parent block data not found');
         return;
       }
 
@@ -82,7 +83,7 @@ export function useDeepDive() {
           },
         });
       } catch (err) {
-        console.error('Deep dive request failed:', err);
+        logger.error('Deep dive request failed:', err);
         if (currentDeepDiveNodeIdRef.current && noteId) {
           updateNodeData(noteId, currentDeepDiveNodeIdRef.current, {
             summary: 'Failed to generate explanation. Please try again.',
