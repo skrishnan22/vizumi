@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Outfit } from 'next/font/google';
+import './globals.css';
 
 const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "AI Visual Note Generator",
-  description: "Turn dense articles into hand-drawn style study boards.",
+  title: 'AI Visual Note Generator',
+  description: 'Turn dense articles into hand-drawn style study boards.',
 };
 
 export default function RootLayout({
@@ -20,9 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${outfit.variable} font-sans antialiased`}>
-        {children}
-      </body>
+      <body className={`${outfit.variable} font-sans antialiased`}>{children}</body>
     </html>
   );
 }

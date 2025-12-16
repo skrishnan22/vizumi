@@ -34,8 +34,7 @@ export const useNoteStore = create<NoteStore>((set) => ({
   autoLayoutEnabled: true,
   setAutoLayoutEnabled: (value) => set({ autoLayoutEnabled: value }),
   isDeepDiveStreaming: false,
-  setDeepDiveStreaming: (isStreaming) =>
-    set({ isDeepDiveStreaming: isStreaming }),
+  setDeepDiveStreaming: (isStreaming) => set({ isDeepDiveStreaming: isStreaming }),
 
   // Y.js Integration
   nodes: [],
@@ -45,8 +44,6 @@ export const useNoteStore = create<NoteStore>((set) => ({
   // Optimized individual node updates
   updateNode: (nodeId, updates) =>
     set((state) => ({
-      nodes: state.nodes.map((node) =>
-        node.id === nodeId ? { ...node, ...updates } : node
-      ),
+      nodes: state.nodes.map((node) => (node.id === nodeId ? { ...node, ...updates } : node)),
     })),
 }));

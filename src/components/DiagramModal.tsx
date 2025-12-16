@@ -7,11 +7,21 @@ import styles from './NoteBoard.module.css';
 
 type DiagramModalProps = {
   code: string;
+  cachedSvg?: string;
   title: string;
   onClose: () => void;
+  onSvgRendered?: (svg: string) => void;
+  onRenderFailure?: () => void;
 };
 
-export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
+export function DiagramModal({
+  code,
+  cachedSvg,
+  title,
+  onClose,
+  onSvgRendered,
+  onRenderFailure,
+}: DiagramModalProps) {
   const [isMounted, setIsMounted] = useState(false);
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -19,14 +29,19 @@ export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
         onClose();
       }
     },
-    [onClose],
+    [onClose]
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, [handleKeyDown, isMounted]);
 
   if (!isMounted || typeof document === 'undefined') {
     return null;
@@ -40,10 +55,7 @@ export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
       aria-label={`Diagram for ${title}`}
       onClick={onClose}
     >
-      <div
-        className={styles.modalContent}
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>{title}</h3>
           <button
@@ -56,7 +68,13 @@ export function DiagramModal({ code, title, onClose }: DiagramModalProps) {
           </button>
         </div>
         <div className={styles.modalBody}>
-          <DiagramRenderer code={code} className={styles.modalDiagram} />
+          <DiagramRenderer
+            code={code}
+            cachedSvg={cachedSvg}
+            className={styles.modalDiagram}
+            onSvgRendered={onSvgRendered}
+            onRenderFailure={onRenderFailure}
+          />
         </div>
       </div>
     </div>

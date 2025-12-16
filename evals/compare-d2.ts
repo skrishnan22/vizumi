@@ -2,171 +2,180 @@ import fs from 'fs/promises';
 import path from 'path';
 
 type EvalIterationResult = {
-    metadata: {
-        contentId: string;
-        promptId: string;
-        modelId: string;
-    };
-    jsonParsed: boolean;
-    schemaValidated: boolean;
-    d2Checks: Array<{
-        blockId: string;
-        title: string;
-        visualType: string;
-        success: boolean;
-        error?: string;
-    }>;
-    timestamp: string;
+  metadata: {
+    contentId: string;
+    promptId: string;
+    modelId: string;
+  };
+  jsonParsed: boolean;
+  schemaValidated: boolean;
+  d2Checks: Array<{
+    blockId: string;
+    title: string;
+    visualType: string;
+    success: boolean;
+    error?: string;
+  }>;
+  timestamp: string;
 };
 
 type Stats = {
-    total: number;
-    failures: number;
-    successes: number;
+  total: number;
+  failures: number;
+  successes: number;
 };
 
-
 function getWeightedScore(successes: number, total: number): number {
-    if (total === 0) return 0;
-    const z = 1.96; // 95% confidence
-    const p = successes / total;
-    const left = p + (z * z) / (2 * total);
-    const right = z * Math.sqrt((p * (1 - p) / total) + (z * z) / (4 * total * total));
-    const under = 1 + (z * z) / total;
-    return Math.round(((left - right) / under) * 100);
+  if (total === 0) return 0;
+  const z = 1.96; // 95% confidence
+  const p = successes / total;
+  const left = p + (z * z) / (2 * total);
+  const right = z * Math.sqrt((p * (1 - p)) / total + (z * z) / (4 * total * total));
+  const under = 1 + (z * z) / total;
+  return Math.round(((left - right) / under) * 100);
 }
 
 async function loadResults(filePath: string): Promise<EvalIterationResult[]> {
-    try {
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        return fileContent
-            .split('\n')
-            .filter((line) => line.trim())
-            .map((line) => JSON.parse(line));
-    } catch (e) {
-        console.error(`Error reading file ${filePath}: ${e}`);
-        return [];
-    }
+  try {
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    return fileContent
+      .split('\n')
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+  } catch (e) {
+    console.error(`Error reading file ${filePath}: ${e}`);
+    return [];
+  }
 }
 
 async function run() {
-    const baselinePath = path.join(process.cwd(), 'evals', 'results', 'd2-eval-main.jsonl');
-    const reflectionPath = path.join(process.cwd(), 'evals', 'results', 'd2-eval-reflection.jsonl');
-    const outputPath = path.join(process.cwd(), 'evals', 'results', 'comparison-report.html');
+  const baselinePath = path.join(process.cwd(), 'evals', 'results', 'd2-eval-main.jsonl');
+  const reflectionPath = path.join(process.cwd(), 'evals', 'results', 'd2-eval-reflection.jsonl');
+  const outputPath = path.join(process.cwd(), 'evals', 'results', 'comparison-report.html');
 
-    console.log(`Reading baseline from ${baselinePath}`);
-    console.log(`Reading reflection from ${reflectionPath}`);
+  console.log(`Reading baseline from ${baselinePath}`);
+  console.log(`Reading reflection from ${reflectionPath}`);
 
-    const [baselineResults, reflectionResults] = await Promise.all([
-        loadResults(baselinePath),
-        loadResults(reflectionPath)
-    ]);
+  const [baselineResults, reflectionResults] = await Promise.all([
+    loadResults(baselinePath),
+    loadResults(reflectionPath),
+  ]);
 
-    console.log(`Loaded ${baselineResults.length} baseline results.`);
-    console.log(`Loaded ${reflectionResults.length} reflection results.`);
+  console.log(`Loaded ${baselineResults.length} baseline results.`);
+  console.log(`Loaded ${reflectionResults.length} reflection results.`);
 
-    const comparisonData: Record<string, Record<string, { baseline: Stats; reflection: Stats }>> = {};
-    const models = new Set<string>();
-    const prompts = new Set<string>();
+  const comparisonData: Record<string, Record<string, { baseline: Stats; reflection: Stats }>> = {};
+  const models = new Set<string>();
+  const prompts = new Set<string>();
 
-    for (const result of baselineResults) {
-        const { promptId, modelId } = result.metadata;
-        models.add(modelId);
-        prompts.add(promptId);
+  for (const result of baselineResults) {
+    const { promptId, modelId } = result.metadata;
+    models.add(modelId);
+    prompts.add(promptId);
 
-        if (!comparisonData[modelId]) comparisonData[modelId] = {};
-        if (!comparisonData[modelId][promptId]) comparisonData[modelId][promptId] = {
-            baseline: { total: 0, failures: 0, successes: 0 },
-            reflection: { total: 0, failures: 0, successes: 0 }
-        };
+    if (!comparisonData[modelId]) comparisonData[modelId] = {};
+    if (!comparisonData[modelId][promptId])
+      comparisonData[modelId][promptId] = {
+        baseline: { total: 0, failures: 0, successes: 0 },
+        reflection: { total: 0, failures: 0, successes: 0 },
+      };
 
-        for (const check of result.d2Checks) {
-            comparisonData[modelId][promptId].baseline.total++;
-            if (check.success) {
-                comparisonData[modelId][promptId].baseline.successes++;
-            } else {
-                comparisonData[modelId][promptId].baseline.failures++;
-            }
-        }
+    for (const check of result.d2Checks) {
+      comparisonData[modelId][promptId].baseline.total++;
+      if (check.success) {
+        comparisonData[modelId][promptId].baseline.successes++;
+      } else {
+        comparisonData[modelId][promptId].baseline.failures++;
+      }
+    }
+  }
+
+  for (const result of reflectionResults) {
+    const { promptId, modelId } = result.metadata;
+    models.add(modelId);
+    prompts.add(promptId);
+
+    if (!comparisonData[modelId]) comparisonData[modelId] = {};
+    if (!comparisonData[modelId][promptId])
+      comparisonData[modelId][promptId] = {
+        baseline: { total: 0, failures: 0, successes: 0 },
+        reflection: { total: 0, failures: 0, successes: 0 },
+      };
+
+    for (const check of result.d2Checks) {
+      comparisonData[modelId][promptId].reflection.total++;
+      if (check.success) {
+        comparisonData[modelId][promptId].reflection.successes++;
+      } else {
+        comparisonData[modelId][promptId].reflection.failures++;
+      }
+    }
+  }
+
+  const sortedModels = Array.from(models).sort();
+  const sortedPrompts = Array.from(prompts).sort();
+
+  const modelStats = sortedModels.map((model) => {
+    let baseTotal = 0,
+      baseSuccess = 0;
+    let refTotal = 0,
+      refSuccess = 0;
+
+    const promptsForModel = comparisonData[model] || {};
+    for (const p of Object.keys(promptsForModel)) {
+      const data = promptsForModel[p];
+      baseTotal += data.baseline.total;
+      baseSuccess += data.baseline.successes;
+      refTotal += data.reflection.total;
+      refSuccess += data.reflection.successes;
     }
 
-    for (const result of reflectionResults) {
-        const { promptId, modelId } = result.metadata;
-        models.add(modelId);
-        prompts.add(promptId);
+    return {
+      model,
+      baselineScore: getWeightedScore(baseSuccess, baseTotal),
+      reflectionScore: getWeightedScore(refSuccess, refTotal),
+    };
+  });
 
-        if (!comparisonData[modelId]) comparisonData[modelId] = {};
-        if (!comparisonData[modelId][promptId]) comparisonData[modelId][promptId] = {
-            baseline: { total: 0, failures: 0, successes: 0 },
-            reflection: { total: 0, failures: 0, successes: 0 }
-        };
+  const tableRows = [];
+  for (const model of sortedModels) {
+    for (const prompt of sortedPrompts) {
+      const data = comparisonData[model]?.[prompt];
+      if (!data) continue;
+      // Only show rows where we have data for at least one
+      if (data.baseline.total === 0 && data.reflection.total === 0) continue;
 
-        for (const check of result.d2Checks) {
-            comparisonData[modelId][promptId].reflection.total++;
-            if (check.success) {
-                comparisonData[modelId][promptId].reflection.successes++;
-            } else {
-                comparisonData[modelId][promptId].reflection.failures++;
-            }
-        }
+      const baseScore = getWeightedScore(data.baseline.successes, data.baseline.total);
+      const refScore = getWeightedScore(data.reflection.successes, data.reflection.total);
+      const delta = refScore - baseScore;
+
+      tableRows.push({
+        model,
+        prompt,
+        baseScore,
+        refScore,
+        delta,
+        baseStats: data.baseline,
+        refStats: data.reflection,
+      });
     }
+  }
 
-    const sortedModels = Array.from(models).sort();
-    const sortedPrompts = Array.from(prompts).sort();
+  tableRows.sort((a, b) => b.delta - a.delta);
 
-    const modelStats = sortedModels.map(model => {
-        let baseTotal = 0, baseSuccess = 0;
-        let refTotal = 0, refSuccess = 0;
+  const tableHtml = tableRows
+    .map((row) => {
+      let deltaClass = 'delta-neutral';
+      let deltaSign = '';
+      if (row.delta > 0) {
+        deltaClass = 'delta-positive';
+        deltaSign = '+';
+      }
+      if (row.delta < 0) {
+        deltaClass = 'delta-negative';
+      }
 
-        const promptsForModel = comparisonData[model] || {};
-        for (const p of Object.keys(promptsForModel)) {
-            const data = promptsForModel[p];
-            baseTotal += data.baseline.total;
-            baseSuccess += data.baseline.successes;
-            refTotal += data.reflection.total;
-            refSuccess += data.reflection.successes;
-        }
-
-        return {
-            model,
-            baselineScore: getWeightedScore(baseSuccess, baseTotal),
-            reflectionScore: getWeightedScore(refSuccess, refTotal)
-        };
-    });
-
-    const tableRows = [];
-    for (const model of sortedModels) {
-        for (const prompt of sortedPrompts) {
-            const data = comparisonData[model]?.[prompt];
-            if (!data) continue;
-            // Only show rows where we have data for at least one
-            if (data.baseline.total === 0 && data.reflection.total === 0) continue;
-
-            const baseScore = getWeightedScore(data.baseline.successes, data.baseline.total);
-            const refScore = getWeightedScore(data.reflection.successes, data.reflection.total);
-            const delta = refScore - baseScore;
-
-            tableRows.push({
-                model,
-                prompt,
-                baseScore,
-                refScore,
-                delta,
-                baseStats: data.baseline,
-                refStats: data.reflection
-            });
-        }
-    }
-
-    tableRows.sort((a, b) => b.delta - a.delta);
-
-    const tableHtml = tableRows.map(row => {
-        let deltaClass = 'delta-neutral';
-        let deltaSign = '';
-        if (row.delta > 0) { deltaClass = 'delta-positive'; deltaSign = '+'; }
-        if (row.delta < 0) { deltaClass = 'delta-negative'; }
-
-        return `
+      return `
         <tr data-prompt="${row.prompt}">
             <td class="model-cell">${row.model}</td>
             <td>${row.prompt}</td>
@@ -175,10 +184,10 @@ async function run() {
             <td class="${deltaClass}">${deltaSign}${row.delta}%</td>
         </tr>
         `;
-    }).join('');
+    })
+    .join('');
 
-
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -251,11 +260,15 @@ async function run() {
             <div class="filter-group">
                 <span class="filter-label">Filter by Prompt</span>
                 <div class="checkbox-group" id="promptFilters">
-                    ${sortedPrompts.map(p => `
+                    ${sortedPrompts
+                      .map(
+                        (p) => `
                         <label class="checkbox-label">
                             <input type="checkbox" value="${p}" checked onchange="filterTable()"> ${p}
                         </label>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </div>
             </div>
         </div>
@@ -314,9 +327,9 @@ async function run() {
 
         const ctx = document.getElementById('comparisonChart').getContext('2d');
         
-        const modelLabels = ${JSON.stringify(modelStats.map(m => m.model))};
-        const baselineScores = ${JSON.stringify(modelStats.map(m => m.baselineScore))};
-        const reflectionScores = ${JSON.stringify(modelStats.map(m => m.reflectionScore))};
+        const modelLabels = ${JSON.stringify(modelStats.map((m) => m.model))};
+        const baselineScores = ${JSON.stringify(modelStats.map((m) => m.baselineScore))};
+        const reflectionScores = ${JSON.stringify(modelStats.map((m) => m.reflectionScore))};
 
         // Colors: Blue for Baseline, Emerald for Reflection
         const baselineColor = '#3b82f6'; 
@@ -389,8 +402,8 @@ async function run() {
 </html>
     `;
 
-    await fs.writeFile(outputPath, html, 'utf-8');
-    console.log(`Comparison report generated at ${outputPath}`);
+  await fs.writeFile(outputPath, html, 'utf-8');
+  console.log(`Comparison report generated at ${outputPath}`);
 }
 
 run().catch(console.error);

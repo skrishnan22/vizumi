@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 import { D2 } from '@terrastruct/d2';
 import { generateText } from 'ai';
@@ -14,7 +15,9 @@ let compileQueue = Promise.resolve();
 async function withCompileLock<T>(fn: () => Promise<T>): Promise<T> {
   const currentQueue = compileQueue;
   let resolve: () => void;
-  compileQueue = new Promise<void>((r) => { resolve = r; });
+  compileQueue = new Promise<void>((r) => {
+    resolve = r;
+  });
 
   await currentQueue;
   try {
@@ -55,8 +58,7 @@ const D2_THEMES = [
 ];
 
 function extractD2ErrorMessage(error: unknown): string {
-  const rawMessage =
-    error instanceof Error ? error.message : 'Unknown rendering error';
+  const rawMessage = error instanceof Error ? error.message : 'Unknown rendering error';
 
   const tryParse = (text: string) => {
     try {
@@ -105,7 +107,7 @@ function hashCode(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return Math.abs(hash);
@@ -143,13 +145,15 @@ async function fixD2SyntaxWithLLM(d2Code: string, errorMessage: string): Promise
   }
 }
 
-type CompileResult = {
-  success: true;
-  svg: string;
-} | {
-  success: false;
-  error: string;
-};
+type CompileResult =
+  | {
+      success: true;
+      svg: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
 
 /**
  * Attempt to compile and render D2 code (serialized to avoid WASM concurrency issues)
@@ -193,10 +197,7 @@ export async function POST(req: Request) {
     const code = body.code;
 
     if (typeof code !== 'string' || !code.trim()) {
-      return NextResponse.json(
-        { error: 'Diagram code is required.' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Diagram code is required.' }, { status: 400 });
     }
 
     // Pick a theme deterministically based on the code content
@@ -207,7 +208,11 @@ export async function POST(req: Request) {
     let currentCode = code.trim();
     console.log(`[render-d2] Attempting compile (${currentCode.length} chars)`);
     let result = await tryCompileD2(currentCode, selectedTheme);
-    console.log(`[render-d2] First compile: ${result.success ? 'success' : 'failed'} (${Date.now() - startTime}ms)`);
+    console.log(
+      `[render-d2] First compile: ${result.success ? 'success' : 'failed'} (${
+        Date.now() - startTime
+      }ms)`
+    );
 
     if (result.success) {
       return NextResponse.json({ svg: result.svg });
@@ -231,7 +236,11 @@ export async function POST(req: Request) {
 
         currentCode = fixedCode;
         result = await tryCompileD2(currentCode, selectedTheme);
-        console.log(`[render-d2] Retry compile: ${result.success ? 'success' : 'failed'} (${Date.now() - startTime}ms)`);
+        console.log(
+          `[render-d2] Retry compile: ${
+            result.success ? 'success' : 'failed'
+          } (${Date.now() - startTime}ms)`
+        );
 
         if (result.success) {
           return NextResponse.json({ svg: result.svg });

@@ -3,11 +3,7 @@ import fs from 'fs/promises';
 
 import { LLMNoteSchema, type LLMNote } from '../src/lib/schemas.js';
 import { z } from 'zod';
-import {
-  SYSTEM_PROMPT,
-  SYSTEM_PROMPT_2,
-  SYSTEM_PROMPT_3,
-} from '../src/lib/prompts.js';
+import { SYSTEM_PROMPT, SYSTEM_PROMPT_3 } from '../src/lib/prompts.js';
 import { SYSTEM_PROMPT_OPTIMIZED } from '../src/lib/prompts-optimized.js';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -20,19 +16,22 @@ dotenv.config({ path: '.env.local' });
 
 // Local schema for eval reflection (not used in production)
 const ReflectionSchema = z.object({
-  corrections: z.array(z.object({
-    blockId: z.string().describe("The ID of the block to update"),
-    d2Code: z.string().describe("The corrected D2 code"),
-    visualType: z.string().optional().describe("Updated visual type if changed"),
-    reason: z.string().optional().describe("Brief reason for the change")
-  })).describe("List of blocks that need correction. Omit blocks that are already correct.")
+  corrections: z
+    .array(
+      z.object({
+        blockId: z.string().describe('The ID of the block to update'),
+        d2Code: z.string().describe('The corrected D2 code'),
+        visualType: z.string().optional().describe('Updated visual type if changed'),
+        reason: z.string().optional().describe('Brief reason for the change'),
+      })
+    )
+    .describe('List of blocks that need correction. Omit blocks that are already correct.'),
 });
 
 const REFLECTION_PROMPT = `You are a D2 syntax expert. Fix only the blocks with __d2_error__ field.
 Return corrections with the fixed d2Code for each broken block.`;
 
-
-console.log("OPENROUTER_API_KEY", process.env.OPENROUTER_API_KEY);
+console.log('OPENROUTER_API_KEY', process.env.OPENROUTER_API_KEY);
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -92,12 +91,11 @@ const SYSTEM_PROMPTS: SystemPromptConfig[] = [
 const DEFAULT_MODELS = [
   'x-ai/grok-4.1-fast:free',
   // 'openai/gpt-oss-20b:free',
-  "openai/gpt-4o-mini",
-  "z-ai/glm-4.5-air:free",
-  "google/gemini-2.5-flash-lite",
-  "moonshotai/kimi-k2-thinking",
-  "deepseek/deepseek-chat-v3.1"
-
+  'openai/gpt-4o-mini',
+  'z-ai/glm-4.5-air:free',
+  'google/gemini-2.5-flash-lite',
+  'moonshotai/kimi-k2-thinking',
+  'deepseek/deepseek-chat-v3.1',
 ];
 
 const CONFIG: EvalConfig = {
@@ -117,18 +115,17 @@ async function loadContentItems(contentDir: string): Promise<ContentItem[]> {
       const text = await fs.readFile(filePath, 'utf-8');
       const id = path.basename(filename, path.extname(filename));
       return { id, filePath, text };
-    }),
+    })
   );
 
   if (items.length === 0) {
     console.warn(
-      `No markdown files found in ${contentDir}. Add dataset files before running evaluations.`,
+      `No markdown files found in ${contentDir}. Add dataset files before running evaluations.`
     );
   }
 
   return items;
 }
-
 
 async function generateNotes(
   _metadata: EvalIterationMetadata,
@@ -138,7 +135,7 @@ async function generateNotes(
   dryRun: boolean,
   useReflection: boolean,
   index: number,
-  total: number,
+  total: number
 ): Promise<string> {
   if (dryRun) {
     // TODO: Replace this placeholder with a real call to the model client.
@@ -181,7 +178,12 @@ async function generateNotes(
   }
 }
 
-async function applyReflection(initialNotes: LLMNote, model: string, index: number, total: number): Promise<string> {
+async function applyReflection(
+  initialNotes: LLMNote,
+  model: string,
+  index: number,
+  total: number
+): Promise<string> {
   const d2Limit = pLimit(1);
 
   await Promise.all(
@@ -204,7 +206,7 @@ async function applyReflection(initialNotes: LLMNote, model: string, index: numb
 
   // 3. Reflection Pass
   // Filter to only blocks with errors to save tokens
-  const blocksWithErrors = initialNotes.blocks.filter((b: any) => b.__d2_error__);
+  const blocksWithErrors = initialNotes.blocks.filter((b) => '__d2_error__' in b && b.__d2_error__);
 
   if (blocksWithErrors.length === 0) {
     // console.log('  > No D2 errors found, skipping reflection.');
@@ -228,22 +230,23 @@ ${JSON.stringify({ blocks: blocksWithErrors }, null, 2)}
   });
 
   const corrections = secondPass.object.corrections;
-  console.log(`[${index + 1}/${total}] Reflection output:\n${JSON.stringify(corrections, null, 2)}`);
+  console.log(
+    `[${index + 1}/${total}] Reflection output:\n${JSON.stringify(corrections, null, 2)}`
+  );
   // Merge corrections back into initialNotes
   if (corrections.length > 0) {
     // Create a map for faster lookup
-    const correctionMap = new Map(corrections.map(c => [c.blockId, c]));
+    const correctionMap = new Map(corrections.map((c) => [c.blockId, c]));
 
-    initialNotes.blocks = initialNotes.blocks.map(block => {
+    initialNotes.blocks = initialNotes.blocks.map((block) => {
       const correction = correctionMap.get(block.id);
       if (correction) {
-
         return {
           ...block,
           d2Code: correction.d2Code,
           visualType: correction.visualType || block.visualType,
           // Remove the error field since it's theoretically fixed
-          __d2_error__: undefined
+          __d2_error__: undefined,
         };
       }
       return block;
@@ -252,7 +255,6 @@ ${JSON.stringify({ blocks: blocksWithErrors }, null, 2)}
 
   return JSON.stringify(initialNotes);
 }
-
 
 function validateLLMResponse(raw: string): {
   jsonParsed: boolean;
@@ -282,22 +284,23 @@ function validateLLMResponse(raw: string): {
     return {
       jsonParsed: false,
       schemaValidated: false,
-      jsonParseError:
-        error instanceof Error ? error.message : 'Unknown parse error',
+      jsonParseError: error instanceof Error ? error.message : 'Unknown parse error',
     };
   }
 }
 
-async function evaluateD2Diagrams(index: number, total: number, note?: LLMNote,): Promise<D2DiagramCheck[]> {
+async function evaluateD2Diagrams(
+  index: number,
+  total: number,
+  note?: LLMNote
+): Promise<D2DiagramCheck[]> {
   if (!note) {
     return [];
   }
 
   console.log(`[${index + 1}/${total}] Evaluating D2 diagrams`);
 
-  const diagramBlocks = note.blocks.filter(
-    (block) => block.visualType === 'diagram',
-  );
+  const diagramBlocks = note.blocks.filter((block) => block.visualType === 'diagram');
   const results: D2DiagramCheck[] = [];
 
   for (const block of diagramBlocks) {
@@ -338,11 +341,7 @@ async function evaluateD2Diagrams(index: number, total: number, note?: LLMNote,)
   return results;
 }
 
-
-async function appendResult(
-  result: EvalIterationResult,
-  outputPath: string,
-) {
+async function appendResult(result: EvalIterationResult, outputPath: string) {
   await fs.appendFile(outputPath, `${JSON.stringify(result)}\n`, 'utf-8');
 }
 
@@ -385,14 +384,12 @@ async function loadCompletedSignatures(outputPath: string): Promise<Set<string>>
     }
   } catch (error) {
     if (isErrnoException(error) && error.code === 'ENOENT') {
-
       return signatures;
     }
     console.warn('Error reading existing results:', error);
   }
   return signatures;
 }
-
 
 async function run() {
   const dryRun = process.argv.includes('--dry-run');
@@ -423,7 +420,9 @@ async function run() {
 
   const completedSignatures = await loadCompletedSignatures(CONFIG.outputPath);
   if (completedSignatures.size > 0) {
-    console.log(`Found ${completedSignatures.size} completed jobs in ${CONFIG.outputPath}. Resuming...`);
+    console.log(
+      `Found ${completedSignatures.size} completed jobs in ${CONFIG.outputPath}. Resuming...`
+    );
   }
 
   // Flatten jobs into array
@@ -463,7 +462,7 @@ async function run() {
         };
 
         console.log(
-          `[${index + 1}/${jobs.length}] Evaluating content=${metadata.contentId} prompt=${metadata.promptId} model=${metadata.modelId}`,
+          `[${index + 1}/${jobs.length}] Evaluating content=${metadata.contentId} prompt=${metadata.promptId} model=${metadata.modelId}`
         );
 
         try {
@@ -475,11 +474,13 @@ async function run() {
             dryRun,
             useReflection,
             index,
-            jobs.length,
+            jobs.length
           );
 
           const validation = validateLLMResponse(rawResponse);
-          const d2Checks = await d2Limit(() => evaluateD2Diagrams(index, jobs.length, validation.value));
+          const d2Checks = await d2Limit(() =>
+            evaluateD2Diagrams(index, jobs.length, validation.value)
+          );
 
           const result: EvalIterationResult = {
             metadata,
@@ -496,24 +497,24 @@ async function run() {
           await appendResult(result, CONFIG.outputPath);
 
           console.log(
-            `[${index + 1}/${jobs.length}] ✓ Saved. parsed=${validation.jsonParsed} schema=${validation.schemaValidated}${validation.schemaError ? ` error=${validation.schemaError}` : ''}`,
+            `[${index + 1}/${jobs.length}] ✓ Saved. parsed=${validation.jsonParsed} schema=${validation.schemaValidated}${validation.schemaError ? ` error=${validation.schemaError}` : ''}`
           );
 
           return { status: 'fulfilled', value: result };
         } catch (error) {
           console.error(
             `[${index + 1}/${jobs.length}] ✗ Failed:`,
-            error instanceof Error ? error.message : error,
+            error instanceof Error ? error.message : error
           );
           return { status: 'rejected', reason: error };
         }
-      }),
+      })
     );
   }
 
   // Wait for all jobs
   const results = await Promise.allSettled(promises);
-  console.log("all jobs completed", results);
+  console.log('all jobs completed', results);
   // Count successes and failures
   const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
   const rejected = results.filter((r) => r.status === 'rejected').length;
@@ -530,18 +531,12 @@ async function run() {
     .filter((line) => line.trim())
     .map((line) => JSON.parse(line) as EvalIterationResult);
 
-  const d2ChecksTotal = savedResults.reduce(
-    (sum, result) => sum + result.d2Checks.length,
-    0,
-  );
+  const d2ChecksTotal = savedResults.reduce((sum, result) => sum + result.d2Checks.length, 0);
   const d2Failures = savedResults.reduce(
-    (sum, result) =>
-      sum + result.d2Checks.filter((check) => !check.success).length,
-    0,
+    (sum, result) => sum + result.d2Checks.filter((check) => !check.success).length,
+    0
   );
-  console.log(
-    `D2 diagrams evaluated: ${d2ChecksTotal}. Failures: ${d2Failures}.`,
-  );
+  console.log(`D2 diagrams evaluated: ${d2ChecksTotal}. Failures: ${d2Failures}.`);
   console.log(`Results saved to ${CONFIG.outputPath}`);
 }
 

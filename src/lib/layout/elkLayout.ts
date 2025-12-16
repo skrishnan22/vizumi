@@ -16,9 +16,9 @@ const elkOptions = {
 function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
   if (angleInRadians >= -Math.PI / 4 && angleInRadians < Math.PI / 4) {
     return 'right';
-  } else if (angleInRadians >= Math.PI / 4 && angleInRadians < 3 * Math.PI / 4) {
+  } else if (angleInRadians >= Math.PI / 4 && angleInRadians < (3 * Math.PI) / 4) {
     return 'bottom';
-  } else if (angleInRadians >= 3 * Math.PI / 4 || angleInRadians < -3 * Math.PI / 4) {
+  } else if (angleInRadians >= (3 * Math.PI) / 4 || angleInRadians < (-3 * Math.PI) / 4) {
     return 'left';
   } else {
     return 'top';
@@ -33,7 +33,7 @@ function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' |
  */
 export async function calculateLayout(
   nodes: Node<NoteNodeData>[],
-  edges: Edge[],
+  edges: Edge[]
 ): Promise<{ nodes: Node<NoteNodeData>[]; edges: Edge[] }> {
   if (nodes.length === 0) {
     return { nodes: [], edges: [] };
