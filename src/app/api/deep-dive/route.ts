@@ -1,15 +1,13 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { streamText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import { getPromptForMode } from '@/lib/deepDivePrompts';
 import { logger } from '@/lib/logger';
+import { createOpenRouterClient } from '@/lib/api/openrouter';
+import { LLM_MODELS, MAX_DURATIONS_SECS } from '@/lib/constants';
 
-const openrouter = createOpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
-export const maxDuration = 60;
+const openrouter = createOpenRouterClient(process.env.OPENROUTER_API_KEY as string);
+export const maxDuration = MAX_DURATIONS_SECS.DEEP_DIVE;
 
 type DeepDiveRequest = {
   nodeId: string;
@@ -62,7 +60,7 @@ Now, provide your ${mode.toUpperCase()} explanation for this specific section. F
 `;
 
     const result = streamText({
-      model: openrouter('x-ai/grok-4.1-fast'),
+      model: openrouter(LLM_MODELS.DEEP_DIVE),
       prompt: fullPrompt,
     });
 

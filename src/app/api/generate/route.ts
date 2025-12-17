@@ -1,20 +1,14 @@
 import { streamObject } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import { LLMNoteSchema } from '@/lib/schemas';
 import { SYSTEM_PROMPT, SYSTEM_PROMPT_WITH_D2_REF } from '@/lib/prompts';
 import { processUrl } from '@/lib/url-processor';
 import { logger } from '@/lib/logger';
+import { createOpenRouterClient } from '@/lib/api/openrouter';
+import { LLM_MODELS, MAX_DURATIONS_SECS, FEATURE_FLAGS } from '@/lib/constants';
 
-// Toggle for A/B testing prompts
-// Set to true to use enhanced prompt with D2 pattern library
-const USE_ENHANCED_PROMPT = true;
+const openrouter = createOpenRouterClient(process.env.OPENROUTER_API_KEY as string);
 
-const openrouter = createOpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
-
-export const maxDuration = 60;
+export const maxDuration = MAX_DURATIONS_SECS.GENERATE;
 
 export async function POST(req: Request) {
   let content = '';
@@ -45,10 +39,10 @@ export async function POST(req: Request) {
     return new Response('Internal Server Error', { status: 500 });
   }
 
-  const systemPrompt = USE_ENHANCED_PROMPT ? SYSTEM_PROMPT_WITH_D2_REF : SYSTEM_PROMPT;
+  const systemPrompt = FEATURE_FLAGS.USE_ENHANCED_PROMPT ? SYSTEM_PROMPT_WITH_D2_REF : SYSTEM_PROMPT;
 
   const result = streamObject({
-    model: openrouter('x-ai/grok-code-fast-1'),
+    model: openrouter(LLM_MODELS.GENERATION),
     schema: LLMNoteSchema,
     system: systemPrompt,
     prompt: `Here is the text to process (Source: ${source}):\n\n${content}`,

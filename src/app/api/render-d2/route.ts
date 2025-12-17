@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 import { D2 } from '@terrastruct/d2';
 import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import { D2_SYNTAX_FIX_PROMPT } from '@/lib/prompts';
 import { logger } from '@/lib/logger';
+import { createOpenRouterClient } from '@/lib/api/openrouter';
+import {
+  LLM_MODELS,
+  MAX_DURATIONS_SECS,
+  LIMITS,
+  TIMEOUTS,
+  D2_CONFIG,
+  D2_THEME_COLORS,
+} from '@/lib/constants';
 
 const d2 = new D2();
-
-const MAX_FIX_ATTEMPTS = 2;
 
 // Mutex to serialize D2 compile calls - WASM isn't thread-safe
 let compileQueue = Promise.resolve();
@@ -27,35 +33,15 @@ async function withCompileLock<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-// Lazy-init to avoid blocking module load
-let _openrouter: ReturnType<typeof createOpenAI> | null = null;
-function getOpenRouter() {
-  if (!_openrouter) {
-    _openrouter = createOpenAI({
-      baseURL: 'https://openrouter.ai/api/v1',
-      apiKey: process.env.OPENROUTER_API_KEY,
-    });
-  }
-  return _openrouter;
-}
+// Singleton client created via factory (cached internally)
+const openrouter = createOpenRouterClient(process.env.OPENROUTER_API_KEY as string);
 
-const D2_THEMES = [
-  // Yellow/Orange (Warm)
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#ffec99" } }`,
-  // Blue (Cool)
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#a5d8ff" } }`,
-  // Green (Nature)
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#b2f2bb" } }`,
-  // Red/Pink (Urgent)
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#ffc9c9" } }`,
-  // Purple (Mystic)
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#e5dbff" } }`,
-];
+// Generate D2 theme strings from constants
+const D2_THEMES = D2_THEME_COLORS.map(
+  (color) =>
+    `vars: { d2-config: { theme-id: ${D2_CONFIG.THEME_ID} } }
+*: { style: { stroke-width: ${D2_CONFIG.STROKE_WIDTH}; fill-pattern: ${D2_CONFIG.FILL_PATTERN}; stroke: "${D2_CONFIG.STROKE_COLOR}"; fill: "${color}" } }`
+);
 
 function extractD2ErrorMessage(error: unknown): string {
   const rawMessage = error instanceof Error ? error.message : 'Unknown rendering error';
@@ -118,11 +104,11 @@ function hashCode(str: string): number {
  */
 async function fixD2SyntaxWithLLM(d2Code: string, errorMessage: string): Promise<string> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.D2_FIX_MS);
 
   try {
     const { text } = await generateText({
-      model: getOpenRouter()('openai/gpt-4o-mini'),
+      model: openrouter(LLM_MODELS.D2_FIX),
       system: D2_SYNTAX_FIX_PROMPT,
       prompt: `d2Code: ${JSON.stringify(d2Code)}\nerror: ${errorMessage}`,
       abortSignal: controller.signal,
@@ -147,13 +133,13 @@ async function fixD2SyntaxWithLLM(d2Code: string, errorMessage: string): Promise
 
 type CompileResult =
   | {
-      success: true;
-      svg: string;
-    }
+    success: true;
+    svg: string;
+  }
   | {
-      success: false;
-      error: string;
-    };
+    success: false;
+    error: string;
+  };
 
 /**
  * Attempt to compile and render D2 code (serialized to avoid WASM concurrency issues)
@@ -165,18 +151,18 @@ async function tryCompileD2(code: string, theme: string): Promise<CompileResult>
     try {
       const compiled = await d2.compile(fullDiagramSource, {
         options: {
-          sketch: true,
-          themeID: 101,
-          pad: 24,
+          sketch: D2_CONFIG.SKETCH_MODE,
+          themeID: D2_CONFIG.THEME_ID,
+          pad: D2_CONFIG.PADDING,
         },
       });
 
       const svg = await d2.render(compiled.diagram, {
         ...compiled.renderOptions,
-        sketch: true,
-        themeID: 101,
-        pad: 24,
-        noXMLTag: true,
+        sketch: D2_CONFIG.SKETCH_MODE,
+        themeID: D2_CONFIG.THEME_ID,
+        pad: D2_CONFIG.PADDING,
+        noXMLTag: D2_CONFIG.NO_XML_TAG,
       });
 
       return { success: true, svg };
@@ -187,7 +173,7 @@ async function tryCompileD2(code: string, theme: string): Promise<CompileResult>
 }
 
 export const runtime = 'nodejs';
-export const maxDuration = 30;
+export const maxDuration = MAX_DURATIONS_SECS.RENDER_D2;
 
 export async function POST(req: Request) {
   const startTime = Date.now();
@@ -221,7 +207,7 @@ export async function POST(req: Request) {
     let lastError = result.error;
     logger.info({ error: lastError.slice(0, 100) }, 'D2 compile failed, attempting LLM fix');
 
-    for (let attempt = 1; attempt <= MAX_FIX_ATTEMPTS; attempt++) {
+    for (let attempt = 1; attempt <= LIMITS.MAX_D2_FIX_ATTEMPTS; attempt++) {
       try {
         logger.debug({ attempt }, 'Starting LLM fix attempt');
         const fixedCode = await fixD2SyntaxWithLLM(currentCode, lastError);

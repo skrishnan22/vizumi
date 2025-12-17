@@ -1,19 +1,14 @@
 import { D2 } from '@terrastruct/d2';
+import { D2_CONFIG, D2_THEME_COLORS } from './constants';
 
 const d2 = new D2();
 
-const D2_THEMES = [
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#ffec99" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#a5d8ff" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#b2f2bb" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#ffc9c9" } }`,
-  `vars: { d2-config: { theme-id: 101 } }
-*: { style: { stroke-width: 2; fill-pattern: lines; stroke: "#1e1e1e"; fill: "#e5dbff" } }`,
-];
+// Generate D2 theme strings from constants
+const D2_THEMES = D2_THEME_COLORS.map(
+  (color) =>
+    `vars: { d2-config: { theme-id: ${D2_CONFIG.THEME_ID} } }
+*: { style: { stroke-width: ${D2_CONFIG.STROKE_WIDTH}; fill-pattern: ${D2_CONFIG.FILL_PATTERN}; stroke: "${D2_CONFIG.STROKE_COLOR}"; fill: "${color}" } }`
+);
 
 export type D2RenderSuccess = {
   ok: true;
@@ -96,18 +91,18 @@ export async function renderD2ToSvg(code: string): Promise<D2RenderSuccess | D2R
 
     const compiled = await d2.compile(diagramSource, {
       options: {
-        sketch: true,
-        themeID: 101,
-        pad: 24,
+        sketch: D2_CONFIG.SKETCH_MODE,
+        themeID: D2_CONFIG.THEME_ID,
+        pad: D2_CONFIG.PADDING,
       },
     });
 
     const svg = await d2.render(compiled.diagram, {
       ...compiled.renderOptions,
-      sketch: true,
-      themeID: 101,
-      pad: 24,
-      noXMLTag: true,
+      sketch: D2_CONFIG.SKETCH_MODE,
+      themeID: D2_CONFIG.THEME_ID,
+      pad: D2_CONFIG.PADDING,
+      noXMLTag: D2_CONFIG.NO_XML_TAG,
     });
 
     return {
