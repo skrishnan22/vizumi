@@ -46,7 +46,6 @@ export function useSettings() {
     setApiKeyState('');
   }, []);
 
-  // Model preference methods
   const setModelPreference = useCallback((feature: ModelPreferenceKey, model: string) => {
     setModelPrefsState((prev) => {
       const updated = { ...prev, [feature]: model };

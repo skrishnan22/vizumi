@@ -1,4 +1,5 @@
 import pino from 'pino';
+import { env } from '@/env';
 
 /**
  * Server-side logger using Pino
@@ -7,8 +8,8 @@ import pino from 'pino';
  * - Pipe output through pino-pretty in CLI for human-readable logs: npm run dev | pino-pretty
  */
 export const logger = pino({
-  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'development' ? 'debug' : 'info'),
+  level: env.LOG_LEVEL || (env.NODE_ENV === 'development' ? 'debug' : 'info'),
   base: {
-    env: process.env.NODE_ENV,
+    env: env.NODE_ENV,
   },
 });
