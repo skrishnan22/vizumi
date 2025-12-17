@@ -3,10 +3,10 @@ import path from 'path';
 import { streamText } from 'ai';
 import { getPromptForMode } from '@/lib/deepDivePrompts';
 import { logger } from '@/lib/logger';
-import { createOpenRouterClient } from '@/lib/api/openrouter';
-import { LLM_MODELS, MAX_DURATIONS_SECS } from '@/lib/constants';
+import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
+import { handleRouteError } from '@/lib/api/error-handler';
+import { MAX_DURATIONS_SECS } from '@/lib/constants';
 
-const openrouter = createOpenRouterClient(process.env.OPENROUTER_API_KEY as string);
 export const maxDuration = MAX_DURATIONS_SECS.DEEP_DIVE;
 
 type DeepDiveRequest = {
@@ -23,7 +23,10 @@ export async function POST(req: Request) {
     const { mode, blockTitle, blockSummary } = body as DeepDiveRequest;
 
     if (!['eli5', 'analogy', 'mental-model'].includes(mode)) {
-      return new Response('Invalid mode', { status: 400 });
+      return Response.json(
+        { error: { code: 'BAD_REQUEST', message: 'Invalid mode', retryable: false } },
+        { status: 400 }
+      );
     }
 
     const contentPath = path.join(process.cwd(), 'public', 'data', 'content.md');
@@ -33,8 +36,14 @@ export async function POST(req: Request) {
       fullDocument = await fs.readFile(contentPath, 'utf-8');
     } catch (error) {
       logger.error({ error, contentPath }, 'Error reading content file');
-      return new Response('Unable to load source content', { status: 500 });
+      return Response.json(
+        { error: { code: 'FILE_READ_ERROR', message: 'Unable to load source content', retryable: false } },
+        { status: 500 }
+      );
     }
+
+    const openrouter = getOpenRouterClient(req);
+    const model = getModel(req, 'deepDive');
 
     const modePrompt = getPromptForMode(mode);
 
@@ -60,13 +69,12 @@ Now, provide your ${mode.toUpperCase()} explanation for this specific section. F
 `;
 
     const result = streamText({
-      model: openrouter(LLM_MODELS.DEEP_DIVE),
+      model: openrouter(model),
       prompt: fullPrompt,
     });
 
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    logger.error({ error }, 'Deep dive error');
-    return new Response('Internal server error', { status: 500 });
+    return handleRouteError(error);
   }
 }

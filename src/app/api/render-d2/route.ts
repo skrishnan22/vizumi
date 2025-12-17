@@ -3,9 +3,9 @@ import { D2 } from '@terrastruct/d2';
 import { generateText } from 'ai';
 import { D2_SYNTAX_FIX_PROMPT } from '@/lib/prompts';
 import { logger } from '@/lib/logger';
-import { createOpenRouterClient } from '@/lib/api/openrouter';
+import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
+import { handleRouteError } from '@/lib/api/error-handler';
 import {
-  LLM_MODELS,
   MAX_DURATIONS_SECS,
   LIMITS,
   TIMEOUTS,
@@ -32,9 +32,6 @@ async function withCompileLock<T>(fn: () => Promise<T>): Promise<T> {
     resolve!();
   }
 }
-
-// Singleton client created via factory (cached internally)
-const openrouter = createOpenRouterClient(process.env.OPENROUTER_API_KEY as string);
 
 // Generate D2 theme strings from constants
 const D2_THEMES = D2_THEME_COLORS.map(
@@ -102,13 +99,18 @@ function hashCode(str: string): number {
 /**
  * Attempt to fix D2 syntax errors using LLM with timeout
  */
-async function fixD2SyntaxWithLLM(d2Code: string, errorMessage: string): Promise<string> {
+async function fixD2SyntaxWithLLM(
+  d2Code: string,
+  errorMessage: string,
+  openrouter: ReturnType<typeof getOpenRouterClient>,
+  model: string
+): Promise<string> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.D2_FIX_MS);
 
   try {
     const { text } = await generateText({
-      model: openrouter(LLM_MODELS.D2_FIX),
+      model: openrouter(model),
       system: D2_SYNTAX_FIX_PROMPT,
       prompt: `d2Code: ${JSON.stringify(d2Code)}\nerror: ${errorMessage}`,
       abortSignal: controller.signal,
@@ -183,8 +185,15 @@ export async function POST(req: Request) {
     const code = body.code;
 
     if (typeof code !== 'string' || !code.trim()) {
-      return NextResponse.json({ error: 'Diagram code is required.' }, { status: 400 });
+      return Response.json(
+        { error: { code: 'BAD_REQUEST', message: 'Diagram code is required', retryable: false } },
+        { status: 400 }
+      );
     }
+
+    // Get OpenRouter client and model for D2 fixes
+    const openrouter = getOpenRouterClient(req);
+    const model = getModel(req, 'd2Fix');
 
     // Pick a theme deterministically based on the code content
     const themeIndex = hashCode(code.trim()) % D2_THEMES.length;
@@ -210,7 +219,7 @@ export async function POST(req: Request) {
     for (let attempt = 1; attempt <= LIMITS.MAX_D2_FIX_ATTEMPTS; attempt++) {
       try {
         logger.debug({ attempt }, 'Starting LLM fix attempt');
-        const fixedCode = await fixD2SyntaxWithLLM(currentCode, lastError);
+        const fixedCode = await fixD2SyntaxWithLLM(currentCode, lastError, openrouter, model);
         logger.debug({ durationMs: Date.now() - startTime }, 'LLM returned fix');
 
         // Skip if LLM returned the same code
@@ -240,8 +249,6 @@ export async function POST(req: Request) {
     logger.warn({ durationMs: Date.now() - startTime }, 'All D2 compile attempts failed');
     return NextResponse.json({ error: lastError }, { status: 500 });
   } catch (error) {
-    logger.error({ error, durationMs: Date.now() - startTime }, 'Unexpected error in render-d2');
-    const message = extractD2ErrorMessage(error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }

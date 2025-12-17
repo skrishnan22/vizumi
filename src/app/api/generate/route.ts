@@ -3,49 +3,52 @@ import { LLMNoteSchema } from '@/lib/schemas';
 import { SYSTEM_PROMPT, SYSTEM_PROMPT_WITH_D2_REF } from '@/lib/prompts';
 import { processUrl } from '@/lib/url-processor';
 import { logger } from '@/lib/logger';
-import { createOpenRouterClient } from '@/lib/api/openrouter';
-import { LLM_MODELS, MAX_DURATIONS_SECS, FEATURE_FLAGS } from '@/lib/constants';
-
-const openrouter = createOpenRouterClient(process.env.OPENROUTER_API_KEY as string);
+import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
+import { handleRouteError } from '@/lib/api/error-handler';
+import { MAX_DURATIONS_SECS, FEATURE_FLAGS } from '@/lib/constants';
 
 export const maxDuration = MAX_DURATIONS_SECS.GENERATE;
 
 export async function POST(req: Request) {
-  let content = '';
-  let source = 'local file';
-
   try {
     const body = await req.json().catch(() => ({}));
     const { url } = body;
 
-    if (url) {
-      try {
-        content = await processUrl(url);
-        source = url;
-      } catch (error: unknown) {
-        logger.error({ error, url }, 'Error processing URL');
-        const errorMessage = error instanceof Error ? error.message : 'Failed to process URL';
-        return new Response(JSON.stringify({ error: errorMessage }), {
-          status: 400,
-        });
-      }
-    } else {
-      return new Response(JSON.stringify({ error: 'No URL provided' }), {
-        status: 400,
-      });
+    if (!url) {
+      return Response.json(
+        { error: { code: 'BAD_REQUEST', message: 'No URL provided', retryable: false } },
+        { status: 400 }
+      );
     }
+
+    let content: string;
+    try {
+      content = await processUrl(url);
+    } catch (error: unknown) {
+      logger.error({ error, url }, 'Error processing URL');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process URL';
+      return Response.json(
+        { error: { code: 'URL_PROCESS_ERROR', message: errorMessage, retryable: false } },
+        { status: 400 }
+      );
+    }
+
+    const openrouter = getOpenRouterClient(req);
+    const model = getModel(req, 'generate');
+
+    const systemPrompt = FEATURE_FLAGS.USE_ENHANCED_PROMPT
+      ? SYSTEM_PROMPT_WITH_D2_REF
+      : SYSTEM_PROMPT;
+
+    const result = streamObject({
+      model: openrouter(model),
+      schema: LLMNoteSchema,
+      system: systemPrompt,
+      prompt: `Here is the text to process (Source: ${url}):\n\n${content}`,
+    });
+
+    return result.toTextStreamResponse();
   } catch (error) {
-    logger.error({ error }, 'Unexpected error in generate route');
-    return new Response('Internal Server Error', { status: 500 });
+    return handleRouteError(error);
   }
-
-  const systemPrompt = FEATURE_FLAGS.USE_ENHANCED_PROMPT ? SYSTEM_PROMPT_WITH_D2_REF : SYSTEM_PROMPT;
-
-  const result = streamObject({
-    model: openrouter(LLM_MODELS.GENERATION),
-    schema: LLMNoteSchema,
-    system: systemPrompt,
-    prompt: `Here is the text to process (Source: ${source}):\n\n${content}`,
-  });
-  return result.toTextStreamResponse();
 }
