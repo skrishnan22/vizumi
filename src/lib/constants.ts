@@ -5,6 +5,34 @@ export const LLM_MODELS = {
   DEEP_DIVE: 'x-ai/grok-4.1-fast',
 } as const;
 
+// ============================================================================
+// Free Tier & Model Preferences
+// ============================================================================
+
+export const FREE_TIER_MODELS = [
+  'google/gemini-2.0-flash-exp:free',
+  'meta-llama/llama-3.2-3b-instruct:free',
+  'mistralai/mistral-7b-instruct:free',
+] as const;
+
+export type FreeTierModel = (typeof FREE_TIER_MODELS)[number];
+
+export const DEFAULT_MODELS = {
+  generate: 'google/gemini-2.0-flash-exp:free',
+  deepDive: 'google/gemini-2.0-flash-exp:free',
+  d2Fix: 'google/gemini-2.0-flash-exp:free',
+} as const;
+
+export type ModelPreferenceKey = keyof typeof DEFAULT_MODELS;
+
+export const HEADERS = {
+  API_KEY: 'X-OpenRouter-Key',
+  MODEL: 'X-Model',
+} as const;
+
+// ============================================================================
+// API Configuration
+// ============================================================================
 
 export const API_CONFIG = {
   OPENROUTER_BASE_URL: 'https://openrouter.ai/api/v1',
