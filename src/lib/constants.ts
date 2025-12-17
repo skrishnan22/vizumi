@@ -18,9 +18,9 @@ export const FREE_TIER_MODELS = [
 export type FreeTierModel = (typeof FREE_TIER_MODELS)[number];
 
 export const DEFAULT_MODELS = {
-  generate: 'google/gemini-2.0-flash-exp:free',
-  deepDive: 'google/gemini-2.0-flash-exp:free',
-  d2Fix: 'google/gemini-2.0-flash-exp:free',
+  generate: 'x-ai/grok-4-fast',
+  deepDive: 'x-ai/grok-4-fast',
+  d2Fix: 'openai/gpt-4o-mini',
 } as const;
 
 export type ModelPreferenceKey = keyof typeof DEFAULT_MODELS;
@@ -29,6 +29,14 @@ export const HEADERS = {
   API_KEY: 'X-OpenRouter-Key',
   MODEL: 'X-Model',
 } as const;
+
+// Available models for user selection
+export const AVAILABLE_MODELS = [
+  { id: 'x-ai/grok-4-fast', label: 'X-AI Grok 4 Fast' },
+  { id: 'openai/gpt-4o-mini', label: 'OpenAI GPT-4o Mini' },
+  { id: 'google/gemini-2.5-flash', label: 'Google Gemini 2.5 Flash' },
+  { id: 'anthropic/claude-sonnet-4.5', label: 'Anthropic Claude Sonnet 4.5' },
+] as const;
 
 // ============================================================================
 // API Configuration
