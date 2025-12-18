@@ -44,3 +44,6 @@ dist/*
 
 evals/results/*
 *.jsonl
+
+test-results/*
+playwright-report/*
