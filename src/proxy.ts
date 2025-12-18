@@ -27,7 +27,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (requestedModel && !FREE_TIER_MODELS.includes(requestedModel as any)) {
+  if (requestedModel && !(FREE_TIER_MODELS as readonly string[]).includes(requestedModel)) {
     return Response.json(
       {
         error: {
