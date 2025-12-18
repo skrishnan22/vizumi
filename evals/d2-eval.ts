@@ -31,7 +31,7 @@ const ReflectionSchema = z.object({
 const REFLECTION_PROMPT = `You are a D2 syntax expert. Fix only the blocks with __d2_error__ field.
 Return corrections with the fixed d2Code for each broken block.`;
 
-console.log('OPENROUTER_API_KEY', process.env.OPENROUTER_API_KEY);
+
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: process.env.OPENROUTER_API_KEY,
