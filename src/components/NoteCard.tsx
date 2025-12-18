@@ -36,6 +36,7 @@ export function NoteCard({ title, url, ogImage, updatedAt, onClick }: NoteCardPr
     <button
       onClick={onClick}
       className="group flex flex-col w-full h-full bg-white border border-gray-200/60 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-gray-300 hover:-translate-y-1 transition-all duration-300 text-left"
+      data-testid="note-card"
     >
       {/* Card Image Area */}
       <div className="relative w-full h-48 overflow-hidden bg-gray-50 border-b border-gray-100">

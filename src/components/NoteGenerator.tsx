@@ -176,6 +176,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
           onChange={(e) => setUrl(e.target.value)}
           className={styles.urlInput}
           placeholder="https://example.com/source-article"
+          data-testid="url-input"
         />
 
         <div className={styles.actions}>
@@ -184,6 +185,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
             onClick={handleGenerate}
             disabled={isLoading || !url.trim()}
             className={styles.button}
+            data-testid="generate-button"
           >
             {isLoading ? 'Sketching notes...' : 'Generate Notes'}
           </button>
