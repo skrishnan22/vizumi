@@ -9,16 +9,19 @@ import { addNodeFromBlock, updateNodeData } from '@/lib/yjs/actions';
 import type { NoteBlock } from '@/lib/schemas';
 import type { NoteNodeData } from '@/lib/yjs/utils';
 import { logger } from '@/lib/logger.client';
+import { useSettings } from '@/hooks/use-settings';
 
 export function useDeepDive() {
   const noteId = useNoteStore((state) => state.noteId);
   const storeNodes = useNoteStore((state) => state.nodes);
   const setDeepDiveStreaming = useNoteStore((state) => state.setDeepDiveStreaming);
+  const { getRequestHeaders } = useSettings();
 
   const currentDeepDiveNodeIdRef = useRef<string | null>(null);
 
   const { completion, complete, isLoading, error } = useCompletion({
     api: '/api/deep-dive',
+    headers: getRequestHeaders('deepDive'),
   });
 
   // Update summary as streaming progresses

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/use-settings';
 import { AVAILABLE_MODELS } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -17,8 +17,14 @@ export function SettingsPage() {
     isLoaded,
   } = useSettings();
 
-  const [keyInput, setKeyInput] = useState(apiKey || '');
-  const [selectedModel, setSelectedModel] = useState(modelPrefs.generate);
+  const [keyInput, setKeyInput] = useState('');
+
+  // Sync keyInput once when settings load from localStorage
+  useEffect(() => {
+    if (isLoaded && apiKey) {
+      setKeyInput(apiKey);
+    }
+  }, [isLoaded, apiKey]);
 
   if (!isLoaded) {
     return (
@@ -44,7 +50,6 @@ export function SettingsPage() {
   };
 
   const handleModelChange = (modelId: string) => {
-    setSelectedModel(modelId);
     // Set the same model for all features
     setModelPreference('generate', modelId);
     setModelPreference('deepDive', modelId);
@@ -167,7 +172,7 @@ export function SettingsPage() {
               </label>
               <select
                 id="model-select"
-                value={selectedModel}
+                value={modelPrefs.generate}
                 onChange={(e) => handleModelChange(e.target.value)}
                 className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent bg-white"
               >
@@ -179,7 +184,7 @@ export function SettingsPage() {
               </select>
 
               <div className="mt-3 text-sm text-stone-500">
-                Currently selected: <span className="font-medium text-stone-700">{selectedModel}</span>
+                Currently selected: <span className="font-medium text-stone-700">{modelPrefs.generate}</span>
               </div>
             </div>
           </section>

@@ -57,8 +57,8 @@ export function useSettings() {
 
   // Generate headers for API requests
   const getRequestHeaders = useCallback(
-    (feature: ModelPreferenceKey): HeadersInit => {
-      const headers: HeadersInit = {
+    (feature: ModelPreferenceKey): Record<string, string> => {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         [HEADERS.MODEL]: modelPrefs[feature],
       };
