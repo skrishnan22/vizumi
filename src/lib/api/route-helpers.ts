@@ -1,4 +1,4 @@
-import { HEADERS, DEFAULT_MODELS, ModelPreferenceKey } from '@/lib/constants';
+import { HEADERS, DEFAULT_MODELS, type ModelPreferenceKey } from '@/lib/constants';
 import { createOpenRouterClient } from './openrouter';
 import { env } from '@/env';
 

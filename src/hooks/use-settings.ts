@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { DEFAULT_MODELS, ModelPreferenceKey, HEADERS } from '@/lib/constants';
+import { DEFAULT_MODELS, type ModelPreferenceKey, HEADERS } from '@/lib/constants';
 
 const STORAGE_KEYS = {
   API_KEY: 'openrouter_api_key',
