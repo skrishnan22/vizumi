@@ -33,20 +33,15 @@ export function useSettings() {
     if (trimmed && !trimmed.startsWith('sk-or-')) {
       throw new Error('Invalid key format. OpenRouter keys start with "sk-or-"');
     }
-    if (trimmed) {
-      localStorage.setItem(STORAGE_KEYS.API_KEY, trimmed);
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.API_KEY);
-    }
+    localStorage.setItem(STORAGE_KEYS.API_KEY, trimmed);
     setApiKeyState(trimmed);
   }, []);
 
   const clearApiKey = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.API_KEY);
-    setApiKeyState('');
+    setApiKeyState(null);
   }, []);
 
-  // Model preference methods
   const setModelPreference = useCallback((feature: ModelPreferenceKey, model: string) => {
     setModelPrefsState((prev) => {
       const updated = { ...prev, [feature]: model };
@@ -62,8 +57,8 @@ export function useSettings() {
 
   // Generate headers for API requests
   const getRequestHeaders = useCallback(
-    (feature: ModelPreferenceKey): HeadersInit => {
-      const headers: HeadersInit = {
+    (feature: ModelPreferenceKey): Record<string, string> => {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         [HEADERS.MODEL]: modelPrefs[feature],
       };

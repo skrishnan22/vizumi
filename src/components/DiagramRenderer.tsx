@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import parse, { domToReact, type DOMNode, type HTMLReactParserOptions } from 'html-react-parser';
 import type { Element } from 'domhandler';
 import { logger } from '@/lib/logger.client';
+import { useSettings } from '@/hooks/use-settings';
 
 type DiagramRendererProps = {
   code: string;
@@ -38,10 +39,10 @@ function normalizeAttributes(attribs: Record<string, string> = {}) {
   }, {});
 }
 
-async function fetchDiagramSvg(diagramCode: string) {
+async function fetchDiagramSvg(diagramCode: string, headers: HeadersInit) {
   const response = await fetch('/api/render-d2', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...headers },
     body: JSON.stringify({ code: diagramCode }),
   });
 
@@ -84,6 +85,7 @@ export function DiagramRenderer({
   onRenderFailure,
 }: DiagramRendererProps) {
   const sanitizedCode = code?.trim() ?? '';
+  const { getRequestHeaders } = useSettings();
 
   const {
     data: svg,
@@ -92,7 +94,7 @@ export function DiagramRenderer({
   } = useSWR(
     // Only fetch if we don't have cached SVG
     cachedSvg ? null : sanitizedCode || null,
-    fetchDiagramSvg,
+    (code) => fetchDiagramSvg(code, getRequestHeaders('d2Fix')),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,

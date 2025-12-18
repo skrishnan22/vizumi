@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { NotesList } from '@/components/NotesList';
 import { HeroAnimation } from '@/components/HeroAnimation';
+import { Settings } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -11,6 +12,17 @@ export default function Home() {
       <div className="fixed inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
       <div className="max-w-7xl mx-auto px-6 py-20">
+        {/* Top Navigation */}
+        <div className="flex justify-end mb-8">
+          <Link
+            href="/settings"
+            className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Settings className="w-4 h-4" />
+            <span className="text-sm font-medium">Settings</span>
+          </Link>
+        </div>
+
         <header className="flex flex-col md:flex-row items-center justify-between gap-12 mb-24">
           <div className="max-w-2xl z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-800 text-sm font-medium mb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">

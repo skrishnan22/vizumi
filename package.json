@@ -19,6 +19,7 @@
     "@ai-sdk/react": "^2.0.69",
     "@mozilla/readability": "^0.6.0",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@t3-oss/env-nextjs": "^0.13.10",
     "@terrastruct/d2": "^0.1.33",
     "@tiptap/extension-placeholder": "^3.11.0",
     "@tiptap/react": "^3.11.0",

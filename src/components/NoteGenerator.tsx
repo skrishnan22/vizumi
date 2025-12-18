@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger.client';
+import { useSettings } from '@/hooks/use-settings';
 
 type NoteGeneratorProps = {
   noteId: string;
@@ -20,9 +21,11 @@ type NoteGeneratorProps = {
 
 export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   const router = useRouter();
+  const { getRequestHeaders } = useSettings();
   const { object, submit, isLoading, error } = useObject({
     api: '/api/generate',
     schema: LLMNoteSchema,
+    headers: getRequestHeaders('generate'),
   });
 
   const [url, setUrl] = useState('');
