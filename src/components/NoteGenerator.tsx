@@ -8,12 +8,13 @@ import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
 import { syncBlocksToYDoc } from '@/lib/yjs/actions';
 import { useNoteStore } from '@/store/noteStore';
-import { createNoteMetadata, getNoteByUrl } from '@/lib/db/actions';
+import { createNoteMetadata, deleteNoteMetadata, getNoteByUrl } from '@/lib/db/actions';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger.client';
 import { useSettings } from '@/hooks/use-settings';
+import { showApiErrorToast } from '@/lib/api/client-error-handler';
 
 type NoteGeneratorProps = {
   noteId: string;
@@ -86,6 +87,17 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
       syncedBlockIdsRef.current.clear();
     }
   }, [isLoading]);
+
+  // Show toast on API error and cleanup metadata
+  useEffect(() => {
+    if (error) {
+      showApiErrorToast(error, { showRetryHint: true });
+      // Delete metadata so user can retry with same URL
+      deleteNoteMetadata(noteId).catch((err) => {
+        logger.error('Failed to cleanup metadata on error:', err);
+      });
+    }
+  }, [error, noteId]);
 
   // Handle generation with metadata saving
   const handleGenerate = async () => {
@@ -164,6 +176,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
           onChange={(e) => setUrl(e.target.value)}
           className={styles.urlInput}
           placeholder="https://example.com/source-article"
+          data-testid="url-input"
         />
 
         <div className={styles.actions}>
@@ -172,13 +185,12 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
             onClick={handleGenerate}
             disabled={isLoading || !url.trim()}
             className={styles.button}
+            data-testid="generate-button"
           >
             {isLoading ? 'Sketching notes...' : 'Generate Notes'}
           </button>
         </div>
       </div>
-
-      {error && <div className={styles.error}>Error: {error.message}</div>}
 
       {blocks.length > 0 ? <NoteBoard noteId={noteId} /> : null}
     </section>

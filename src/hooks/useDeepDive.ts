@@ -10,6 +10,7 @@ import type { NoteBlock } from '@/lib/schemas';
 import type { NoteNodeData } from '@/lib/yjs/utils';
 import { logger } from '@/lib/logger.client';
 import { useSettings } from '@/hooks/use-settings';
+import { showApiErrorToast } from '@/lib/api/client-error-handler';
 
 export function useDeepDive() {
   const noteId = useNoteStore((state) => state.noteId);
@@ -87,6 +88,7 @@ export function useDeepDive() {
         });
       } catch (err) {
         logger.error('Deep dive request failed:', err);
+        showApiErrorToast(err, { showRetryHint: true });
         if (currentDeepDiveNodeIdRef.current && noteId) {
           updateNodeData(noteId, currentDeepDiveNodeIdRef.current, {
             summary: 'Failed to generate explanation. Please try again.',

@@ -1,38 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSettings } from '@/hooks/use-settings';
+import { useState } from 'react';
+import { useSettings, type ModelPreferences } from '@/hooks/use-settings';
 import { AVAILABLE_MODELS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { Key, Sparkles, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
-export function SettingsPage() {
-  const {
-    apiKey,
-    modelPrefs,
-    saveApiKey,
-    clearApiKey,
-    setModelPreference,
-    isLoaded,
-  } = useSettings();
-
-  const [keyInput, setKeyInput] = useState('');
-
-  // Sync keyInput once when settings load from localStorage
-  useEffect(() => {
-    if (isLoaded && apiKey) {
-      setKeyInput(apiKey);
-    }
-  }, [isLoaded, apiKey]);
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="text-stone-500">Loading settings...</div>
-      </div>
-    );
-  }
+// Separate component that only mounts after settings are loaded
+// This allows lazy initialization of keyInput with the actual apiKey value
+function SettingsForm({
+  apiKey,
+  modelPrefs,
+  saveApiKey,
+  clearApiKey,
+  setModelPreference,
+}: {
+  apiKey: string | null;
+  modelPrefs: ModelPreferences;
+  saveApiKey: (key: string) => void;
+  clearApiKey: () => void;
+  setModelPreference: (feature: 'generate' | 'deepDive' | 'd2Fix', model: string) => void;
+}) {
+  // Initialize with apiKey value - works because this component only mounts after isLoaded
+  const [keyInput, setKeyInput] = useState(() => apiKey ?? '');
 
   const handleSaveKey = () => {
     try {
@@ -202,5 +193,35 @@ export function SettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function SettingsPage() {
+  const {
+    apiKey,
+    modelPrefs,
+    saveApiKey,
+    clearApiKey,
+    setModelPreference,
+    isLoaded,
+  } = useSettings();
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-stone-500">Loading settings...</div>
+      </div>
+    );
+  }
+
+  // Render form only after loaded - enables lazy initialization of keyInput
+  return (
+    <SettingsForm
+      apiKey={apiKey}
+      modelPrefs={modelPrefs}
+      saveApiKey={saveApiKey}
+      clearApiKey={clearApiKey}
+      setModelPreference={setModelPreference}
+    />
   );
 }

@@ -7,7 +7,7 @@ type ErrorProps = {
   reset: () => void;
 };
 
-export default function Error({ error, reset }: ErrorProps) {
+export default function Error({ error: _error, reset }: ErrorProps) {
   return (
     <RouteErrorUI
       title="Something went wrong"

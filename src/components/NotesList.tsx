@@ -10,7 +10,7 @@ export function NotesList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center py-16" data-testid="notes-list-loading">
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-4">
             <div className="absolute inset-0 border-4 border-gray-200 rounded-full" />
@@ -24,7 +24,7 @@ export function NotesList() {
 
   if (notes.length === 0) {
     return (
-      <div className="col-span-full flex flex-col items-center justify-center py-24 px-6 text-center bg-gray-50 rounded-3xl border border-gray-100">
+      <div className="col-span-full flex flex-col items-center justify-center py-24 px-6 text-center bg-gray-50 rounded-3xl border border-gray-100" data-testid="notes-list-empty">
         <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
           <svg
             className="w-10 h-10 text-gray-400"
@@ -49,7 +49,7 @@ export function NotesList() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="notes-list">
       {notes.map((note) => (
         <NoteCard
           key={note.noteId}

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { DEFAULT_MODELS, ModelPreferenceKey, HEADERS } from '@/lib/constants';
+import { useSyncExternalStore, useCallback } from 'react';
+import { DEFAULT_MODELS, type ModelPreferenceKey, HEADERS } from '@/lib/constants';
 
 const STORAGE_KEYS = {
   API_KEY: 'openrouter_api_key',
@@ -8,51 +8,99 @@ const STORAGE_KEYS = {
 
 export type ModelPreferences = Record<ModelPreferenceKey, string>;
 
+// Pub/sub for localStorage changes within the same tab
+// (The native 'storage' event only fires in OTHER tabs)
+const subscribers = new Set<() => void>();
+
+function emitChange() {
+  subscribers.forEach((callback) => callback());
+}
+
+function subscribe(callback: () => void) {
+  subscribers.add(callback);
+  window.addEventListener('storage', callback);
+  return () => {
+    subscribers.delete(callback);
+    window.removeEventListener('storage', callback);
+  };
+}
+
+// Snapshot cache - useSyncExternalStore requires stable references
+// If getSnapshot returns a new object each time, React will infinite loop
+let cachedApiKey: string | null = null;
+let cachedModelPrefsRaw: string | null = null;
+let cachedModelPrefs: ModelPreferences = DEFAULT_MODELS;
+
+function getApiKeySnapshot(): string | null {
+  const current = localStorage.getItem(STORAGE_KEYS.API_KEY);
+  // Strings are primitives, so === comparison works, but cache anyway for consistency
+  if (current !== cachedApiKey) {
+    cachedApiKey = current;
+  }
+  return cachedApiKey;
+}
+
+function getApiKeyServerSnapshot(): string | null {
+  return null;
+}
+
+function getModelPrefsSnapshot(): ModelPreferences {
+  const raw = localStorage.getItem(STORAGE_KEYS.MODEL_PREFS);
+  // Only create new object if the raw string changed
+  if (raw !== cachedModelPrefsRaw) {
+    cachedModelPrefsRaw = raw;
+    cachedModelPrefs = { ...DEFAULT_MODELS, ...(raw ? JSON.parse(raw) : {}) };
+  }
+  return cachedModelPrefs;
+}
+
+function getModelPrefsServerSnapshot(): ModelPreferences {
+  return DEFAULT_MODELS;
+}
+
+// Hydration detection using useSyncExternalStore (no useEffect needed!)
+function subscribeNoop() {
+  return () => { };
+}
+function getIsHydratedSnapshot() {
+  return true;
+}
+function getIsHydratedServerSnapshot() {
+  return false;
+}
+
 /**
  * Hook for managing user settings (API key and model preferences)
- * Stores in localStorage and provides helpers for API requests
+ * Uses useSyncExternalStore for proper React 18+ external store integration
  */
 export function useSettings() {
-  const [apiKey, setApiKeyState] = useState<string | null>(null);
-  const [modelPrefs, setModelPrefsState] = useState<ModelPreferences>(DEFAULT_MODELS);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const storedKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-    const storedPrefs = localStorage.getItem(STORAGE_KEYS.MODEL_PREFS) || '{}';
-
-    setApiKeyState(storedKey);
-    setModelPrefsState({ ...DEFAULT_MODELS, ...JSON.parse(storedPrefs) });
-
-    setIsLoaded(true);
-  }, []);
+  // Read from localStorage using useSyncExternalStore (no useEffect!)
+  const apiKey = useSyncExternalStore(subscribe, getApiKeySnapshot, getApiKeyServerSnapshot);
+  const modelPrefs = useSyncExternalStore(subscribe, getModelPrefsSnapshot, getModelPrefsServerSnapshot);
+  const isLoaded = useSyncExternalStore(subscribeNoop, getIsHydratedSnapshot, getIsHydratedServerSnapshot);
 
   const saveApiKey = useCallback((key: string) => {
     const trimmed = key.trim();
-    if (trimmed && !trimmed.startsWith('sk-or-')) {
-      throw new Error('Invalid key format. OpenRouter keys start with "sk-or-"');
-    }
+
     localStorage.setItem(STORAGE_KEYS.API_KEY, trimmed);
-    setApiKeyState(trimmed);
+    emitChange();
   }, []);
 
   const clearApiKey = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.API_KEY);
-    setApiKeyState(null);
+    emitChange();
   }, []);
 
   const setModelPreference = useCallback((feature: ModelPreferenceKey, model: string) => {
-    setModelPrefsState((prev) => {
-      const updated = { ...prev, [feature]: model };
-      localStorage.setItem(STORAGE_KEYS.MODEL_PREFS, JSON.stringify(updated));
-      return updated;
-    });
+    const current = getModelPrefsSnapshot();
+    const updated = { ...current, [feature]: model };
+    localStorage.setItem(STORAGE_KEYS.MODEL_PREFS, JSON.stringify(updated));
+    emitChange();
   }, []);
 
   const resetModelPreferences = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.MODEL_PREFS);
-    setModelPrefsState(DEFAULT_MODELS);
+    emitChange();
   }, []);
 
   // Generate headers for API requests
