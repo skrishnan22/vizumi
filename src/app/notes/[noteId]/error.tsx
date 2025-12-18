@@ -7,7 +7,7 @@ type ErrorProps = {
   reset: () => void;
 };
 
-export default function NoteError({ error, reset }: ErrorProps) {
+export default function NoteError({ error: _error, reset }: ErrorProps) {
   return (
     <RouteErrorUI
       title="Failed to load note"
