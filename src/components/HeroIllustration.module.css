@@ -27,10 +27,6 @@
   animation: subtleFloat 6s ease-in-out infinite;
 }
 
-.linkIcon {
-  animation: pulse 3s ease-in-out infinite;
-}
-
 /* ============================================
    PROCESSING GROUP (Center)
    ============================================ */
@@ -79,11 +75,11 @@
 
 /* AI Node */
 .aiNode {
-  animation: subtleFloat 5s ease-in-out infinite;
+  animation: subtleFloat 6s ease-in-out infinite;
 }
 
 .aiIcon {
-  animation: pulse 2s ease-in-out infinite;
+  /* No animation - keep brain icon static for clarity */
 }
 
 /* Orbiting dots around AI node */

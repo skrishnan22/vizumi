@@ -82,17 +82,6 @@ export function HeroIllustration() {
           <rect x="92" y="220" width="100" height="6" rx="2" fill="#e2e8f0" />
           <rect x="92" y="232" width="60" height="6" rx="2" fill="#e2e8f0" />
 
-          {/* Floating link icon */}
-          <g className={styles.linkIcon}>
-            <circle cx="120" cy="120" r="20" fill="url(#tealGradient)" filter="url(#glow)" />
-            <path
-              d="M114 124 L110 128 A6 6 0 0 0 118 136 L122 132 M126 120 L130 116 A6 6 0 0 0 122 108 L118 112 M114 128 L126 116"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              fill="none"
-            />
-          </g>
         </g>
 
         {/* === CENTER: AI Processing / Flow === */}
@@ -129,16 +118,18 @@ export function HeroIllustration() {
             <circle cx="400" cy="200" r="36" fill="white" filter="url(#softShadow)" />
             <circle cx="400" cy="200" r="32" fill="#f0fdfa" />
             <circle cx="400" cy="200" r="24" stroke="url(#tealGradient)" strokeWidth="2" fill="none" />
-            {/* AI sparkle/brain icon */}
-            <path
-              d="M392 196 L400 188 L408 196 M392 204 L400 212 L408 204 M388 200 L412 200"
-              stroke="url(#tealGradient)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              className={styles.aiIcon}
-            />
+            {/* AI text */}
+            <text
+              x="400"
+              y="207"
+              textAnchor="middle"
+              fill="#0d9488"
+              fontFamily="'Cabinet Grotesk', 'DM Sans', system-ui, sans-serif"
+              fontSize="18"
+              fontWeight="700"
+            >
+              AI
+            </text>
             {/* Orbiting dots */}
             <circle className={styles.orbit1} cx="400" cy="160" r="3" fill="#14b8a6" />
             <circle className={styles.orbit2} cx="440" cy="200" r="3" fill="#8b5cf6" />
