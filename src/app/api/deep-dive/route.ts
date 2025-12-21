@@ -29,18 +29,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const contentPath = path.join(process.cwd(), 'public', 'data', 'content.md');
-    let fullDocument = '';
 
-    try {
-      fullDocument = await fs.readFile(contentPath, 'utf-8');
-    } catch (error) {
-      logger.error({ error, contentPath }, 'Error reading content file');
-      return Response.json(
-        { error: { code: 'FILE_READ_ERROR', message: 'Unable to load source content', retryable: false } },
-        { status: 500 }
-      );
-    }
+    let fullDocument = '';
 
     const openrouter = getOpenRouterClient(req);
     const model = getModel(req, 'deepDive');

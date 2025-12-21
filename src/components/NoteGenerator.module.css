@@ -1,25 +1,130 @@
+/* ============================================
+   NOTE GENERATOR - Premium Light Theme
+   ============================================ */
+
 .wrapper {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
-  background-color: var(--app-bg);
+  overflow: hidden;
+  background-color: #fafafa;
   display: flex;
   flex-direction: column;
 }
 
-/* Home Button Positioning */
+/* ============================================
+   ANIMATED BACKGROUND ORBS
+   ============================================ */
+
+.backgroundOrbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: float 20s ease-in-out infinite;
+}
+
+.orb1 {
+  width: 600px;
+  height: 600px;
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+  top: -200px;
+  right: -100px;
+  animation-delay: 0s;
+}
+
+.orb2 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.08) 100%);
+  bottom: -150px;
+  left: -100px;
+  animation-delay: -7s;
+}
+
+.orb3 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(234, 179, 8, 0.06) 100%);
+  top: 40%;
+  left: 60%;
+  animation-delay: -14s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  75% {
+    transform: translate(-30px, -20px) scale(1.02);
+  }
+}
+
+/* ============================================
+   HOME BUTTON
+   ============================================ */
+
 .homeButtonWrapper {
   position: fixed;
-  top: 2rem;
-  left: 2rem;
+  top: 1.5rem;
+  left: 1.5rem;
   z-index: 50;
 }
 
-/* 
-  The main content container (Input + Button).
-  transitions between center (empty state) and hidden (generated state).
-*/
+.homeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(28, 26, 23, 0.08);
+  border-radius: 10px;
+  color: rgba(28, 26, 23, 0.7);
+  font-family: 'Cabinet Grotesk', 'DM Sans', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    transform 150ms ease,
+    box-shadow 200ms ease;
+  box-shadow: 0 2px 8px rgba(28, 26, 23, 0.04);
+}
+
+.homeButton:hover {
+  background: #ffffff;
+  border-color: rgba(28, 26, 23, 0.12);
+  color: #1c1a17;
+  transform: translateX(-2px);
+  box-shadow: 0 4px 12px rgba(28, 26, 23, 0.08);
+}
+
+.homeButton:active {
+  transform: translateX(0);
+}
+
+/* ============================================
+   CONTENT CONTAINER (Input + Button)
+   ============================================ */
+
 .contentContainer {
   width: 100%;
   max-width: 720px;
@@ -31,24 +136,214 @@
   z-index: 20;
 }
 
-/* State: Centered (Initial) */
 .contentCentered {
-  top: 60%;
+  top: 50%;
   transform: translate(-50%, -50%);
   opacity: 1;
   pointer-events: auto;
 }
 
-/* State: Hidden (Generated) */
 .contentHidden {
   top: 40%;
-  /* Move up less drastically */
   transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;
 }
 
-/* Generated Header (Title + URL) */
+/* ============================================
+   ILLUSTRATION
+   ============================================ */
+
+.illustrationWrapper {
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.heroSection {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heroTitle {
+  font-family: 'Cabinet Grotesk', 'DM Sans', system-ui, sans-serif;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+  background: linear-gradient(135deg, #1c1a17 0%, #0d9488 50%, #0f766e 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroSubtitle {
+  font-family: 'Satoshi', 'DM Sans', system-ui, sans-serif;
+  font-size: 1.0625rem;
+  color: rgba(28, 26, 23, 0.6);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ============================================
+   INPUT CARD
+   ============================================ */
+
+.inputCard {
+  background: #ffffff;
+  border: 1px solid rgba(28, 26, 23, 0.08);
+  border-radius: 16px;
+  padding: 0.5rem;
+  box-shadow:
+    0 0 0 1px rgba(28, 26, 23, 0.02),
+    0 4px 16px rgba(28, 26, 23, 0.06),
+    0 8px 32px rgba(28, 26, 23, 0.04);
+  animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 100ms both;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .inputCard {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.inputWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  color: rgba(28, 26, 23, 0.35);
+  pointer-events: none;
+  transition: color 200ms ease;
+}
+
+.inputWrapper:focus-within .inputIcon {
+  color: #0d9488;
+}
+
+.urlInput {
+  width: 100%;
+  padding: 1rem 1rem 1rem 2.75rem;
+  font-size: 1rem;
+  color: #1c1a17;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  outline: none;
+  font-family: 'Satoshi', 'DM Sans', system-ui, sans-serif;
+  transition: background 200ms ease;
+}
+
+.urlInput::placeholder {
+  color: rgba(28, 26, 23, 0.4);
+}
+
+.urlInput:focus {
+  background: rgba(28, 26, 23, 0.02);
+}
+
+/* ============================================
+   GENERATE BUTTON
+   ============================================ */
+
+.generateButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: 'Cabinet Grotesk', 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  transition:
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 200ms ease,
+    opacity 200ms ease;
+  box-shadow:
+    0 2px 8px rgba(13, 148, 136, 0.25),
+    0 4px 16px rgba(13, 148, 136, 0.15);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 479px) {
+  .generateButton {
+    width: 100%;
+  }
+}
+
+.generateButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 12px rgba(13, 148, 136, 0.3),
+    0 8px 24px rgba(13, 148, 136, 0.2);
+}
+
+.generateButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.generateButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   HINT TEXT
+   ============================================ */
+
+.hint {
+  text-align: center;
+  font-family: 'Satoshi', 'DM Sans', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: rgba(28, 26, 23, 0.45);
+  margin-top: 1.25rem;
+  animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+}
+
+/* ============================================
+   GENERATED HEADER
+   ============================================ */
+
 .generatedHeader {
   width: 100%;
   max-width: 900px;
@@ -56,122 +351,68 @@
   padding: 2rem 1.5rem 1rem;
   text-align: center;
   opacity: 0;
-  /* Start hidden */
-  animation: fadeInDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  animation-delay: 0.2s;
-  /* Wait for input to start fading */
+  animation: fadeInDown 800ms cubic-bezier(0.2, 0.8, 0.2, 1) 200ms forwards;
   z-index: 30;
 }
 
 .generatedTitle {
-  font-family: var(--font-hand), 'Patrick Hand', cursive;
-  font-size: 2.5rem;
-  color: var(--ink);
+  font-family: 'Cabinet Grotesk', 'DM Sans', system-ui, sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  color: #1c1a17;
+  letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
   line-height: 1.2;
 }
 
 .generatedUrl {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  color: #64748b;
+  display: inline-block;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-size: 0.8125rem;
+  color: rgba(28, 26, 23, 0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  display: block;
+  padding: 0.375rem 0.75rem;
+  background: rgba(28, 26, 23, 0.04);
+  border-radius: 6px;
+  text-decoration: none;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
 }
 
-/* Hero Illustration Wrapper */
-.heroWrapper {
-  position: absolute;
-  top: 35%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  max-width: 600px;
-  opacity: 1;
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-  pointer-events: none;
-  z-index: 10;
+.generatedUrl:hover {
+  background: rgba(28, 26, 23, 0.08);
+  color: #0d9488;
 }
 
-.heroHidden {
-  opacity: 0;
-  transform: translate(-50%, -55%);
-  /* Subtle float up */
-  pointer-events: none;
-}
+/* ============================================
+   BOARD CONTAINER
+   ============================================ */
 
-/* Input Styling */
-.urlInput {
-  width: 100%;
-  padding: 1.25rem 1.5rem;
-  font-size: 1.125rem;
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(28, 26, 23, 0.1);
-  border-radius: 24px;
-  outline: none;
-  transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.urlInput::placeholder {
-  color: #94a3b8;
-}
-
-.urlInput:focus {
-  background: #fff;
-  border-color: rgba(28, 26, 23, 0.2);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.generateButton {
-  background: var(--ink);
-  color: #fff;
-  border: none;
-  border-radius: 9999px;
-  padding: 1rem 3rem;
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  align-self: center;
-}
-
-.generateButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.generateButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Board specific wrapper */
 .boardContainer {
   flex: 1;
   width: 100%;
   position: relative;
   opacity: 0;
-  /* Start hidden */
-  animation: fadeIn 1s ease-out forwards;
-  animation-delay: 0.4s;
-  /* Wait even longer for the board */
+  animation: fadeIn 1000ms ease-out 400ms forwards;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeInDown {
@@ -179,7 +420,6 @@
     opacity: 0;
     transform: translateY(-20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -190,15 +430,30 @@
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
 }
 
-/* Responsive */
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
 @media (max-width: 640px) {
   .contentCentered {
-    top: 55%;
+    top: 45%;
+  }
+
+  .homeButtonWrapper {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .heroSection {
+    margin-bottom: 2rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
   }
 }

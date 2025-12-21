@@ -28,25 +28,25 @@ export function getModeTitle(mode?: DeepDiveMode): string {
 
 export const DEEP_DIVE_COLORS = {
   eli5: {
-    bg: '#FFD6C9', // Richer peach
+    bg: '#FFF0EC', // Lighter peach for better text legibility
     border: '#FFAB91',
     text: '#5D4037',
     accent: '#D84315',
   },
   analogy: {
-    bg: '#E3F2FD', // Sky blue
+    bg: '#F0F7FF', // Lighter sky blue
     border: '#90CAF9',
     text: '#0D47A1',
     accent: '#1976D2',
   },
   'mental-model': {
-    bg: '#B2DFDB', // Richer mint
+    bg: '#E8F5F3', // Lighter mint for better text legibility
     border: '#80CBC4',
     text: '#004D40',
     accent: '#00796B',
   },
   default: {
-    bg: '#FFF9E6',
+    bg: '#FFFDF5',
     border: '#FFE5A0',
     text: '#664D00',
     accent: '#664D00',

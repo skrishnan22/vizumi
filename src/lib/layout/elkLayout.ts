@@ -2,16 +2,30 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import type { Node, Edge } from 'reactflow';
 import { MarkerType } from 'reactflow';
 import type { NoteNodeData } from '@/lib/yjs/utils';
-import { NODE_WIDTH, NODE_HEIGHT } from '@/lib/yjs/utils';
+import { NODE_WIDTH } from '@/lib/yjs/utils';
 
 const elk = new ELK();
+
+// Base height for nodes without diagrams
+const BASE_NODE_HEIGHT = 300;
+// Extra height for nodes with diagrams
+const DIAGRAM_HEIGHT_BONUS = 280;
 
 const elkOptions = {
   'elk.algorithm': 'org.eclipse.elk.mrtree',
   'elk.direction': 'DOWN',
-  'elk.spacing.nodeNode': '300',
+  'elk.spacing.nodeNode': '100',
   'elk.mrtree.searchDepth': '5',
 };
+
+/**
+ * Calculate the estimated height for a node based on its content.
+ * Nodes with diagrams need more space.
+ */
+function getNodeHeight(node: Node<NoteNodeData>): number {
+  const hasDiagram = node.data?.block?.d2Code && node.data.block.d2Code.trim().length > 0;
+  return hasDiagram ? BASE_NODE_HEIGHT + DIAGRAM_HEIGHT_BONUS : BASE_NODE_HEIGHT;
+}
 
 function getHandleForAngle(angleInRadians: number): 'top' | 'right' | 'bottom' | 'left' {
   if (angleInRadians >= -Math.PI / 4 && angleInRadians < Math.PI / 4) {
@@ -45,7 +59,7 @@ export async function calculateLayout(
     children: nodes.map((node) => ({
       id: node.id,
       width: NODE_WIDTH,
-      height: NODE_HEIGHT,
+      height: getNodeHeight(node),
     })),
     edges: edges.map((edge) => ({
       id: edge.id,
@@ -77,10 +91,13 @@ export async function calculateLayout(
 
     const isDeepDiveEdge = targetNode.data?.block?.blockType === 'deep-dive';
 
+    const sourceHeight = getNodeHeight(sourceNode);
+    const targetHeight = getNodeHeight(targetNode);
+
     const sourceX = sourceNode.position.x + NODE_WIDTH / 2;
-    const sourceY = sourceNode.position.y + NODE_HEIGHT / 2;
+    const sourceY = sourceNode.position.y + sourceHeight / 2;
     const targetX = targetNode.position.x + NODE_WIDTH / 2;
-    const targetY = targetNode.position.y + NODE_HEIGHT / 2;
+    const targetY = targetNode.position.y + targetHeight / 2;
 
     const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
     const sourceHandleSide = getHandleForAngle(angle);

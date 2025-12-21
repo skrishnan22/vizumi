@@ -61,21 +61,6 @@ async function fetchDiagramSvg(diagramCode: string, headers: HeadersInit) {
   return data.svg;
 }
 
-function StatusMessage({ message }: { message: string }) {
-  return (
-    <p
-      style={{
-        fontSize: '0.9rem',
-        textAlign: 'center',
-        margin: 0,
-        color: 'rgba(28, 26, 23, 0.8)',
-      }}
-    >
-      {message}
-    </p>
-  );
-}
-
 export function DiagramRenderer({
   code,
   cachedSvg,
@@ -126,13 +111,34 @@ export function DiagramRenderer({
 
           // Special handling for root SVG element
           if (element.name === 'svg') {
+            const originalWidth = attribs.width;
+            const originalHeight = attribs.height;
+
             delete attribs.style;
+            delete attribs.width;
+            delete attribs.height;
+
+            // Ensure viewBox exists for proper scaling
+            // If no viewBox but has width/height, create one
+            if (!attribs.viewBox && originalWidth && originalHeight) {
+              const w = parseFloat(originalWidth);
+              const h = parseFloat(originalHeight);
+              if (!isNaN(w) && !isNaN(h)) {
+                attribs.viewBox = `0 0 ${w} ${h}`;
+              }
+            }
+
             return (
               <svg
                 {...attribs}
-                width="100%"
-                height="auto"
-                style={{ display: 'block', width: '100%', height: 'auto' }}
+                preserveAspectRatio="xMidYMid meet"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  height: '100%',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                }}
               >
                 {domToReact(element.children as DOMNode[], options)}
               </svg>
@@ -167,11 +173,7 @@ export function DiagramRenderer({
   }
 
   if (isLoading || !parsedSvg) {
-    return (
-      <div className={className}>
-        <StatusMessage message="Sketching diagram..." />
-      </div>
-    );
+    return null;
   }
 
   return <div className={className}>{parsedSvg}</div>;
