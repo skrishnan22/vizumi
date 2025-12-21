@@ -61,21 +61,6 @@ async function fetchDiagramSvg(diagramCode: string, headers: HeadersInit) {
   return data.svg;
 }
 
-function StatusMessage({ message }: { message: string }) {
-  return (
-    <p
-      style={{
-        fontSize: '0.9rem',
-        textAlign: 'center',
-        margin: 0,
-        color: 'rgba(28, 26, 23, 0.8)',
-      }}
-    >
-      {message}
-    </p>
-  );
-}
-
 export function DiagramRenderer({
   code,
   cachedSvg,
@@ -188,11 +173,7 @@ export function DiagramRenderer({
   }
 
   if (isLoading || !parsedSvg) {
-    return (
-      <div className={className}>
-        <StatusMessage message="Sketching diagram..." />
-      </div>
-    );
+    return null;
   }
 
   return <div className={className}>{parsedSvg}</div>;
