@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import ReactFlow, {
   Background,
@@ -17,6 +17,7 @@ import styles from './NoteBoard.module.css';
 import { useNoteStore } from '@/store/noteStore';
 import { useNoteDoc } from '@/hooks/useNoteDoc';
 import { updateNodePosition, updateNodeData } from '@/lib/yjs/actions';
+import { type NoteNodeData } from '@/lib/yjs/utils';
 
 type NoteBoardProps = {
   noteId: string;
@@ -31,12 +32,29 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   const { isLoading, isEmpty } = useNoteDoc(noteId); // Bind Y.Doc and sync to store
 
   const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
-  const [_, setRfInstance] = useState<ReactFlowInstance | null>(null);
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<NoteNodeData, any> | null>(null);
+  const fitViewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const nodes = useNoteStore((state) => state.nodes);
   const edges = useNoteStore((state) => state.edges);
   const setAutoLayoutEnabled = useNoteStore((state) => state.setAutoLayoutEnabled);
   const updateNode = useNoteStore((state) => state.updateNode);
+
+  // Trigger fitView when new nodes are added (debounced)
+  useEffect(() => {
+    if (rfInstance && nodes.length > 0) {
+      if (fitViewTimeoutRef.current) {
+        clearTimeout(fitViewTimeoutRef.current);
+      }
+
+      fitViewTimeoutRef.current = setTimeout(() => {
+        rfInstance.fitView({ padding: 0.2, duration: 800 });
+      }, 200);
+    }
+    return () => {
+      if (fitViewTimeoutRef.current) clearTimeout(fitViewTimeoutRef.current);
+    };
+  }, [nodes.length, rfInstance]);
 
   // Find selected block and parent from nodes
   const selectedBlock = useMemo(() => {
@@ -112,7 +130,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   );
 
   // Handle edge changes (selection, etc.)
-  const handleEdgesChange = useCallback((_changes: EdgeChange[]) => {}, []);
+  const handleEdgesChange = useCallback((_changes: EdgeChange[]) => { }, []);
 
   /**
    * Inject stable callbacks into nodes.
