@@ -23,13 +23,20 @@ export function DiagramModal({
   onRenderFailure,
 }: DiagramModalProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(onClose, 200);
+  }, [onClose]);
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     },
-    [onClose]
+    [handleClose]
   );
 
   useEffect(() => {
@@ -49,22 +56,43 @@ export function DiagramModal({
 
   const modalContent = (
     <div
-      className={styles.modalOverlay}
+      className={`${styles.modalOverlay} ${isClosing ? styles.modalOverlayClosing : ''}`}
       role="dialog"
       aria-modal="true"
       aria-label={`Diagram for ${title}`}
-      onClick={onClose}
+      onClick={handleClose}
     >
-      <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
+      <div
+        className={`${styles.modalContent} ${isClosing ? styles.modalContentClosing : ''}`}
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>{title}</h3>
+          <div className={styles.modalTitleWrapper}>
+            <span className={styles.modalAccent} aria-hidden="true" />
+            <h3 className={styles.modalTitle}>{title}</h3>
+          </div>
           <button
             type="button"
             className={styles.modalClose}
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close diagram"
           >
-            ×
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M15 5L5 15M5 5L15 15"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
         <div className={styles.modalBody}>
