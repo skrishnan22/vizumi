@@ -126,13 +126,34 @@ export function DiagramRenderer({
 
           // Special handling for root SVG element
           if (element.name === 'svg') {
+            const originalWidth = attribs.width;
+            const originalHeight = attribs.height;
+
             delete attribs.style;
+            delete attribs.width;
+            delete attribs.height;
+
+            // Ensure viewBox exists for proper scaling
+            // If no viewBox but has width/height, create one
+            if (!attribs.viewBox && originalWidth && originalHeight) {
+              const w = parseFloat(originalWidth);
+              const h = parseFloat(originalHeight);
+              if (!isNaN(w) && !isNaN(h)) {
+                attribs.viewBox = `0 0 ${w} ${h}`;
+              }
+            }
+
             return (
               <svg
                 {...attribs}
-                width="100%"
-                height="auto"
-                style={{ display: 'block', width: '100%', height: 'auto' }}
+                preserveAspectRatio="xMidYMid meet"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  height: '100%',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                }}
               >
                 {domToReact(element.children as DOMNode[], options)}
               </svg>
