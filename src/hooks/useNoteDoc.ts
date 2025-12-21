@@ -22,9 +22,13 @@ export function useNoteDoc(noteId: string) {
   const [isLoading, setIsLoading] = useState(true);
   const [isEmpty, setIsEmpty] = useState(false);
   const setGraph = useNoteStore((s) => s.setGraph);
+  const setNoteId = useNoteStore((s) => s.setNoteId);
 
   useEffect(() => {
     if (!noteId) return;
+
+    // Store noteId in Zustand so other hooks (like useDeepDive) can access it
+    setNoteId(noteId);
 
     const { doc: ydoc, persistence } = getOrCreateYDoc(noteId);
 
@@ -72,8 +76,10 @@ export function useNoteDoc(noteId: string) {
     return () => {
       ydoc.off('update', syncToStore);
       persistence.off('synced', handleSynced);
+      // Clear noteId from store when unmounting
+      setNoteId(null);
     };
-  }, [noteId, setGraph]);
+  }, [noteId, setGraph, setNoteId]);
 
   return { doc, isLoading, isEmpty };
 }
