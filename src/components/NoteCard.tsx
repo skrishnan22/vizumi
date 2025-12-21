@@ -10,6 +10,7 @@ type NoteCardProps = {
   ogImage?: string;
   updatedAt: Date;
   onClick: () => void;
+  onDelete: () => void;
 };
 
 // Generate a consistent vibrant gradient based on the title
@@ -25,7 +26,7 @@ function getGradientForTitle(title: string): string {
   return gradients[hash % gradients.length];
 }
 
-export function NoteCard({ title, url, ogImage, updatedAt, onClick }: NoteCardProps) {
+export function NoteCard({ title, url, ogImage, updatedAt, onClick, onDelete }: NoteCardProps) {
   const [imageError, setImageError] = useState(false);
   const timeAgo = formatDistanceToNow(new Date(updatedAt), { addSuffix: true });
   const domain = new URL(url).hostname.replace('www.', '');
@@ -33,13 +34,40 @@ export function NoteCard({ title, url, ogImage, updatedAt, onClick }: NoteCardPr
   const showFallback = !ogImage || imageError;
 
   return (
-    <button
-      onClick={onClick}
-      className="group flex flex-col w-full h-full bg-white border border-gray-200/60 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-gray-300 hover:-translate-y-1 transition-all duration-300 text-left"
-      data-testid="note-card"
-    >
-      {/* Card Image Area */}
-      <div className="relative w-full h-48 overflow-hidden bg-gray-50 border-b border-gray-100">
+    <div className="group relative flex flex-col w-full h-full bg-white border border-gray-200/60 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-gray-300 hover:-translate-y-1 transition-all duration-300">
+      {/* Delete Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+        className="absolute top-3 right-3 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border border-gray-200 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
+        aria-label="Delete note"
+        data-testid="delete-note-button"
+      >
+        <svg
+          className="w-4 h-4 text-gray-600 hover:text-red-600 transition-colors"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
+        </svg>
+      </button>
+
+      {/* Card Content - Now clickable */}
+      <button
+        onClick={onClick}
+        className="flex flex-col w-full h-full text-left"
+        data-testid="note-card"
+      >
+        {/* Card Image Area */}
+        <div className="relative w-full h-48 overflow-hidden bg-gray-50 border-b border-gray-100">
         {showFallback ? (
           <div className={`w-full h-full bg-gradient-to-br ${gradient} p-6 relative`}>
             {/* Abstract Pattern Overlay */}
@@ -101,6 +129,7 @@ export function NoteCard({ title, url, ogImage, updatedAt, onClick }: NoteCardPr
           </span>
         </div>
       </div>
-    </button>
+      </button>
+    </div>
   );
 }

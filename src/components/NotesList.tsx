@@ -3,10 +3,30 @@
 import { useRouter } from 'next/navigation';
 import { useNotesList } from '@/hooks/useNotesList';
 import { NoteCard } from './NoteCard';
+import { deleteNote } from '@/lib/db/actions';
+import { toast } from 'sonner';
 
 export function NotesList() {
-  const { notes, isLoading } = useNotesList();
+  const { notes, isLoading, refetch } = useNotesList();
   const router = useRouter();
+
+  const handleDelete = async (noteId: string, title: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${title}"?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteNote(noteId);
+      toast.success(`"${title}" deleted successfully`);
+      // Refresh the notes list
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+      toast.error('Failed to delete note');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -58,6 +78,7 @@ export function NotesList() {
           ogImage={note.ogImage}
           updatedAt={note.updatedAt}
           onClick={() => router.push(`/notes/${note.noteId}`)}
+          onDelete={() => handleDelete(note.noteId, note.title)}
         />
       ))}
     </div>

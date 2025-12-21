@@ -31,3 +31,21 @@ export function getOrCreateYDoc(noteId: string): YDocWithPersistence {
 export function getYDoc(noteId: string): Y.Doc | undefined {
   return docs.get(noteId)?.doc;
 }
+
+/**
+ * Delete a Y.Doc and its IndexedDB persistence
+ */
+export async function deleteYDoc(noteId: string): Promise<void> {
+  const entry = docs.get(noteId);
+
+  if (entry) {
+    // clearData() calls destroy() internally and deletes the IndexedDB database
+    await entry.persistence.clearData();
+
+    // Destroy the Y.Doc
+    entry.doc.destroy();
+
+    // Remove from cache
+    docs.delete(noteId);
+  }
+}

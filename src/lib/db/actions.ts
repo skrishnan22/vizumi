@@ -1,4 +1,5 @@
 import { db, type NoteMetadata } from './noteMetadata';
+import { deleteYDoc } from '@/lib/yjs/doc';
 
 /**
  * Create a new note metadata entry
@@ -56,4 +57,12 @@ export async function getNoteMetadata(noteId: string): Promise<NoteMetadata | un
  */
 export async function getNoteByUrl(url: string): Promise<NoteMetadata | undefined> {
   return db.notes.where('url').equals(url).first();
+}
+
+/**
+ * Delete a note completely (both metadata and Y.Doc from IndexedDB)
+ */
+export async function deleteNote(noteId: string): Promise<void> {
+  // Delete both in parallel for better performance
+  await Promise.all([deleteNoteMetadata(noteId), deleteYDoc(noteId)]);
 }
