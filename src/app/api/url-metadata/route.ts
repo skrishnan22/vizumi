@@ -15,6 +15,7 @@ export async function POST(req: Request) {
     return Response.json({
       title: metadata.title,
       ogImage: metadata.ogImage,
+      markdown: metadata.markdown,
       url: url,
     });
   } catch (error) {

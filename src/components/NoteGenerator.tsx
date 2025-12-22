@@ -32,7 +32,9 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
 
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [markdown, setMarkdown] = useState<string | null>(null);
   const setNoteId = useNoteStore((state) => state.setNoteId);
+  const setMarkdownForNote = useNoteStore((state) => state.setMarkdownForNote);
 
   // Set noteId in store once on mount
   useEffect(() => {
@@ -118,8 +120,10 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
       return;
     }
 
+    let fetchedMarkdown: string | undefined;
+
     try {
-      // 1. Fetch metadata
+      // 1. Fetch metadata and markdown
       const metadataRes = await fetch('/api/url-metadata', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -127,8 +131,13 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
       });
 
       if (metadataRes.ok) {
-        const { title, ogImage } = await metadataRes.json();
+        const { title, ogImage, markdown: responseMarkdown } = await metadataRes.json();
         if (title) setTitle(title);
+        if (responseMarkdown) {
+          fetchedMarkdown = responseMarkdown;
+          setMarkdown(responseMarkdown);
+          setMarkdownForNote(noteId, responseMarkdown);
+        }
 
         // 2. Save to metadata index
         await createNoteMetadata({
@@ -142,8 +151,8 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
       logger.error('Error saving metadata:', error);
     }
 
-    // 3. Start generation
-    submit({ url });
+    // 3. Start generation with markdown
+    submit({ url, markdown: fetchedMarkdown });
   };
 
   return (

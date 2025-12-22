@@ -14,7 +14,7 @@ const DIAGRAM_HEIGHT_BONUS = 280;
 const elkOptions = {
   'elk.algorithm': 'org.eclipse.elk.mrtree',
   'elk.direction': 'DOWN',
-  'elk.spacing.nodeNode': '100',
+  'elk.spacing.nodeNode': '300',
   'elk.mrtree.searchDepth': '5',
 };
 

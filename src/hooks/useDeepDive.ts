@@ -11,11 +11,13 @@ import type { NoteNodeData } from '@/lib/yjs/utils';
 import { logger } from '@/lib/logger.client';
 import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
+import { getNoteMetadata } from '@/lib/db/actions';
 
 export function useDeepDive() {
   const noteId = useNoteStore((state) => state.noteId);
   const storeNodes = useNoteStore((state) => state.nodes);
   const setDeepDiveStreaming = useNoteStore((state) => state.setDeepDiveStreaming);
+  const markdownCache = useNoteStore((state) => state.markdownCache);
   const { getRequestHeaders } = useSettings();
 
   const currentDeepDiveNodeIdRef = useRef<string | null>(null);
@@ -77,6 +79,16 @@ export function useDeepDive() {
       const currentNodeCount = storeNodes.length;
       await addNodeFromBlock(noteId, deepDiveBlock, currentNodeCount);
 
+      // Get markdown from cache and URL from metadata
+      const markdown = markdownCache[noteId];
+      let url: string | undefined;
+      try {
+        const metadata = await getNoteMetadata(noteId);
+        url = metadata?.url;
+      } catch (err) {
+        logger.warn('Failed to fetch note metadata for URL:', err);
+      }
+
       try {
         await complete('', {
           body: {
@@ -84,6 +96,8 @@ export function useDeepDive() {
             mode,
             blockTitle: parentBlock.title,
             blockSummary: parentBlock.summary,
+            markdown,
+            url,
           },
         });
       } catch (err) {
@@ -105,7 +119,7 @@ export function useDeepDive() {
         currentDeepDiveNodeIdRef.current = null;
       }
     },
-    [noteId, storeNodes, complete]
+    [noteId, storeNodes, complete, markdownCache]
   );
 
   return {
