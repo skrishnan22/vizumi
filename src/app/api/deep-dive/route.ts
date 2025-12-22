@@ -5,6 +5,7 @@ import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
 import { MAX_DURATIONS_SECS } from '@/lib/constants';
 import { processUrl } from '@/lib/url-processor';
+import { createSecureDeepDivePrompt } from '@/lib/security';
 
 export const maxDuration = MAX_DURATIONS_SECS.DEEP_DIVE;
 
@@ -53,30 +54,18 @@ export async function POST(req: Request) {
 
     const modePrompt = getPromptForMode(mode);
 
-    const fullPrompt = `${modePrompt}
-
----
-
-## CONTEXT (Full Document):
-This is the complete source material for reference:
-
-${fullDocument}
-
----
-
-## SPECIFIC SECTION TO EXPLAIN:
-**Title**: ${blockTitle}
-
-**Content**: ${blockSummary}
-
----
-
-Now, provide your ${mode.toUpperCase()} explanation for this specific section. Follow the format and guidelines exactly. Make sure to ground your explanation in the source material above.
-`;
+    // Create secure prompt with delimiters to prevent injection from block content
+    const securePrompt = createSecureDeepDivePrompt(
+      modePrompt,
+      fullDocument,
+      blockTitle,
+      blockSummary,
+      mode
+    );
 
     const result = streamText({
       model: openrouter(model),
-      prompt: fullPrompt,
+      prompt: securePrompt,
     });
 
     return result.toUIMessageStreamResponse();

@@ -1,11 +1,15 @@
 import { streamObject } from 'ai';
 import { LLMNoteSchema } from '@/lib/schemas';
-import { SYSTEM_PROMPT, SYSTEM_PROMPT_WITH_D2_REF } from '@/lib/prompts';
+import {
+  SYSTEM_PROMPT_SECURE,
+  SYSTEM_PROMPT_WITH_D2_REF_SECURE,
+} from '@/lib/prompts';
 import { processUrl } from '@/lib/url-processor';
 import { logger } from '@/lib/logger';
 import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
 import { MAX_DURATIONS_SECS, FEATURE_FLAGS } from '@/lib/constants';
+import { createSecureContentPrompt, sanitizeBlocks, type Block } from '@/lib/security';
 
 export const maxDuration = MAX_DURATIONS_SECS.GENERATE;
 
@@ -43,15 +47,19 @@ export async function POST(req: Request) {
     const openrouter = getOpenRouterClient(req);
     const model = getModel(req, 'generate');
 
+    // Use security-hardened system prompt
     const systemPrompt = FEATURE_FLAGS.USE_ENHANCED_PROMPT
-      ? SYSTEM_PROMPT_WITH_D2_REF
-      : SYSTEM_PROMPT;
+      ? SYSTEM_PROMPT_WITH_D2_REF_SECURE
+      : SYSTEM_PROMPT_SECURE;
+
+    // Create secure prompt with delimiters and anti-injection instructions
+    const securePrompt = createSecureContentPrompt(url, content);
 
     const result = streamObject({
       model: openrouter(model),
       schema: LLMNoteSchema,
       system: systemPrompt,
-      prompt: `Here is the text to process (Source: ${url}):\n\n${content}`,
+      prompt: securePrompt,
     });
 
     return result.toTextStreamResponse();
