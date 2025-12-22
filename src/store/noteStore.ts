@@ -23,6 +23,12 @@ type NoteStore = {
 
   // Individual node updates (for streaming/editing without full graph replacement)
   updateNode: (nodeId: string, updates: Partial<Node<NoteNodeData>>) => void;
+
+  // Markdown cache for deep-dive context (session-only storage)
+  // Maps noteId -> markdown content
+  markdownCache: Record<string, string>;
+  setMarkdownForNote: (noteId: string, markdown: string) => void;
+  clearMarkdownForNote: (noteId: string) => void;
 };
 
 export const useNoteStore = create<NoteStore>((set) => ({
@@ -46,4 +52,15 @@ export const useNoteStore = create<NoteStore>((set) => ({
     set((state) => ({
       nodes: state.nodes.map((node) => (node.id === nodeId ? { ...node, ...updates } : node)),
     })),
+
+  markdownCache: {},
+  setMarkdownForNote: (noteId, markdown) =>
+    set((state) => ({
+      markdownCache: { ...state.markdownCache, [noteId]: markdown },
+    })),
+  clearMarkdownForNote: (noteId) =>
+    set((state) => {
+      const { [noteId]: _, ...rest } = state.markdownCache;
+      return { markdownCache: rest };
+    }),
 }));

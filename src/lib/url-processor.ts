@@ -20,53 +20,15 @@ export async function processUrl(url: string) {
   }
 
   try {
-    // Use a standard User-Agent to avoid basic bot blocking
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      },
-    });
+    const dom = await fetchAndParseHtml(url);
+    const markdown = extractMarkdown(dom);
 
-    if (!response.ok) {
-      throw new UrlProcessingError(
-        `Failed to fetch URL: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('text/html')) {
-      throw new UrlProcessingError(
-        `Invalid content type: ${contentType}. Only text/html is supported.`
-      );
-    }
-
-    const html = await response.text();
-
-    const dom = new JSDOM(html, { url });
-
+    // Extract title for metadata prefix
     const reader = new Readability(dom.window.document);
     const article = reader.parse();
+    const title = article?.title || 'Untitled';
 
-    if (!article || !article.content) {
-      throw new UrlProcessingError('Could not extract content from the page.');
-    }
-
-    const turndownService = new TurndownService({
-      headingStyle: 'atx',
-      codeBlockStyle: 'fenced',
-    });
-
-    turndownService.remove(['script', 'style', 'iframe', 'noscript']);
-
-    const markdown = turndownService.turndown(article.content);
-
-    if (!markdown.trim()) {
-      throw new UrlProcessingError('Resulting markdown content is empty.');
-    }
-
-    const metadata = `Source: ${url}\nTitle: ${article.title}\n\n`;
+    const metadata = `Source: ${url}\nTitle: ${title}\n\n`;
     return metadata + markdown;
   } catch (error) {
     if (error instanceof UrlProcessingError) {
@@ -80,10 +42,67 @@ export async function processUrl(url: string) {
 export interface UrlMetadata {
   title: string;
   ogImage?: string;
+  markdown: string;
 }
 
 /**
- * Extract metadata (title, OG image) from a URL without processing full content
+ * Shared utility to fetch HTML and create JSDOM instance
+ */
+async function fetchAndParseHtml(url: string) {
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    },
+  });
+
+  if (!response.ok) {
+    throw new UrlProcessingError(
+      `Failed to fetch URL: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('text/html')) {
+    throw new UrlProcessingError(
+      `Invalid content type: ${contentType}. Only text/html is supported.`
+    );
+  }
+
+  const html = await response.text();
+  return new JSDOM(html, { url });
+}
+
+/**
+ * Extract markdown content from HTML DOM using Readability
+ */
+function extractMarkdown(dom: JSDOM): string {
+  const reader = new Readability(dom.window.document);
+  const article = reader.parse();
+
+  if (!article || !article.content) {
+    throw new UrlProcessingError('Could not extract content from the page.');
+  }
+
+  const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+  });
+
+  turndownService.remove(['script', 'style', 'iframe', 'noscript']);
+
+  const markdown = turndownService.turndown(article.content);
+
+  if (!markdown.trim()) {
+    throw new UrlProcessingError('Resulting markdown content is empty.');
+  }
+
+  return markdown;
+}
+
+/**
+ * Extract metadata and markdown from a URL in a single fetch
  */
 export async function processUrlMetadata(url: string): Promise<UrlMetadata> {
   const validationResult = UrlSchema.safeParse(url);
@@ -92,29 +111,7 @@ export async function processUrlMetadata(url: string): Promise<UrlMetadata> {
   }
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      },
-    });
-
-    if (!response.ok) {
-      throw new UrlProcessingError(
-        `Failed to fetch URL: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('text/html')) {
-      throw new UrlProcessingError(
-        `Invalid content type: ${contentType}. Only text/html is supported.`
-      );
-    }
-
-    const html = await response.text();
-    const dom = new JSDOM(html, { url });
+    const dom = await fetchAndParseHtml(url);
     const document = dom.window.document;
 
     // Extract title: try og:title first, then regular title
@@ -130,9 +127,13 @@ export async function processUrlMetadata(url: string): Promise<UrlMetadata> {
       document.querySelector('meta[name="twitter:image"]')?.getAttribute('content') ||
       undefined;
 
+    // Extract markdown
+    const markdown = extractMarkdown(dom);
+
     return {
       title: title.trim(),
       ogImage,
+      markdown,
     };
   } catch (error) {
     if (error instanceof UrlProcessingError) {

@@ -59,6 +59,11 @@ export const MAX_DURATIONS_SECS = {
 export const LIMITS = {
   MAX_D2_FIX_ATTEMPTS: 2,
   MAX_URL_CONTENT_SIZE: 5 * 1024 * 1024,
+  // Security: Prevent excessive input that could be used for injection or DoS
+  MAX_CONTENT_LENGTH: 50000, // ~12k tokens - prevents prompt injection via volume
+  MAX_TITLE_LENGTH: 200,
+  MAX_SUMMARY_LENGTH: 5000,
+  MAX_D2_CODE_LENGTH: 10000,
 } as const;
 
 export const D2_CONFIG = {
