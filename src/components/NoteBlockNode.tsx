@@ -45,7 +45,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
   const { requestDeepDive } = useDeepDive();
 
-  const hasDiagram = block.d2Code && Boolean(block.d2Code?.trim());
+  const hasDiagram = block.renderedSvg && Boolean(block.renderedSvg?.trim());
 
   // Callback to clear d2Code when rendering fails
   const handleDiagramFailure = useCallback(() => {

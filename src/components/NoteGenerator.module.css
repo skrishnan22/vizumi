@@ -137,7 +137,7 @@
 }
 
 .contentCentered {
-  top: 50%;
+  top: 48%;
   transform: translate(-50%, -50%);
   opacity: 1;
   pointer-events: auto;
@@ -155,8 +155,10 @@
    ============================================ */
 
 .illustrationWrapper {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   animation: fadeInUp 800ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.85);
+  transform-origin: center bottom;
 }
 
 /* ============================================
@@ -165,7 +167,7 @@
 
 .heroSection {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -336,8 +338,27 @@
   font-family: 'Satoshi', 'DM Sans', system-ui, sans-serif;
   font-size: 0.8125rem;
   color: rgba(28, 26, 23, 0.45);
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+}
+
+/* ============================================
+   MODEL SELECTOR
+   ============================================ */
+
+.modelSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
+}
+
+.modelLabel {
+  font-family: 'Satoshi', 'DM Sans', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: rgba(28, 26, 23, 0.5);
 }
 
 /* ============================================
@@ -441,7 +462,7 @@
 
 @media (max-width: 640px) {
   .contentCentered {
-    top: 45%;
+    top: 42%;
   }
 
   .homeButtonWrapper {
@@ -449,11 +470,20 @@
     left: 1rem;
   }
 
+  .illustrationWrapper {
+    transform: scale(0.75);
+  }
+
   .heroSection {
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
   }
 
   .heroSubtitle {
-    font-size: 1rem;
+    font-size: 0.9375rem;
+  }
+
+  .modelSelector {
+    flex-wrap: wrap;
+    gap: 0.375rem;
   }
 }

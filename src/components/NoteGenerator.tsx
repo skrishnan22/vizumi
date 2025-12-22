@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { LLMNoteSchema, LLMNoteBlockSchema } from '@/lib/schemas';
 import type { LLMNoteBlock } from '@/lib/schemas';
@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger.client';
 import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
+import { HEADERS } from '@/lib/constants';
+import { ModelSelector } from './ModelSelector';
 
 type NoteGeneratorProps = {
   noteId: string;
@@ -23,11 +25,28 @@ type NoteGeneratorProps = {
 
 export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   const router = useRouter();
-  const { getRequestHeaders } = useSettings();
+  const { apiKey, modelPrefs } = useSettings();
+
+  // Session-specific model selection (defaults to user's saved preference)
+  const [sessionModel, setSessionModel] = useState<string | null>(null);
+  const effectiveModel = sessionModel ?? modelPrefs.generate;
+
+  // Compute headers with the effective model
+  const requestHeaders = useMemo(() => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      [HEADERS.MODEL]: effectiveModel,
+    };
+    if (apiKey) {
+      headers[HEADERS.API_KEY] = apiKey;
+    }
+    return headers;
+  }, [effectiveModel, apiKey]);
+
   const { object, submit, isLoading, error } = useObject({
     api: '/api/generate',
     schema: LLMNoteSchema,
-    headers: getRequestHeaders('generate'),
+    headers: requestHeaders,
   });
 
   const [url, setUrl] = useState('');
@@ -263,6 +282,16 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
         <p className={styles.hint}>
           Works with blogs, documentation, news articles, and more
         </p>
+
+        {/* Model selector */}
+        <div className={styles.modelSelector}>
+          <span className={styles.modelLabel}>Model:</span>
+          <ModelSelector
+            value={effectiveModel}
+            onChange={setSessionModel}
+            disabled={isLoading}
+          />
+        </div>
       </div>
 
       {/* Generated Header - Appears when content is generated */}
