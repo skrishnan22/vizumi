@@ -52,6 +52,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [markdown, setMarkdown] = useState<string | null>(null);
+  const [generationStage, setGenerationStage] = useState<'fetching' | 'generating' | null>(null);
   const setNoteId = useNoteStore((state) => state.setNoteId);
   const setMarkdownForNote = useNoteStore((state) => state.setMarkdownForNote);
 
@@ -108,6 +109,10 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   useEffect(() => {
     if (isLoading) {
       syncedBlockIdsRef.current.clear();
+
+      setGenerationStage('generating');
+    } else {
+      setGenerationStage(null);
     }
   }, [isLoading]);
 
@@ -115,10 +120,12 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   useEffect(() => {
     if (error) {
       showApiErrorToast(error, { showRetryHint: true });
-      // Delete metadata so user can retry with same URL
+
       deleteNoteMetadata(noteId).catch((err) => {
         logger.error('Failed to cleanup metadata on error:', err);
       });
+
+      setGenerationStage(null);
     }
   }, [error, noteId]);
 
@@ -126,52 +133,57 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   const handleGenerate = async () => {
     if (!url.trim()) return;
 
-    const existingNote = await getNoteByUrl(url.trim());
-    if (existingNote) {
-      toast.info('A note already exists for this URL', {
-        description: existingNote.title || 'View the existing note',
-        action: {
-          label: 'View Note',
-          onClick: () => router.push(`/notes/${existingNote.noteId}`),
-        },
-        duration: 8000,
-      });
-      return;
-    }
-
-    let fetchedMarkdown: string | undefined;
+    setGenerationStage('fetching');
 
     try {
-      // 1. Fetch metadata and markdown
-      const metadataRes = await fetch('/api/url-metadata', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-
-      if (metadataRes.ok) {
-        const { title, ogImage, markdown: responseMarkdown } = await metadataRes.json();
-        if (title) setTitle(title);
-        if (responseMarkdown) {
-          fetchedMarkdown = responseMarkdown;
-          setMarkdown(responseMarkdown);
-          setMarkdownForNote(noteId, responseMarkdown);
-        }
-
-        // 2. Save to metadata index
-        await createNoteMetadata({
-          noteId,
-          url,
-          title,
-          ogImage,
+      const existingNote = await getNoteByUrl(url.trim());
+      if (existingNote) {
+        toast.info('A note already exists for this URL', {
+          description: existingNote.title || 'View the existing note',
+          action: {
+            label: 'View Note',
+            onClick: () => router.push(`/notes/${existingNote.noteId}`),
+          },
+          duration: 8000,
         });
+        setGenerationStage(null);
+        return;
       }
-    } catch (error) {
-      logger.error('Error saving metadata:', error);
-    }
 
-    // 3. Start generation with markdown
-    submit({ url, markdown: fetchedMarkdown });
+      let fetchedMarkdown: string | undefined;
+
+      try {
+        const metadataRes = await fetch('/api/url-metadata', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+
+        if (metadataRes.ok) {
+          const { title, ogImage, markdown: responseMarkdown } = await metadataRes.json();
+          if (title) setTitle(title);
+          if (responseMarkdown) {
+            fetchedMarkdown = responseMarkdown;
+            setMarkdown(responseMarkdown);
+            setMarkdownForNote(noteId, responseMarkdown);
+          }
+
+          await createNoteMetadata({
+            noteId,
+            url,
+            title,
+            ogImage,
+          });
+        }
+      } catch (error) {
+        logger.error('Error saving metadata:', error);
+      }
+
+      submit({ url, markdown: fetchedMarkdown });
+    } catch (error) {
+      logger.error('Error in handleGenerate:', error);
+      setGenerationStage(null);
+    }
   };
 
   return (
@@ -237,7 +249,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && url.trim() && !isLoading) {
+                if (e.key === 'Enter' && url.trim() && !generationStage) {
                   handleGenerate();
                 }
               }}
@@ -252,21 +264,23 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
           <ModelSelector
             value={effectiveModel}
             onChange={setSessionModel}
-            disabled={isLoading}
+            disabled={!!generationStage}
             className={styles.embeddedModelSelector}
           />
 
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={isLoading || !url.trim()}
+            disabled={!!generationStage || !url.trim()}
             className={styles.generateButton}
             data-testid="generate-button"
           >
-            {isLoading ? (
+            {generationStage ? (
               <>
                 <span className={styles.spinner} />
-                <span>Generating...</span>
+                <span>
+                  {generationStage === 'fetching' ? 'Fetching content...' : 'Creating notes...'}
+                </span>
               </>
             ) : (
               <>

@@ -45,7 +45,8 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
   const { requestDeepDive } = useDeepDive();
 
-  const hasDiagram = block.renderedSvg && Boolean(block.renderedSvg?.trim());
+  const hasDiagram = block.d2Code && Boolean(block.d2Code?.trim());
+  const hasSvgReady = block.renderedSvg && Boolean(block.renderedSvg?.trim());
 
   // Callback to clear d2Code when rendering fails
   const handleDiagramFailure = useCallback(() => {
@@ -235,24 +236,24 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
           </div>
         )}
         {hasDiagram && (
-          <button
-            type="button"
-            className={styles.diagramPreviewButton}
-            onClick={() => setIsModalOpen(true)}
-            aria-label="Open diagram in modal"
+          <div
+            className={hasSvgReady ? styles.diagramPreviewButton : styles.nodeDiagramWrapper}
+            onClick={hasSvgReady ? () => setIsModalOpen(true) : undefined}
+            role={hasSvgReady ? 'button' : undefined}
+            tabIndex={hasSvgReady ? 0 : undefined}
+            aria-label={hasSvgReady ? "Open diagram in modal" : undefined}
+            style={hasSvgReady ? { cursor: 'pointer' } : { visibility: 'hidden', position: 'absolute' }}
           >
-            <div className={styles.nodeDiagramWrapper}>
-              <DiagramRenderer
-                key={block.id}
-                code={block.d2Code ?? ''}
-                cachedSvg={block.renderedSvg}
-                className={styles.nodeDiagram}
-                onSuccess={() => requestAnimationFrame(() => measureHeight())}
-                onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
-                onRenderFailure={handleDiagramFailure}
-              />
-            </div>
-          </button>
+            <DiagramRenderer
+              key={block.id}
+              code={block.d2Code ?? ''}
+              cachedSvg={block.renderedSvg}
+              className={styles.nodeDiagram}
+              onSuccess={() => requestAnimationFrame(() => measureHeight())}
+              onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
+              onRenderFailure={handleDiagramFailure}
+            />
+          </div>
         )}
       </div>
       {isModalOpen && block.d2Code && (
