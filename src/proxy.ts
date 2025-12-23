@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { FREE_TIER_MODELS, HEADERS } from '@/lib/constants';
+import { FREE_MODELS, HEADERS } from '@/lib/constants';
 
 /**
  * Proxy validates API key and model access before requests reach route handlers
@@ -27,7 +27,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (requestedModel && !(FREE_TIER_MODELS as readonly string[]).includes(requestedModel)) {
+  const freeModelIds = FREE_MODELS.map((m) => m.id);
+  if (requestedModel && !freeModelIds.includes(requestedModel)) {
     return Response.json(
       {
         error: {

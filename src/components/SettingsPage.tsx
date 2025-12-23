@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useSettings, type ModelPreferences } from '@/hooks/use-settings';
-import { AVAILABLE_MODELS } from '@/lib/constants';
+import { DEFAULT_MODELS } from '@/lib/constants';
 import { toast } from 'sonner';
-import { Key, Sparkles, ChevronLeft } from 'lucide-react';
+import { Key, Sparkles, ChevronLeft, Info } from 'lucide-react';
 import Link from 'next/link';
+import { ModelSelector } from './ModelSelector';
 
 // Separate component that only mounts after settings are loaded
 // This allows lazy initialization of keyInput with the actual apiKey value
@@ -158,24 +159,23 @@ function SettingsForm({
             </div>
 
             <div>
-              <label htmlFor="model-select" className="block text-sm font-medium text-stone-700 mb-2">
+              <label className="block text-sm font-medium text-stone-700 mb-3">
                 Select Model
               </label>
-              <select
-                id="model-select"
+              <ModelSelector
                 value={modelPrefs.generate}
-                onChange={(e) => handleModelChange(e.target.value)}
-                className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent bg-white"
-              >
-                {AVAILABLE_MODELS.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.label}
-                  </option>
-                ))}
-              </select>
+                onChange={handleModelChange}
+              />
 
-              <div className="mt-3 text-sm text-stone-500">
-                Currently selected: <span className="font-medium text-stone-700">{modelPrefs.generate}</span>
+              {/* Model usage note */}
+              <div className="mt-4 flex items-start gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200">
+                <Info className="w-4 h-4 text-stone-500 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-stone-600">
+                  <p>
+                    Your chosen model is used for note generation and deep dives. If diagram code fails to compile,
+                    we use <span className="font-medium text-stone-700">{DEFAULT_MODELS.d2Fix}</span> to attempt fixes.
+                  </p>
+                </div>
               </div>
             </div>
           </section>

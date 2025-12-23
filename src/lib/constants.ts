@@ -6,16 +6,8 @@ export const LLM_MODELS = {
 } as const;
 
 // ============================================================================
-// Free Tier & Model Preferences
+// Model Preferences
 // ============================================================================
-
-export const FREE_TIER_MODELS = [
-  'google/gemini-2.0-flash-exp:free',
-  'meta-llama/llama-3.2-3b-instruct:free',
-  'mistralai/mistral-7b-instruct:free',
-] as const;
-
-export type FreeTierModel = (typeof FREE_TIER_MODELS)[number];
 
 export const DEFAULT_MODELS = {
   generate: 'x-ai/grok-4-fast',
@@ -30,13 +22,30 @@ export const HEADERS = {
   MODEL: 'X-Model',
 } as const;
 
-// Available models for user selection
-export const AVAILABLE_MODELS = [
-  { id: 'x-ai/grok-4-fast', label: 'X-AI Grok 4 Fast' },
-  { id: 'openai/gpt-4o-mini', label: 'OpenAI GPT-4o Mini' },
-  { id: 'google/gemini-2.5-flash', label: 'Google Gemini 2.5 Flash' },
-  { id: 'anthropic/claude-sonnet-4.5', label: 'Anthropic Claude Sonnet 4.5' },
-] as const;
+// Model definitions with grouping
+export type ModelInfo = {
+  id: string;
+  label: string;
+  description?: string;
+};
+
+export const FREE_MODELS: ModelInfo[] = [
+  { id: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash', description: 'Fast & capable' },
+  { id: 'meta-llama/llama-4-scout:free', label: 'Llama 4 Scout', description: 'Meta\'s latest' },
+  { id: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1', description: 'Balanced performance' },
+  { id: 'qwen/qwen3-14b:free', label: 'Qwen 3 14B', description: 'Strong reasoning' },
+];
+
+export const PAID_MODELS: ModelInfo[] = [
+  { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast', description: 'Best quality' },
+  { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4', description: 'Excellent reasoning' },
+  { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini', description: 'Fast & affordable' },
+  { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', description: 'Great value' },
+  { id: 'z-ai/glm-4.7', label: 'GLM 4.7', description: 'ZAI\'s latest' },
+];
+
+// Combined flat list for backward compatibility
+export const AVAILABLE_MODELS = [...PAID_MODELS, ...FREE_MODELS] as const;
 
 // ============================================================================
 // API Configuration
@@ -68,7 +77,7 @@ export const LIMITS = {
 
 export const D2_CONFIG = {
   PADDING: 24,
-  THEME_ID: 101,
+  THEME_ID: 100,
   SKETCH_MODE: true,
   NO_XML_TAG: true,
   STROKE_WIDTH: 2,
