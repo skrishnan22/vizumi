@@ -8,10 +8,12 @@ import { processUrl } from '@/lib/url-processor';
 import { logger } from '@/lib/logger';
 import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
-import { MAX_DURATIONS_SECS, FEATURE_FLAGS } from '@/lib/constants';
+import { FEATURE_FLAGS } from '@/lib/constants';
 import { createSecureContentPrompt, sanitizeBlocks, type Block } from '@/lib/security';
 
-export const maxDuration = MAX_DURATIONS_SECS.GENERATE;
+// Next.js segment config values must be statically analyzable literals.
+// Using the imported constant directly trips the validator, so inline the value.
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
