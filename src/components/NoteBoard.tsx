@@ -104,29 +104,31 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   }, []);
 
   /**
-   * Handle node changes from ReactFlow.
+   * Handle node position changes from ReactFlow.
    *
-   * In controlled mode, ReactFlow needs us to apply ALL changes to state,
-   * otherwise the UI won't update. We use a two-phase approach:
-   *
-   * Phase 1 (During drag): Update Zustand immediately for visual feedback
-   * Phase 2 (After drag): Persist to Y.Doc for permanent storage
+   * During drag: Update Zustand for immediate visual feedback
+   * After drag: Persist to Y.Doc (position may be undefined, so fallback to current state)
    */
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      changes.forEach((change) => {
-        if (change.type === 'position' && change.position) {
-          if (change.dragging) {
-            updateNode(change.id, { position: change.position });
-          } else {
-            updateNodePosition(noteId, change.id, change.position);
-            // Disable auto-layout since user manually positioned
-            setAutoLayoutEnabled(false);
-          }
+      for (const change of changes) {
+        if (change.type !== 'position') continue;
+
+        if (change.dragging && change.position) {
+          updateNode(change.id, { position: change.position });
+          continue;
         }
-      });
+
+        if (change.dragging === false) {
+          const finalPosition = change.position ?? nodes.find((n) => n.id === change.id)?.position;
+          if (!finalPosition) continue;
+
+          updateNodePosition(noteId, change.id, finalPosition);
+          setAutoLayoutEnabled(false);
+        }
+      }
     },
-    [noteId, setAutoLayoutEnabled, updateNode]
+    [noteId, nodes, setAutoLayoutEnabled, updateNode]
   );
 
   // Handle edge changes (selection, etc.)
