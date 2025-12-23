@@ -6,16 +6,8 @@ export const LLM_MODELS = {
 } as const;
 
 // ============================================================================
-// Free Tier & Model Preferences
+// Model Preferences
 // ============================================================================
-
-export const FREE_TIER_MODELS = [
-  'google/gemini-2.0-flash-exp:free',
-  'meta-llama/llama-3.2-3b-instruct:free',
-  'mistralai/mistral-7b-instruct:free',
-] as const;
-
-export type FreeTierModel = (typeof FREE_TIER_MODELS)[number];
 
 export const DEFAULT_MODELS = {
   generate: 'x-ai/grok-4-fast',
@@ -49,6 +41,7 @@ export const PAID_MODELS: ModelInfo[] = [
   { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4', description: 'Excellent reasoning' },
   { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini', description: 'Fast & affordable' },
   { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', description: 'Great value' },
+  { id: 'z-ai/glm-4.7', label: 'GLM 4.7', description: 'ZAI\'s latest' },
 ];
 
 // Combined flat list for backward compatibility

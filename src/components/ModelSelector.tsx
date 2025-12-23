@@ -92,38 +92,48 @@ export function ModelSelector({ value, onChange, disabled, className }: ModelSel
           sideOffset={8}
           align="start"
         >
-          {/* Paid Models Section */}
-          <div className="p-1.5">
-            <DropdownMenu.Label className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Premium Models
-            </DropdownMenu.Label>
-            {PAID_MODELS.map((model) => (
-              <ModelItem
-                key={model.id}
-                model={model}
-                isSelected={value === model.id}
-                onSelect={() => handleSelect(model.id)}
-              />
-            ))}
-          </div>
+          <div className="max-h-[300px] overflow-y-auto">
+            {/* Paid Models Section */}
+            <div className="flex flex-col">
+              <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-amber-100/50">
+                <DropdownMenu.Label className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-700 bg-amber-50/50 uppercase tracking-wide">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  Premium Models
+                </DropdownMenu.Label>
+              </div>
+              <div className="p-1.5 pt-1">
+                {PAID_MODELS.map((model) => (
+                  <ModelItem
+                    key={model.id}
+                    model={model}
+                    isSelected={value === model.id}
+                    onSelect={() => handleSelect(model.id)}
+                  />
+                ))}
+              </div>
+            </div>
 
-          <DropdownMenu.Separator className="h-px bg-stone-200 mx-2" />
+            <div className="h-px bg-stone-100" />
 
-          {/* Free Models Section */}
-          <div className="p-1.5">
-            <DropdownMenu.Label className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-              <Zap className="w-3.5 h-3.5 text-emerald-500" />
-              Free Models
-            </DropdownMenu.Label>
-            {FREE_MODELS.map((model) => (
-              <ModelItem
-                key={model.id}
-                model={model}
-                isSelected={value === model.id}
-                onSelect={() => handleSelect(model.id)}
-              />
-            ))}
+            {/* Free Models Section */}
+            <div className="flex flex-col">
+              <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-emerald-100/50">
+                <DropdownMenu.Label className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50/50 uppercase tracking-wide">
+                  <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                  Free Models
+                </DropdownMenu.Label>
+              </div>
+              <div className="p-1.5 pt-1">
+                {FREE_MODELS.map((model) => (
+                  <ModelItem
+                    key={model.id}
+                    model={model}
+                    isSelected={value === model.id}
+                    onSelect={() => handleSelect(model.id)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

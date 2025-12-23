@@ -247,6 +247,15 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
             />
           </div>
 
+          <div className={styles.inputDivider} />
+
+          <ModelSelector
+            value={effectiveModel}
+            onChange={setSessionModel}
+            disabled={isLoading}
+            className={styles.embeddedModelSelector}
+          />
+
           <button
             type="button"
             onClick={handleGenerate}
@@ -279,19 +288,6 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
           </button>
         </div>
 
-        <p className={styles.hint}>
-          Works with blogs, documentation, news articles, and more
-        </p>
-
-        {/* Model selector */}
-        <div className={styles.modelSelector}>
-          <span className={styles.modelLabel}>Model:</span>
-          <ModelSelector
-            value={effectiveModel}
-            onChange={setSessionModel}
-            disabled={isLoading}
-          />
-        </div>
       </div>
 
       {/* Generated Header - Appears when content is generated */}
