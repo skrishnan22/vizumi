@@ -16,6 +16,7 @@ export default defineConfig({
       // Specify multiple entry points
       input: {
         'd2-eval': path.resolve(__dirname, 'evals/d2-eval.ts'),
+        'collect-data': path.resolve(__dirname, 'evals/collect-data.ts'),
       },
       output: {
         format: 'es',
