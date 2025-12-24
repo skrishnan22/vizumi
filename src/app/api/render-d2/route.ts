@@ -129,13 +129,13 @@ async function fixD2SyntaxWithLLM(
 
 type CompileResult =
   | {
-    success: true;
-    svg: string;
-  }
+      success: true;
+      svg: string;
+    }
   | {
-    success: false;
-    error: string;
-  };
+      success: false;
+      error: string;
+    };
 
 /**
  * Attempt to compile and render D2 code (serialized to avoid WASM concurrency issues)
