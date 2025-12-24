@@ -43,9 +43,11 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
 
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
+  const isGenerating = useNoteStore((state) => state.isGenerating);
   const { requestDeepDive } = useDeepDive();
 
-  const hasDiagram = block.d2Code && Boolean(block.d2Code?.trim());
+  // Only render diagram when we have complete d2Code (not while streaming)
+  const hasDiagram = block.d2Code && Boolean(block.d2Code?.trim()) && !isGenerating;
   const hasSvgReady = block.renderedSvg && Boolean(block.renderedSvg?.trim());
 
   // Callback to clear d2Code when rendering fails
@@ -241,8 +243,10 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
             onClick={hasSvgReady ? () => setIsModalOpen(true) : undefined}
             role={hasSvgReady ? 'button' : undefined}
             tabIndex={hasSvgReady ? 0 : undefined}
-            aria-label={hasSvgReady ? "Open diagram in modal" : undefined}
-            style={hasSvgReady ? { cursor: 'pointer' } : { visibility: 'hidden', position: 'absolute' }}
+            aria-label={hasSvgReady ? 'Open diagram in modal' : undefined}
+            style={
+              hasSvgReady ? { cursor: 'pointer' } : { visibility: 'hidden', position: 'absolute' }
+            }
           >
             <DiagramRenderer
               key={block.id}

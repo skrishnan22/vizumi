@@ -14,6 +14,8 @@ type NoteStore = {
   setAutoLayoutEnabled: (value: boolean) => void;
   isDeepDiveStreaming: boolean;
   setDeepDiveStreaming: (isStreaming: boolean) => void;
+  isGenerating: boolean;
+  setGenerating: (isGenerating: boolean) => void;
 
   // Y.js Integration - Single source of truth for ReactFlow
   // These are the ONLY place where nodes/edges live in React state
@@ -41,6 +43,8 @@ export const useNoteStore = create<NoteStore>((set) => ({
   setAutoLayoutEnabled: (value) => set({ autoLayoutEnabled: value }),
   isDeepDiveStreaming: false,
   setDeepDiveStreaming: (isStreaming) => set({ isDeepDiveStreaming: isStreaming }),
+  isGenerating: false,
+  setGenerating: (isGenerating) => set({ isGenerating }),
 
   // Y.js Integration
   nodes: [],

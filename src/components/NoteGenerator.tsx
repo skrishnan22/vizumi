@@ -55,6 +55,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   const [generationStage, setGenerationStage] = useState<'fetching' | 'generating' | null>(null);
   const setNoteId = useNoteStore((state) => state.setNoteId);
   const setMarkdownForNote = useNoteStore((state) => state.setMarkdownForNote);
+  const setGenerating = useNoteStore((state) => state.setGenerating);
 
   // Set noteId in store once on mount
   useEffect(() => {
@@ -109,12 +110,13 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   useEffect(() => {
     if (isLoading) {
       syncedBlockIdsRef.current.clear();
-
       setGenerationStage('generating');
+      setGenerating(true);
     } else {
       setGenerationStage(null);
+      setGenerating(false);
     }
-  }, [isLoading]);
+  }, [isLoading, setGenerating]);
 
   // Show toast on API error and cleanup metadata
   useEffect(() => {
