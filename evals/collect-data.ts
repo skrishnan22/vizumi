@@ -6,6 +6,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import dotenv from 'dotenv';
 import sharp from 'sharp';
 import { checkbox, confirm } from '@inquirer/prompts';
+import pLimit from 'p-limit';
 
 import { LLMNoteSchema, type LLMNote } from '../src/lib/schemas.js';
 import { renderD2ToSvg } from '../src/lib/d2.js';
@@ -21,21 +22,31 @@ const PROMPTS: Record<string, { id: string; name: string; text: string }> = {
 };
 
 const MODELS: { id: string; name: string }[] = [
-  { id: 'openai/gpt-5-mini', name: 'GPT-5 Mini (OpenAI)' },
-  { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite (Google)' },
-  { id: 'deepseek/deepseek-chat-v3.1', name: 'DeepSeek Chat v3.1' },
+  { id: 'openai/gpt-5-mini', name: 'GPT-5 Mini' },
+
+  { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite' },
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2 flash (Free)' },
   { id: 'google/gemini-3-flash-preview', name: 'Gemini 3 Flash' },
+  // { id: 'google/gemma-3-27b-it:free', name: 'Google Gemma3' }, //provider issue
+
   { id: 'x-ai/grok-code-fast-1', name: 'Grok Code Fast 1' },
   { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast' },
+
   { id: 'moonshotai/kimi-k2-0905', name: 'Kimi K2 Moonshot' },
+  { id: 'moonshotai/kimi-k2:free', name: 'Kimi K2 (Free)' },
+
   { id: 'z-ai/glm-4.7', name: 'Z.ai GLM 4.7' },
-  { id: 'google/gemma-3-27b-it:free', name: 'Google Gemma3' },
-  { id: 'xiaomi/mimo-v2-flash:free', name: 'Mimo v2 flash Xiaomi' },
-  { id: 'mistralai/devstral-2512:free', name: 'Mistral' },
+  { id: 'z-ai/glm-4.5-air:free', name: 'Z.ai GLM 4.5 Air (Free)' },
+  { id: 'mistralai/devstral-2512:free', name: 'Mistral (Free)' },
+  { id: 'deepseek/deepseek-chat-v3.1', name: 'DeepSeek Chat v3.1' },
+  { id: 'qwen/qwen3-coder:free', name: 'Qwen 3 Coder(Free)' },
 ];
 
 const COLLECTED_DIR = path.join(process.cwd(), 'evals', 'collected');
 const DATASETS_DIR = path.join(process.cwd(), 'evals', 'datasets');
+
+// D2 compilation must be serialized (concurrency 1)
+const d2Limit = pLimit(1);
 
 interface CollectionMetadata {
   contentId: string;
@@ -226,44 +237,45 @@ async function renderDiagrams(
   const diagramsDir = path.join(outputDir, 'diagrams');
   await fs.mkdir(diagramsDir, { recursive: true });
 
-  let success = 0;
-  let failed = 0;
+  const diagramBlocks = output.blocks.filter(
+    (block) => block.visualType === 'diagram' && block.d2Code
+  );
 
-  for (const block of output.blocks) {
-    if (block.visualType !== 'diagram' || !block.d2Code) {
-      continue;
-    }
+  const results = await Promise.all(
+    diagramBlocks.map((block) =>
+      d2Limit(async () => {
+        const svgPath = path.join(diagramsDir, `${block.id}.svg`);
+        const pngPath = path.join(diagramsDir, `${block.id}.png`);
 
-    const svgPath = path.join(diagramsDir, `${block.id}.svg`);
-    const pngPath = path.join(diagramsDir, `${block.id}.png`);
+        try {
+          const result = await renderD2ToSvg(block.d2Code!);
 
-    try {
-      const result = await renderD2ToSvg(block.d2Code);
+          if (result.ok && result.svg) {
+            await fs.writeFile(svgPath, result.svg, 'utf-8');
+            await sharp(Buffer.from(result.svg)).png().toFile(pngPath);
+            return { success: true };
+          } else {
+            await fs.writeFile(
+              path.join(diagramsDir, `${block.id}.error.txt`),
+              JSON.stringify(result) || 'Unknown error',
+              'utf-8'
+            );
+            return { success: false };
+          }
+        } catch (error) {
+          await fs.writeFile(
+            path.join(diagramsDir, `${block.id}.error.txt`),
+            error instanceof Error ? error.message : 'Unknown error',
+            'utf-8'
+          );
+          return { success: false };
+        }
+      })
+    )
+  );
 
-      if (result.ok && result.svg) {
-        await fs.writeFile(svgPath, result.svg, 'utf-8');
-
-        await sharp(Buffer.from(result.svg)).png().toFile(pngPath);
-
-        success++;
-      } else {
-        // Save error info
-        await fs.writeFile(
-          path.join(diagramsDir, `${block.id}.error.txt`),
-          JSON.stringify(result) || 'Unknown error',
-          'utf-8'
-        );
-        failed++;
-      }
-    } catch (error) {
-      await fs.writeFile(
-        path.join(diagramsDir, `${block.id}.error.txt`),
-        error instanceof Error ? error.message : 'Unknown error',
-        'utf-8'
-      );
-      failed++;
-    }
-  }
+  const success = results.filter((r) => r.success).length;
+  const failed = results.filter((r) => !r.success).length;
 
   return { success, failed };
 }
@@ -442,32 +454,64 @@ async function run() {
     selectedModels = selection.selectedModels;
   }
 
-  // Run collection
+  // Flatten jobs into array
+  type Job = {
+    dataset: Dataset;
+    promptId: string;
+    promptText: string;
+    modelId: string;
+  };
+
+  const jobs: Job[] = [];
+  for (const dataset of selectedContent) {
+    for (const prompt of selectedPrompts) {
+      for (const modelId of selectedModels) {
+        jobs.push({
+          dataset,
+          promptId: prompt.id,
+          promptText: prompt.text,
+          modelId,
+        });
+      }
+    }
+  }
+
+  // LLM generation can run in parallel
+  const LLM_CONCURRENCY = 5;
+  const llmLimit = pLimit(LLM_CONCURRENCY);
+
+  console.log(`\nRunning ${jobs.length} jobs with concurrency ${LLM_CONCURRENCY}...`);
+
+  // Run collection in parallel
+  const results = await Promise.all(
+    jobs.map((job, index) =>
+      llmLimit(async () => {
+        console.log(
+          `[${index + 1}/${jobs.length}] ${job.dataset.id} / ${job.promptId} / ${job.modelId}`
+        );
+        return collectOne(
+          job.dataset,
+          job.promptId,
+          job.promptText,
+          job.modelId,
+          args.force ?? false
+        );
+      })
+    )
+  );
+
+  // Count results
   let completed = 0;
   let skipped = 0;
   let failed = 0;
 
-  for (const dataset of selectedContent) {
-    console.log(`\n Processing: ${dataset.id}`);
-
-    for (const prompt of selectedPrompts) {
-      for (const modelId of selectedModels) {
-        const result = await collectOne(
-          dataset,
-          prompt.id,
-          prompt.text,
-          modelId,
-          args.force ?? false
-        );
-
-        if (result.output === null && result.metadata.timestamp === '') {
-          skipped++;
-        } else if (result.metadata.success) {
-          completed++;
-        } else {
-          failed++;
-        }
-      }
+  for (const result of results) {
+    if (result.output === null && result.metadata.timestamp === '') {
+      skipped++;
+    } else if (result.metadata.success) {
+      completed++;
+    } else {
+      failed++;
     }
   }
 
