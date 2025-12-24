@@ -43,6 +43,7 @@ next-env.d.ts
 dist/*
 
 evals/results/*
+evals/collected/*
 *.jsonl
 
 test-results/*
