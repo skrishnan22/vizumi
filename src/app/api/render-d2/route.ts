@@ -5,13 +5,7 @@ import { D2_SYNTAX_FIX_PROMPT } from '@/lib/prompts';
 import { logger } from '@/lib/logger';
 import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
-import {
-  MAX_DURATIONS_SECS,
-  LIMITS,
-  TIMEOUTS,
-  D2_CONFIG,
-  D2_THEME_COLORS,
-} from '@/lib/constants';
+import { LIMITS, TIMEOUTS, D2_CONFIG, D2_THEME_COLORS } from '@/lib/constants';
 
 const d2 = new D2();
 
@@ -175,7 +169,8 @@ async function tryCompileD2(code: string, theme: string): Promise<CompileResult>
 }
 
 export const runtime = 'nodejs';
-export const maxDuration = MAX_DURATIONS_SECS.RENDER_D2;
+// Inline literal to satisfy Next.js segment config validation.
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
   const startTime = Date.now();

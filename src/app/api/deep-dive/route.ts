@@ -3,11 +3,11 @@ import { getPromptForMode } from '@/lib/deepDivePrompts';
 import { logger } from '@/lib/logger';
 import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
-import { MAX_DURATIONS_SECS } from '@/lib/constants';
 import { processUrl } from '@/lib/url-processor';
 import { createSecureDeepDivePrompt } from '@/lib/security';
 
-export const maxDuration = MAX_DURATIONS_SECS.DEEP_DIVE;
+// Inline literal to satisfy Next.js segment config validation.
+export const maxDuration = 60;
 
 type DeepDiveRequest = {
   nodeId: string;
