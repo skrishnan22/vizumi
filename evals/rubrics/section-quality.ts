@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export const SECTION_QUALITY_RUBRIC = `You are an expert evaluator assessing how well content has been chunked into sections.
 
 ## Your Task
@@ -74,21 +76,13 @@ Respond with valid JSON only:
   "justification": "<1-2 sentence summary>"
 }`;
 
-export const SECTION_QUALITY_SCHEMA = {
-  type: 'object',
-  properties: {
-    scores: {
-      type: 'object',
-      properties: {
-        logical_boundaries: { type: 'number', minimum: 1, maximum: 5 },
-        coverage: { type: 'number', minimum: 1, maximum: 5 },
-        balance: { type: 'number', minimum: 1, maximum: 5 },
-        no_overlap: { type: 'number', minimum: 1, maximum: 5 },
-      },
-      required: ['logical_boundaries', 'coverage', 'balance', 'no_overlap'],
-    },
-    overall_score: { type: 'number', minimum: 1, maximum: 5 },
-    justification: { type: 'string' },
-  },
-  required: ['scores', 'overall_score', 'justification'],
-} as const;
+export const SECTION_QUALITY_SCHEMA = z.object({
+  scores: z.object({
+    logical_boundaries: z.number().min(1).max(5),
+    coverage: z.number().min(1).max(5),
+    balance: z.number().min(1).max(5),
+    no_overlap: z.number().min(1).max(5),
+  }),
+  overall_score: z.number().min(1).max(5),
+  justification: z.string(),
+});

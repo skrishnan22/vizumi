@@ -30,7 +30,7 @@ export async function callTextJudge<T extends z.ZodTypeAny>(
   prompt: string,
   schema: T,
   options: JudgeOptions = {}
-): Promise<z.infer<T>> {
+) {
   const {
     maxRetries = JUDGE_CONFIG.textJudge.maxRetries,
     temperature = JUDGE_CONFIG.textJudge.temperature,
