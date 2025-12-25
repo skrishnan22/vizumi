@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export const SUMMARY_QUALITY_RUBRIC = `You are an expert evaluator assessing AI-generated summaries.
 
 ## Your Task
@@ -81,21 +83,13 @@ Respond with valid JSON only:
   "justification": "<1-2 sentence summary>"
 }`;
 
-export const SUMMARY_QUALITY_SCHEMA = {
-  type: 'object',
-  properties: {
-    scores: {
-      type: 'object',
-      properties: {
-        coherence: { type: 'number', minimum: 1, maximum: 5 },
-        completeness: { type: 'number', minimum: 1, maximum: 5 },
-        conciseness: { type: 'number', minimum: 1, maximum: 5 },
-        clarity: { type: 'number', minimum: 1, maximum: 5 },
-      },
-      required: ['coherence', 'completeness', 'conciseness', 'clarity'],
-    },
-    overall_score: { type: 'number', minimum: 1, maximum: 5 },
-    justification: { type: 'string' },
-  },
-  required: ['scores', 'overall_score', 'justification'],
-} as const;
+export const SUMMARY_QUALITY_SCHEMA = z.object({
+  scores: z.object({
+    coherence: z.number().min(1).max(5),
+    completeness: z.number().min(1).max(5),
+    conciseness: z.number().min(1).max(5),
+    clarity: z.number().min(1).max(5),
+  }),
+  overall_score: z.number().min(1).max(5),
+  justification: z.string(),
+});

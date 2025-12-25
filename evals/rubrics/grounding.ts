@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export const GROUNDING_RUBRIC = `You are an expert fact-checker evaluating whether a summary is faithful to its source.
 
 ## Your Task
@@ -49,11 +51,7 @@ Respond with valid JSON only:
 
 }`;
 
-export const GROUNDING_SCHEMA = {
-  type: 'object',
-  properties: {
-    overall_score: { type: 'number', minimum: 1, maximum: 5 },
-    justification: { type: 'string' },
-  },
-  required: ['overall_score', 'justification'],
-} as const;
+export const GROUNDING_SCHEMA = z.object({
+  overall_score: z.number().min(1).max(5),
+  justification: z.string(),
+});
