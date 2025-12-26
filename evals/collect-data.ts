@@ -23,8 +23,13 @@ const PROMPTS: Record<string, { id: string; name: string; text: string }> = {
 
 const MODELS: { id: string; name: string }[] = [
   { id: 'openai/gpt-5-mini', name: 'GPT-5 Mini' },
+  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini' },
+
+  { id: 'anthropic/claude-sonnet-4.5', name: 'Claude Sonnet 4.5' },
 
   { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite' },
+
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
   { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2 flash (Free)' },
   { id: 'google/gemini-3-flash-preview', name: 'Gemini 3 Flash' },
   // { id: 'google/gemma-3-27b-it:free', name: 'Google Gemma3' }, //provider issue
@@ -40,6 +45,7 @@ const MODELS: { id: string; name: string }[] = [
   { id: 'mistralai/devstral-2512:free', name: 'Mistral (Free)' },
   { id: 'deepseek/deepseek-chat-v3.1', name: 'DeepSeek Chat v3.1' },
   { id: 'qwen/qwen3-coder:free', name: 'Qwen 3 Coder(Free)' },
+  { id: 'minimax/minimax-m2', name: 'Minmax  M2' },
 ];
 
 const COLLECTED_DIR = path.join(process.cwd(), 'evals', 'collected');

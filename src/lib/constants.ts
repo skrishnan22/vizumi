@@ -1,4 +1,3 @@
-
 export const LLM_MODELS = {
   GENERATION: 'x-ai/grok-code-fast-1',
   D2_FIX: 'openai/gpt-4o-mini',
@@ -30,9 +29,17 @@ export type ModelInfo = {
 };
 
 export const FREE_MODELS: ModelInfo[] = [
-  { id: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash', description: 'Fast & capable' },
-  { id: 'meta-llama/llama-4-scout:free', label: 'Llama 4 Scout', description: 'Meta\'s latest' },
-  { id: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1', description: 'Balanced performance' },
+  {
+    id: 'google/gemini-2.0-flash-exp:free',
+    label: 'Gemini 2.0 Flash',
+    description: 'Fast & capable',
+  },
+  { id: 'meta-llama/llama-4-scout:free', label: 'Llama 4 Scout', description: "Meta's latest" },
+  {
+    id: 'mistralai/mistral-small-3.1-24b-instruct:free',
+    label: 'Mistral Small 3.1',
+    description: 'Balanced performance',
+  },
   { id: 'qwen/qwen3-14b:free', label: 'Qwen 3 14B', description: 'Strong reasoning' },
 ];
 
@@ -41,7 +48,7 @@ export const PAID_MODELS: ModelInfo[] = [
   { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4', description: 'Excellent reasoning' },
   { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini', description: 'Fast & affordable' },
   { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', description: 'Great value' },
-  { id: 'z-ai/glm-4.7', label: 'GLM 4.7', description: 'ZAI\'s latest' },
+  { id: 'z-ai/glm-4.7', label: 'GLM 4.7', description: "ZAI's latest" },
 ];
 
 // Combined flat list for backward compatibility
@@ -69,10 +76,10 @@ export const LIMITS = {
   MAX_D2_FIX_ATTEMPTS: 2,
   MAX_URL_CONTENT_SIZE: 5 * 1024 * 1024,
   // Security: Prevent excessive input that could be used for injection or DoS
-  MAX_CONTENT_LENGTH: 50000, // ~12k tokens - prevents prompt injection via volume
+  MAX_CONTENT_LENGTH: 150000,
   MAX_TITLE_LENGTH: 200,
-  MAX_SUMMARY_LENGTH: 5000,
-  MAX_D2_CODE_LENGTH: 10000,
+  MAX_SUMMARY_LENGTH: 10000,
+  MAX_D2_CODE_LENGTH: 5000,
 } as const;
 
 export const D2_CONFIG = {
