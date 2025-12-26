@@ -285,7 +285,7 @@ async function selectInteractive(outputs: OutputPath[]): Promise<OutputPath[]> {
       selectedModelIds.includes(o.modelId)
   );
 
-  console.log(`\n📊 Found ${filtered.length} outputs to evaluate\n`);
+  console.log(`\nFound ${filtered.length} outputs to evaluate\n`);
 
   const proceed = await confirm({
     message: 'Proceed?',
@@ -352,10 +352,6 @@ async function runDiagramJudge(
   };
 }
 
-// ============================================================
-// Composite Score Calculation
-// ============================================================
-
 function calculateComposite(
   summary: SummaryQualityResult,
   grounding: GroundingResult,
@@ -401,10 +397,6 @@ function calculateComposite(
     diagramAvg: diagramAvg ? Math.round(diagramAvg * 100) / 100 : null,
   };
 }
-
-// ============================================================
-// Single Output Evaluation
-// ============================================================
 
 async function evalSingleOutput(output: OutputPath): Promise<void> {
   console.log(`  🔄 Evaluating: ${output.contentId} / ${output.promptId} / ${output.modelId}`);
