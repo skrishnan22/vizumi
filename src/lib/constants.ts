@@ -36,19 +36,21 @@ export const FREE_MODELS: ModelInfo[] = [
   },
   { id: 'meta-llama/llama-4-scout:free', label: 'Llama 4 Scout', description: "Meta's latest" },
   {
-    id: 'mistralai/mistral-small-3.1-24b-instruct:free',
-    label: 'Mistral Small 3.1',
+    id: 'mistralai/devstral-2512:free	',
+    label: 'Mistral Devstral',
     description: 'Balanced performance',
   },
   { id: 'qwen/qwen3-14b:free', label: 'Qwen 3 14B', description: 'Strong reasoning' },
 ];
 
 export const PAID_MODELS: ModelInfo[] = [
-  { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast', description: 'Best quality' },
-  { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4', description: 'Excellent reasoning' },
-  { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini', description: 'Fast & affordable' },
-  { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', description: 'Great value' },
-  { id: 'z-ai/glm-4.7', label: 'GLM 4.7', description: "ZAI's latest" },
+  { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast' },
+  { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
+  { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+  { id: 'openai/gpt-5-mini', label: 'GPT-5 Mini' },
+  { id: 'google/gemini-3-flash-preview	', label: 'Gemini 3 Flash' },
+  { id: 'z-ai/glm-4.7', label: 'GLM 4.7' },
+  { id: 'minimax/minimax-m2', label: 'MiniMax M2' },
 ];
 
 // Combined flat list for backward compatibility

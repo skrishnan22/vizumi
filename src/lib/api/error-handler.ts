@@ -56,10 +56,20 @@ function parseError(error: unknown): ParsedError {
   }
 
   // Handle standard Error
+  // Sanitize error messages to prevent exposing sensitive data like API keys
   if (error instanceof Error) {
+    // Check if error message might contain sensitive data
+    const message = error.message;
+    const sanitizedMessage = message.includes('OPENROUTER_API_KEY') || 
+                            message.includes('apiKey') || 
+                            message.includes('sk-or-') ||
+                            message.length > 200
+      ? 'An unexpected error occurred'
+      : message;
+    
     return {
       code: 'ERROR',
-      message: error.message,
+      message: sanitizedMessage,
       retryable: false,
       status: 500,
     };
