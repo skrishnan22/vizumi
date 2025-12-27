@@ -1,18 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { type NextRequest, NextResponse } from 'next/server';
-import { proxy } from './proxy';
+import proxy from './proxy';
 import { HEADERS } from '@/lib/constants';
 
-describe('proxy middleware', () => {
+describe('proxy', () => {
   const createMockRequest = (
     pathname: string,
-    headers: Record<string, string> = {}
+    headers: Record<string, string> = {},
+    method: string = 'POST'
   ): NextRequest => {
     const headersList = new Headers(headers);
 
     return {
       nextUrl: { pathname },
       headers: headersList,
+      method,
     } as NextRequest;
   };
 
@@ -141,6 +143,46 @@ describe('proxy middleware', () => {
       const body = await response.json();
       expect(body.error.message).toContain('Add your OpenRouter key in settings');
       expect(body.error.message).toContain('choose a free model');
+    });
+  });
+
+  describe('CORS preflight handling', () => {
+    it('should respond to OPTIONS with 204 and CORS headers', () => {
+      const request = createMockRequest('/api/generate', {}, 'OPTIONS');
+      const response = proxy(request);
+
+      expect(response.status).toBe(204);
+      expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+      expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST');
+      expect(response.headers.get('Access-Control-Allow-Headers')).toContain('X-OpenRouter-Key');
+      expect(response.headers.get('Access-Control-Allow-Headers')).toContain('X-Model');
+    });
+
+    it('should handle OPTIONS for url-metadata route', () => {
+      const request = createMockRequest('/api/url-metadata', {}, 'OPTIONS');
+      const response = proxy(request);
+
+      expect(response.status).toBe(204);
+      expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    });
+
+    it('should add CORS headers to successful responses', () => {
+      const request = createMockRequest('/api/generate', {
+        [HEADERS.API_KEY]: 'user-key',
+      });
+      const response = proxy(request);
+
+      expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    });
+
+    it('should add CORS headers to error responses', async () => {
+      const request = createMockRequest('/api/generate', {
+        [HEADERS.MODEL]: 'openai/gpt-4',
+      });
+      const response = proxy(request);
+
+      expect(response.status).toBe(403);
+      expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
     });
   });
 });

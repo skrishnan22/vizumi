@@ -1,4 +1,4 @@
-import { JSDOM } from 'jsdom';
+import { parseHTML } from 'linkedom';
 import { Readability } from '@mozilla/readability';
 import TurndownService from 'turndown';
 import { z } from 'zod';
@@ -20,11 +20,11 @@ export async function processUrl(url: string) {
   }
 
   try {
-    const dom = await fetchAndParseHtml(url);
-    const markdown = extractMarkdown(dom);
+    const { document } = await fetchAndParseHtml(url);
+    const markdown = extractMarkdown(document);
 
     // Extract title for metadata prefix
-    const reader = new Readability(dom.window.document);
+    const reader = new Readability(document.cloneNode(true) as Document);
     const article = reader.parse();
     const title = article?.title || 'Untitled';
 
@@ -46,7 +46,7 @@ export interface UrlMetadata {
 }
 
 /**
- * Shared utility to fetch HTML and create JSDOM instance
+ * Shared utility to fetch HTML and parse with linkedom
  */
 async function fetchAndParseHtml(url: string) {
   const response = await fetch(url, {
@@ -71,14 +71,14 @@ async function fetchAndParseHtml(url: string) {
   }
 
   const html = await response.text();
-  return new JSDOM(html, { url });
+  return parseHTML(html);
 }
 
 /**
  * Extract markdown content from HTML DOM using Readability
  */
-function extractMarkdown(dom: JSDOM): string {
-  const reader = new Readability(dom.window.document);
+function extractMarkdown(document: Document): string {
+  const reader = new Readability(document.cloneNode(true) as Document);
   const article = reader.parse();
 
   if (!article || !article.content) {
@@ -111,8 +111,7 @@ export async function processUrlMetadata(url: string): Promise<UrlMetadata> {
   }
 
   try {
-    const dom = await fetchAndParseHtml(url);
-    const document = dom.window.document;
+    const { document } = await fetchAndParseHtml(url);
 
     // Extract title: try og:title first, then regular title
     const title =
@@ -128,7 +127,7 @@ export async function processUrlMetadata(url: string): Promise<UrlMetadata> {
       undefined;
 
     // Extract markdown
-    const markdown = extractMarkdown(dom);
+    const markdown = extractMarkdown(document);
 
     return {
       title: title.trim(),
