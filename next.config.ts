@@ -1,9 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['pino'],
-  // Prevent trailing slash redirects that convert POST to GET (causing 405)
-  skipTrailingSlashRedirect: true,
+  serverExternalPackages: ['pino', '@terrastruct/d2', '@terrastruct/wasm'],
 };
 
 export default nextConfig;
