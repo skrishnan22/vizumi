@@ -13,6 +13,7 @@ import { createSecureContentPrompt, sanitizeBlocks, type Block } from '@/lib/sec
 
 // Next.js segment config values must be statically analyzable literals.
 // Using the imported constant directly trips the validator, so inline the value.
+export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
