@@ -138,7 +138,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
 
       {/* Deep Dive Toolbar - only shows for content blocks when selected */}
       <NodeToolbar isVisible={showToolbar} position={Position.Top} offset={10}>
-        <div className={styles.deepDiveToolbar}>
+        <div className={styles.deepDiveToolbar} onMouseDown={(e) => e.stopPropagation()}>
           {renderToolbarButton('eli5', "Explain Like I'm 5")}
           {renderToolbarButton('analogy', 'Create an Analogy')}
           {renderToolbarButton('mental-model', 'Build a Mental Model')}

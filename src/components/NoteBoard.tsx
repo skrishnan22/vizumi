@@ -112,6 +112,12 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       for (const change of changes) {
+        // Handle selection changes
+        if (change.type === 'select') {
+          updateNode(change.id, { selected: change.selected });
+          continue;
+        }
+
         if (change.type !== 'position') continue;
 
         if (change.dragging && change.position) {

@@ -49,7 +49,16 @@ export const useNoteStore = create<NoteStore>((set) => ({
   // Y.js Integration
   nodes: [],
   edges: [],
-  setGraph: (nodes, edges) => set({ nodes, edges }),
+  setGraph: (newNodes, edges) =>
+    set((state) => {
+      // Preserve selection state from current nodes (selection is ephemeral, not in Y.Doc)
+      const selectionMap = new Map(state.nodes.map((n) => [n.id, n.selected]));
+      const nodesWithSelection = newNodes.map((n) => ({
+        ...n,
+        selected: selectionMap.get(n.id) ?? false,
+      }));
+      return { nodes: nodesWithSelection, edges };
+    }),
 
   // Optimized individual node updates
   updateNode: (nodeId, updates) =>
