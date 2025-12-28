@@ -1,30 +1,33 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { API_CONFIG } from '@/lib/constants';
 
-// Cache to store client instances keyed by API key
-const clientCache = new Map<string, ReturnType<typeof createOpenAI>>();
+const systemApiKey = process.env.OPENROUTER_API_KEY;
+const systemClient = systemApiKey
+  ? createOpenAI({
+    baseURL: API_CONFIG.OPENROUTER_BASE_URL,
+    apiKey: systemApiKey,
+  })
+  : null;
 
 /**
- * Creates or retrieves a cached OpenRouter API client for the provided API key
+ * Creates an OpenRouter API client for the provided API key
  *
- * Uses a singleton pattern - multiple calls with the same API key will return
- * the same client instance, avoiding unnecessary object creation.
+ * For the system API key, returns a pre-created singleton to avoid
+ * unnecessary object creation. For BYOK (Bring Your Own Key) users,
+ * creates a fresh client each time to avoid unbounded cache growth.
  *
  * @param apiKey - The OpenRouter API key to use for authentication
  * @returns An OpenAI-compatible client configured for OpenRouter
  */
 export function createOpenRouterClient(apiKey: string) {
-  const cacheKey = apiKey;
 
-  if (clientCache.has(cacheKey)) {
-    return clientCache.get(cacheKey)!;
+  if (systemClient && apiKey === systemApiKey) {
+    return systemClient;
   }
 
-  const client = createOpenAI({
+
+  return createOpenAI({
     baseURL: API_CONFIG.OPENROUTER_BASE_URL,
     apiKey,
   });
-
-  clientCache.set(cacheKey, client);
-  return client;
 }
