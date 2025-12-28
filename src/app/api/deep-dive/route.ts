@@ -7,6 +7,7 @@ import { processUrl } from '@/lib/url-processor';
 import { createSecureDeepDivePrompt } from '@/lib/security';
 
 // Inline literal to satisfy Next.js segment config validation.
+export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 type DeepDiveRequest = {
