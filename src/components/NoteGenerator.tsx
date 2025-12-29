@@ -217,7 +217,9 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
       </div>
 
       {/* Main Input - Fades out when content is generated */}
-      <div className={`${styles.contentContainer} ${blocks.length > 0 ? styles.contentHidden : styles.contentCentered}`}>
+      <div
+        className={`${styles.contentContainer} ${blocks.length > 0 ? styles.contentHidden : styles.contentCentered}`}
+      >
         {/* Animated Illustration */}
         <div className={styles.illustrationWrapper}>
           <HeroIllustration />
@@ -303,7 +305,6 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
             )}
           </button>
         </div>
-
       </div>
 
       {/* Generated Header - Appears when content is generated */}
@@ -316,7 +317,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
             </a>
           </header>
           <div className={styles.boardContainer}>
-            <NoteBoard noteId={noteId} />
+            <NoteBoard noteId={noteId} sessionModel={effectiveModel} />
           </div>
         </>
       )}

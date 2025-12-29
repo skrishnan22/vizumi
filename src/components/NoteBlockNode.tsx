@@ -39,6 +39,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
     onSaveRenderedSvg,
     onUpdateBlockData,
     onOpenDrawer,
+    sessionModel,
   } = data;
 
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -253,6 +254,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
               code={block.d2Code ?? ''}
               cachedSvg={block.renderedSvg}
               className={styles.nodeDiagram}
+              model={sessionModel}
               onSuccess={() => requestAnimationFrame(() => measureHeight())}
               onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
               onRenderFailure={handleDiagramFailure}
@@ -265,6 +267,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
           code={block.d2Code}
           cachedSvg={block.renderedSvg}
           title={block.title || 'Diagram'}
+          model={sessionModel}
           onClose={() => setIsModalOpen(false)}
           onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
           onRenderFailure={handleDiagramFailure}

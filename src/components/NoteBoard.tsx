@@ -21,6 +21,7 @@ import { type NoteNodeData } from '@/lib/yjs/utils';
 
 type NoteBoardProps = {
   noteId: string;
+  sessionModel?: string;
 };
 
 // Must be defined outside component or memoized to prevent ReactFlow warnings
@@ -28,7 +29,7 @@ const nodeTypes = {
   note: NoteBlockNode,
 } as const;
 
-export function NoteBoard({ noteId }: NoteBoardProps) {
+export function NoteBoard({ noteId, sessionModel }: NoteBoardProps) {
   const { isLoading, isEmpty } = useNoteDoc(noteId); // Bind Y.Doc and sync to store
 
   const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
@@ -138,7 +139,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
   );
 
   // Handle edge changes (selection, etc.)
-  const handleEdgesChange = useCallback((_changes: EdgeChange[]) => { }, []);
+  const handleEdgesChange = useCallback((_changes: EdgeChange[]) => {}, []);
 
   /**
    * Inject stable callbacks into nodes.
@@ -162,6 +163,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
         onSaveRenderedSvg: handleSaveRenderedSvg,
         onUpdateBlockData: handleUpdateBlockData,
         onOpenDrawer: handleOpenDrawer,
+        sessionModel, // Pass session model to nodes for DiagramRenderer
       },
     }));
   }, [
@@ -171,6 +173,7 @@ export function NoteBoard({ noteId }: NoteBoardProps) {
     handleSaveRenderedSvg,
     handleUpdateBlockData,
     handleOpenDrawer,
+    sessionModel,
   ]);
 
   // Loading state while IndexedDB syncs

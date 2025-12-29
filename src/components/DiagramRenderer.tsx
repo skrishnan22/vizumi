@@ -6,11 +6,13 @@ import parse, { domToReact, type DOMNode, type HTMLReactParserOptions } from 'ht
 import type { Element } from 'domhandler';
 import { logger } from '@/lib/logger.client';
 import { useSettings } from '@/hooks/use-settings';
+import { HEADERS } from '@/lib/constants';
 
 type DiagramRendererProps = {
   code: string;
   cachedSvg?: string;
   className?: string;
+  model?: string; // Optional session model, falls back to saved preference
   onSuccess?: () => void;
   onSvgRendered?: (svg: string) => void;
   onRenderFailure?: () => void;
@@ -65,12 +67,30 @@ export function DiagramRenderer({
   code,
   cachedSvg,
   className,
+  model,
   onSuccess,
   onSvgRendered,
   onRenderFailure,
 }: DiagramRendererProps) {
   const sanitizedCode = code?.trim() ?? '';
-  const { getRequestHeaders } = useSettings();
+  const { getRequestHeaders, apiKey } = useSettings();
+
+  // Use provided model or fall back to saved preference
+  const headers = useMemo(() => {
+    if (model) {
+      // Use session model if provided
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        [HEADERS.MODEL]: model,
+      };
+      if (apiKey) {
+        headers[HEADERS.API_KEY] = apiKey;
+      }
+      return headers;
+    }
+    // Fall back to saved preference
+    return getRequestHeaders('d2Fix');
+  }, [model, apiKey, getRequestHeaders]);
 
   const {
     data: svg,
@@ -79,7 +99,7 @@ export function DiagramRenderer({
   } = useSWR(
     // Only fetch if we don't have cached SVG
     cachedSvg ? null : sanitizedCode || null,
-    (code) => fetchDiagramSvg(code, getRequestHeaders('d2Fix')),
+    (code) => fetchDiagramSvg(code, headers),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
