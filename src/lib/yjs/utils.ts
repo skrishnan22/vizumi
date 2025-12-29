@@ -14,6 +14,7 @@ export type NoteNodeData = {
   onOpenDrawer?: (id: string) => void;
   onSaveRenderedSvg?: (id: string, svg: string) => void;
   onUpdateBlockData?: (id: string, data: Partial<NoteBlock>) => void;
+  sessionModel?: string;
 };
 
 /**

@@ -45,7 +45,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
   const isGenerating = useNoteStore((state) => state.isGenerating);
-  const { requestDeepDive } = useDeepDive();
+  const { requestDeepDive } = useDeepDive(data.sessionModel);
 
   // Only render diagram when we have complete d2Code (not while streaming)
   const hasDiagram = block.d2Code && Boolean(block.d2Code?.trim()) && !isGenerating;
