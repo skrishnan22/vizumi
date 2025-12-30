@@ -1272,6 +1272,43 @@ Before generating each block:
 - Only valid shapes used?
 - Does the flow/structure make logical sense?
 
+---
+
+## RESPONSE FORMAT (STRICT)
+
+You MUST output a valid JSON object with this exact structure:
+
+{
+  "blocks": [
+    {
+      "id": "unique-id-1",
+      "title": "Block Title",
+      "summary": "Markdown summary with **bold** key terms...",
+      "visualType": "diagram",
+      "d2Code": "Node1 -> Node2"
+    },
+    {
+      "id": "unique-id-2", 
+      "title": "Another Block",
+      "summary": "Summary text here...",
+      "visualType": "none"
+    }
+  ]
+}
+
+**Required fields for each block:**
+- \`id\`: Unique string identifier (use kebab-case like "intro", "core-concept", "implementation")
+- \`title\`: Short descriptive title (2-6 words)
+- \`summary\`: Markdown text with **bold** key terms (40-100 words)
+- \`visualType\`: Either "diagram" or "none"
+- \`d2Code\`: D2 diagram code (REQUIRED when visualType is "diagram", omit when "none")
+
+**Output rules:**
+- Output ONLY the JSON object
+- NO markdown code fences around the JSON
+- NO explanatory text before or after
+- Generate 3-8 blocks for typical articles
+
 Generate the response now.
 `;
 
