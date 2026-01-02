@@ -21,6 +21,41 @@ const WEIGHTS_NO_DIAGRAMS = {
   diagram: 0,
 };
 
+// Model pricing: cost per 1M output tokens in USD (from OpenRouter)
+// Source: https://openrouter.ai/models
+const MODEL_PRICING: Record<string, number> = {
+  // OpenAI
+  'openai/gpt-5-mini': 2.0, // estimated based on similar models
+  'openai/gpt-4o-mini': 0.6,
+
+  // Anthropic
+  'anthropic/claude-sonnet-4.5': 15.0,
+
+  // Google
+  'google/gemini-2.5-flash-lite': 0.4,
+  'google/gemini-2.5-flash': 2.5,
+  'google/gemini-2.0-flash-exp:free': 0,
+  'google/gemini-3-flash-preview': 3.0, // estimated
+
+  // xAI
+  'x-ai/grok-code-fast-1': 1.5, // estimated
+  'x-ai/grok-4.1-fast': 0.5, // estimated
+
+  // Moonshot
+  'moonshotai/kimi-k2-0905': 1.9, // estimated
+  'moonshotai/kimi-k2:free': 0,
+
+  // Z.ai / Zhipu
+  'z-ai/glm-4.7': 1.5, // estimated
+  'z-ai/glm-4.5-air:free': 0,
+
+  // Others
+  'mistralai/devstral-2512:free': 0,
+  'deepseek/deepseek-chat-v3.1': 0.75,
+  'qwen/qwen3-coder:free': 0,
+  'minimax/minimax-m2': 1.1, // estimated
+};
+
 interface DiagramEvalResult {
   blockId: string;
   scores: {
@@ -107,6 +142,7 @@ interface ModelStats {
   avgDiagramFailRate: number;
   totalDiagrams: number;
   totalDiagramsFailed: number;
+  costPer1MTokens: number | null; // USD per 1M output tokens
 }
 
 interface PromptStats {
@@ -284,6 +320,7 @@ function aggregateByModel(data: AdjustedMetadata[]): ModelStats[] {
         totalDiagrams + totalFailed > 0 ? round(totalFailed / (totalDiagrams + totalFailed)) : 0,
       totalDiagrams,
       totalDiagramsFailed: totalFailed,
+      costPer1MTokens: MODEL_PRICING[modelId] ?? null,
     });
   }
 
@@ -341,6 +378,39 @@ function aggregateByContent(data: AdjustedMetadata[]): ContentStats[] {
 
 function round(n: number, decimals = 2): number {
   return Math.round(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
+}
+
+/**
+ * Calculate Pareto frontier for cost vs quality.
+ * A model is on the frontier if no other model has both lower cost AND higher quality.
+ * Returns model IDs that are on the Pareto frontier, sorted by cost ascending.
+ */
+function calculateParetoFrontier(
+  modelStats: ModelStats[]
+): { modelId: string; cost: number; score: number }[] {
+  // Filter to models with known pricing
+  const modelsWithCost = modelStats.filter((m) => m.costPer1MTokens !== null);
+
+  // Sort by cost ascending
+  const sorted = [...modelsWithCost].sort((a, b) => a.costPer1MTokens! - b.costPer1MTokens!);
+
+  const frontier: { modelId: string; cost: number; score: number }[] = [];
+  let maxScore = -Infinity;
+
+  // Sweep from lowest cost to highest
+  // A model is on the frontier if it has a higher score than all cheaper models
+  for (const model of sorted) {
+    if (model.avgAdjustedComposite > maxScore) {
+      frontier.push({
+        modelId: model.modelId,
+        cost: model.costPer1MTokens!,
+        score: model.avgAdjustedComposite,
+      });
+      maxScore = model.avgAdjustedComposite;
+    }
+  }
+
+  return frontier;
 }
 
 interface ExtremeResult {
@@ -431,12 +501,22 @@ function generateHtmlReport(
   modelStats: ModelStats[],
   promptStats: PromptStats[],
   contentStats: ContentStats[],
-  extremes: ReturnType<typeof findExtremes>
+  extremes: ReturnType<typeof findExtremes>,
+  paretoFrontier: ReturnType<typeof calculateParetoFrontier>
 ): string {
   const timestamp = new Date().toISOString();
   const totalOutputs = data.length;
   const avgAdjustedComposite = round(avg(data.map((d) => d.adjustedComposite.score)));
   const avgOriginalComposite = round(avg(data.map((d) => d.evals!.composite.score)));
+
+  // Prepare cost vs quality data for scatter chart
+  const modelsWithCost = modelStats.filter((m) => m.costPer1MTokens !== null);
+  const paretoModelIds = new Set(paretoFrontier.map((p) => p.modelId));
+
+  // Helper to strip provider prefix (e.g., "openai/gpt-4o" → "gpt-4o")
+  function stripProvider(name: string): string {
+    return name.replace(/^[a-zA-Z0-9_-]+\//, '');
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -554,12 +634,24 @@ function generateHtmlReport(
       </div>
     </div>
 
+    <div class="chart-container">
+      <h3>Cost vs Quality (Pareto Frontier)</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">
+        Models on the Pareto frontier (connected line) offer the best value at their price point.
+        Models below the frontier are dominated by better alternatives.
+      </p>
+      <div class="chart-wrapper">
+        <canvas id="paretoChart"></canvas>
+      </div>
+    </div>
+
     <h2>🏆 Model Rankings</h2>
     <table>
       <thead>
         <tr>
           <th>Rank</th>
           <th>Model</th>
+          <th>Cost/1M</th>
           <th>Adjusted Score</th>
           <th>Original Score</th>
           <th>Summary</th>
@@ -577,6 +669,7 @@ function generateHtmlReport(
         <tr>
           <td><span class="rank ${getRankClass(i + 1)}">${i + 1}</span></td>
           <td class="model-name">${m.modelId}</td>
+          <td>${m.costPer1MTokens !== null ? '$' + m.costPer1MTokens : '-'}</td>
           <td class="score ${getScoreClass(m.avgAdjustedComposite)}">${m.avgAdjustedComposite}</td>
           <td>${m.avgComposite}</td>
           <td>${m.avgSummary}</td>
@@ -892,6 +985,152 @@ function generateHtmlReport(
       },
       options: commonOptions
     });
+
+    // Pareto Chart - Cost vs Quality
+    const costQualityData = ${JSON.stringify(
+      modelsWithCost.map((m) => ({
+        x: m.costPer1MTokens,
+        y: m.avgAdjustedComposite,
+        label: stripProvider(m.modelId),
+        fullLabel: m.modelId,
+        isPareto: paretoModelIds.has(m.modelId),
+      }))
+    )};
+
+    const paretoLineData = ${JSON.stringify(
+      paretoFrontier.map((p) => ({ x: p.cost, y: p.score }))
+    )};
+
+    const paretoPoints = costQualityData.filter(d => d.isPareto);
+    const nonParetoPoints = costQualityData.filter(d => !d.isPareto);
+
+    // Register inline labels plugin
+    const inlineLabelsPlugin = {
+      id: 'inlineLabels',
+      afterDraw: function(chart) {
+        const ctx = chart.ctx;
+        const labelsToShow = ['devstral', 'gpt-5-mini', 'sonnet-4.5', 'gemini-3-flash', 'grok-code-fast', 'gpt-4o-mini'];
+
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          if (dataset.label === 'Pareto Optimal' || dataset.label === 'Other Models') {
+            meta.data.forEach((point, index) => {
+              const data = dataset.data[index];
+              if (data.label && labelsToShow.some(l => data.label.includes(l))) {
+                ctx.save();
+                ctx.font = dataset.label === 'Pareto Optimal' ? 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif' : 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.fillStyle = dataset.label === 'Pareto Optimal' ? '#0a5f0a' : '#374151';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+
+                const x = point.x + 12;
+                const y = point.y;
+
+                ctx.fillText(data.label, x, y);
+                ctx.restore();
+              }
+            });
+          }
+        });
+      }
+    };
+
+    // Calculate max values for better scale
+    const maxCost = Math.max(...costQualityData.map(d => d.x), 10);
+    const maxScore = Math.max(...costQualityData.map(d => d.y), 5);
+
+    Chart.register(inlineLabelsPlugin);
+
+    new Chart(document.getElementById('paretoChart'), {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: 'Pareto Frontier',
+            data: paretoLineData,
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            borderWidth: 2,
+            fill: false,
+            showLine: true,
+            pointRadius: 0,
+            tension: 0,
+            order: 2
+          },
+          {
+            label: 'Pareto Optimal',
+            data: paretoPoints,
+            backgroundColor: '#22c55e',
+            borderColor: '#166534',
+            borderWidth: 2,
+            pointRadius: 10,
+            pointHoverRadius: 12,
+            order: 1
+          },
+          {
+            label: 'Other Models',
+            data: nonParetoPoints,
+            backgroundColor: '#94a3b8',
+            borderColor: '#64748b',
+            borderWidth: 1,
+            pointRadius: 7,
+            pointHoverRadius: 9,
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const point = context.raw;
+                if (point.fullLabel) {
+                  return point.fullLabel + ': $' + point.x + '/1M, Score: ' + point.y;
+                }
+                return 'Cost: $' + point.x + ', Score: ' + point.y;
+              }
+            }
+          },
+          inlineLabels: {
+            display: true
+          }
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            title: {
+              display: true,
+              text: 'Cost ($ per 1M output tokens)',
+              font: { weight: 'bold' }
+            },
+            min: 0,
+            max: Math.min(maxCost * 1.1, 20),
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Avg Adjusted Composite Score',
+              font: { weight: 'bold' }
+            },
+            min: 0,
+            max: Math.min(maxScore * 1.1, 5),
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          }
+        }
+      }
+    });
   </script>
 </body>
 </html>`;
@@ -919,7 +1158,8 @@ function generateJsonReport(
   modelStats: ModelStats[],
   promptStats: PromptStats[],
   contentStats: ContentStats[],
-  extremes: ReturnType<typeof findExtremes>
+  extremes: ReturnType<typeof findExtremes>,
+  paretoFrontier: ReturnType<typeof calculateParetoFrontier>
 ): string {
   return JSON.stringify(
     {
@@ -933,6 +1173,7 @@ function generateJsonReport(
       byModel: modelStats,
       byPrompt: promptStats,
       byContent: contentStats,
+      paretoFrontier,
       extremes: {
         bestOverall: { ...extremes.bestOverall, metadata: undefined },
         worstOverall: { ...extremes.worstOverall, metadata: undefined },
@@ -989,6 +1230,7 @@ async function run() {
   const promptStats = aggregateByPrompt(data);
   const contentStats = aggregateByContent(data);
   const extremes = findExtremes(data);
+  const paretoFrontier = calculateParetoFrontier(modelStats);
 
   // Generate report
   const format = (args.format as string) || 'html';
@@ -1000,9 +1242,23 @@ async function run() {
 
   let content: string;
   if (format === 'json') {
-    content = generateJsonReport(data, modelStats, promptStats, contentStats, extremes);
+    content = generateJsonReport(
+      data,
+      modelStats,
+      promptStats,
+      contentStats,
+      extremes,
+      paretoFrontier
+    );
   } else {
-    content = generateHtmlReport(data, modelStats, promptStats, contentStats, extremes);
+    content = generateHtmlReport(
+      data,
+      modelStats,
+      promptStats,
+      contentStats,
+      extremes,
+      paretoFrontier
+    );
   }
 
   await fs.writeFile(outputPath, content);
