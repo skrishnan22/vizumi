@@ -563,6 +563,7 @@ function generateHtmlReport(
     .model-name { font-family: monospace; font-size: 0.9rem; }
     .chart-container { background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
     .chart-wrapper { position: relative; height: 400px; }
+    .chart-wrapper-tall { position: relative; height: 500px; }
     .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
   </style>
 </head>
@@ -640,7 +641,7 @@ function generateHtmlReport(
         Models on the Pareto frontier (connected line) offer the best value at their price point.
         Models below the frontier are dominated by better alternatives.
       </p>
-      <div class="chart-wrapper">
+      <div class="chart-wrapper-tall">
         <canvas id="paretoChart"></canvas>
       </div>
     </div>
@@ -1004,33 +1005,51 @@ function generateHtmlReport(
     const paretoPoints = costQualityData.filter(d => d.isPareto);
     const nonParetoPoints = costQualityData.filter(d => !d.isPareto);
 
-    // Register inline labels plugin
+    // Register inline labels plugin with smart positioning
     const inlineLabelsPlugin = {
       id: 'inlineLabels',
       afterDraw: function(chart) {
         const ctx = chart.ctx;
         const labelsToShow = ['devstral', 'gpt-5-mini', 'sonnet-4.5', 'gemini-3-flash', 'grok-code-fast', 'gpt-4o-mini'];
 
+        // Collect all points to label with their positions
+        const labeledPoints = [];
         chart.data.datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
           if (dataset.label === 'Pareto Optimal' || dataset.label === 'Other Models') {
             meta.data.forEach((point, index) => {
               const data = dataset.data[index];
-              if (data.label && labelsToShow.some(l => data.label.includes(l))) {
-                ctx.save();
-                ctx.font = dataset.label === 'Pareto Optimal' ? 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif' : 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
-                ctx.fillStyle = dataset.label === 'Pareto Optimal' ? '#0a5f0a' : '#374151';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'middle';
-
-                const x = point.x + 12;
-                const y = point.y;
-
-                ctx.fillText(data.label, x, y);
-                ctx.restore();
+              if (data.label) {
+                labeledPoints.push({
+                  point,
+                  data,
+                  isPareto: dataset.label === 'Pareto Optimal'
+                });
               }
             });
           }
+        });
+
+        // Sort by x position for consistent alternating
+        labeledPoints.sort((a, b) => a.point.x - b.point.x);
+
+        // Draw labels with alternating vertical offset
+        labeledPoints.forEach((item, index) => {
+          const { point, data, isPareto } = item;
+          ctx.save();
+          ctx.font = isPareto ? 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif' : '10px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = isPareto ? '#0a5f0a' : '#374151';
+          ctx.textAlign = 'left';
+          
+          // Alternate labels above/below to reduce overlap
+          const verticalOffset = (index % 2 === 0) ? -7 : 7;
+          ctx.textBaseline = (index % 2 === 0) ? 'bottom' : 'top';
+
+          const x = point.x + 8;
+          const y = point.y + verticalOffset;
+
+          ctx.fillText(data.label, x, y);
+          ctx.restore();
         });
       }
     };
@@ -1104,14 +1123,22 @@ function generateHtmlReport(
         },
         scales: {
           x: {
-            type: 'linear',
+            type: 'logarithmic',
             title: {
               display: true,
-              text: 'Cost ($ per 1M output tokens)',
+              text: 'Cost ($ per 1M output tokens) - Log Scale',
               font: { weight: 'bold' }
             },
-            min: 0,
-            max: Math.min(maxCost * 1.1, 20),
+            min: 0.1,
+            max: Math.min(maxCost * 1.5, 25),
+            ticks: {
+              callback: function(value) {
+                if ([0.1, 0.2, 0.5, 1, 2, 5, 10, 20].includes(value)) {
+                  return '$' + value;
+                }
+                return '';
+              }
+            },
             grid: {
               color: 'rgba(0, 0, 0, 0.05)'
             }
