@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import {
   CanvasAgentResponseSchema,
   type CanvasEdge as CanvasEdgeType,
 } from '@/lib/canvas/schemas-v2';
-import { CanvasBoard } from './CanvasBoard';
+import { CanvasBoard, type CanvasBoardHandle } from './CanvasBoard';
 import { postProcessCards } from '@/lib/canvas/post-process';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -44,6 +44,7 @@ export function CanvasGenerator() {
   const [title, setTitle] = useState('');
   const [generationStage, setGenerationStage] = useState<'fetching' | 'generating' | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const canvasRef = useRef<CanvasBoardHandle | null>(null);
 
   // Process cards with N-1 streaming strategy
   const {
@@ -184,6 +185,29 @@ export function CanvasGenerator() {
     } catch (err) {
       logger.warn('Failed to copy share link to clipboard', err);
       toast.success('Share link ready', { action: { label: 'Open', onClick: openShare } });
+    }
+  };
+
+  const handleExportImage = async () => {
+    if (!cards.length || !canvasRef.current) {
+      toast.error('Generate a canvas before exporting.');
+      return;
+    }
+
+    try {
+      const dataUrl = await canvasRef.current.exportPng();
+      const anchor = document.createElement('a');
+      const safeTitle = (title || 'visual-canvas')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      anchor.href = dataUrl;
+      anchor.download = `${safeTitle || 'visual-canvas'}.png`;
+      anchor.click();
+      toast.success('Canvas image downloaded.');
+    } catch (err) {
+      logger.error('Failed to export canvas image', err);
+      toast.error('Could not export the canvas image.');
     }
   };
 
@@ -333,6 +357,26 @@ export function CanvasGenerator() {
                   <span>Export Link</span>
                 </button>
 
+                <button
+                  type="button"
+                  onClick={handleExportImage}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-stone-200 rounded-lg text-stone-700 text-sm font-semibold shadow-sm hover:border-teal-300 hover:text-teal-700 transition-all"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <circle cx="8.5" cy="10.5" r="1.5" />
+                    <path d="M21 15l-5-5L5 21" />
+                  </svg>
+                  <span>Export Image</span>
+                </button>
+
                 {shareUrl && (
                   <a
                     href={shareUrl}
@@ -357,6 +401,7 @@ export function CanvasGenerator() {
               layoutType={layoutType}
               isLoading={isLoading}
               showSkeletonCard={hasIncompleteCard}
+              ref={canvasRef}
             />
           </div>
         </>

@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useImperativeHandle,
+} from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -16,8 +24,11 @@ import ReactFlow, {
   MarkerType,
   ReactFlowProvider,
   useNodesInitialized,
+  getNodesBounds,
+  getViewportForBounds,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { toPng } from 'html-to-image';
 
 import { WhiteboardCard } from './nodes/WhiteboardCard';
 import { SkeletonCard } from './nodes/SkeletonCard';
@@ -46,6 +57,10 @@ type NodeDimensions = Record<string, { width: number; height: number }>;
 
 type LayoutResult = { nodes: Node[]; edges: Edge[] };
 
+export type CanvasBoardHandle = {
+  exportPng: () => Promise<string>;
+};
+
 function buildNodeDimensions(nodes: Node[]): NodeDimensions {
   const dims: NodeDimensions = {};
 
@@ -70,18 +85,16 @@ function getNodeHeightForPlacement(node: Node): number {
   return nodeAny.measured?.height ?? nodeAny.height ?? 300;
 }
 
-function CanvasBoardInner({
-  cards,
-  edges,
-  layoutType,
-  isLoading,
-  showSkeletonCard,
-}: CanvasBoardProps) {
+const CanvasBoardInner = forwardRef<CanvasBoardHandle, CanvasBoardProps>(function CanvasBoardInner(
+  { cards, edges, layoutType, isLoading, showSkeletonCard },
+  ref
+) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [flowEdges, setFlowEdges] = useState<Edge[]>([]);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [isLayouting, setIsLayouting] = useState(false);
   const fitViewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const nodesInitialized = useNodesInitialized();
 
@@ -262,8 +275,42 @@ function CanvasBoardInner({
 
   const showLoading = isLoading || isLayouting;
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      exportPng: async () => {
+        const viewport = wrapperRef.current?.querySelector(
+          '.react-flow__viewport'
+        ) as HTMLElement | null;
+
+        if (!viewport || nodes.length === 0) {
+          throw new Error('Canvas is not ready to export.');
+        }
+
+        const bounds = getNodesBounds(nodes);
+        const padding = 120;
+        const width = Math.max(bounds.width + padding * 2, 1000);
+        const height = Math.max(bounds.height + padding * 2, 700);
+        const view = getViewportForBounds(bounds, width, height, 0.1, 2, 0.1);
+
+        return toPng(viewport, {
+          width,
+          height,
+          backgroundColor: '#fafaf9',
+          style: {
+            width: `${width}px`,
+            height: `${height}px`,
+            transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
+          },
+        });
+      },
+    }),
+    [nodes]
+  );
+
   return (
     <div
+      ref={wrapperRef}
       style={{
         width: '100%',
         height: '100%',
@@ -318,12 +365,14 @@ function CanvasBoardInner({
       )}
     </div>
   );
-}
+});
 
-export function CanvasBoard(props: CanvasBoardProps) {
-  return (
-    <ReactFlowProvider>
-      <CanvasBoardInner {...props} />
-    </ReactFlowProvider>
-  );
-}
+export const CanvasBoard = forwardRef<CanvasBoardHandle, CanvasBoardProps>(
+  function CanvasBoard(props, ref) {
+    return (
+      <ReactFlowProvider>
+        <CanvasBoardInner {...props} ref={ref} />
+      </ReactFlowProvider>
+    );
+  }
+);

@@ -32,7 +32,8 @@ export default function proxy(request: NextRequest) {
   if (
     path.startsWith('/api/generate') ||
     path.startsWith('/api/deep-dive') ||
-    path.startsWith('/api/render-d2')
+    path.startsWith('/api/render-d2') ||
+    path.startsWith('/api/canvas-agent')
   ) {
     const hasUserKey = !!request.headers.get(HEADERS.API_KEY);
     const requestedModel = request.headers.get(HEADERS.MODEL);
