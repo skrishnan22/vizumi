@@ -15,6 +15,7 @@ import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
 import { HEADERS } from '@/lib/constants';
 import { ModelSelector } from '@/components/ModelSelector';
+import { encodeSharePayload, type CanvasSharePayload } from '@/lib/canvas/share';
 
 export function CanvasGenerator() {
   const { apiKey, modelPrefs } = useSettings();
@@ -42,18 +43,52 @@ export function CanvasGenerator() {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [generationStage, setGenerationStage] = useState<'fetching' | 'generating' | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
 
-  const { cards, edges, layoutType } = useMemo(() => {
-    if (isLoading || !object) {
-      return { cards: [], edges: [], layoutType: 'layered' as const };
+  // Process cards with N-1 streaming strategy
+  const {
+    cards: rawCards,
+    edges: rawEdges,
+    layoutType,
+    hasIncompleteCard,
+  } = useMemo(() => {
+    if (!object) {
+      return { cards: [], edges: [], layoutType: 'layered' as const, hasIncompleteCard: false };
     }
 
-    const responseCards = object.cards as any[];
-    const responseEdges = object.edges as any[];
+    const responseCards = (object.cards as any[]) ?? [];
+    const responseEdges = (object.edges as any[]) ?? [];
     const responseLayoutType = object.layout || 'layered';
 
+    // Debug logging for streaming
+    if (isLoading) {
+      logger.info(`[Streaming] Cards received: ${responseCards.length}, isLoading: ${isLoading}`);
+    }
+
+    // During streaming: use N-1 strategy (exclude last potentially incomplete card)
+    const cardsToProcess =
+      isLoading && responseCards.length > 0
+        ? responseCards.slice(0, responseCards.length - 1)
+        : responseCards;
+
+    // Validate each card - use lenient check for streaming (just check required fields exist)
+    // Full safeParse is too strict for partial streaming data
+    const validCards = cardsToProcess.filter((card) => {
+      if (!card || typeof card !== 'object') return false;
+      if (!card.id || typeof card.id !== 'string') return false;
+      if (!card.title || typeof card.title !== 'string') return false;
+      if (!Array.isArray(card.sections) || card.sections.length === 0) return false;
+      // Check first section has a type
+      if (!card.sections[0]?.type) return false;
+      return true;
+    });
+
+    if (isLoading) {
+      logger.info(`[Streaming] Valid cards after N-1: ${validCards.length}`);
+    }
+
     const { cards: processedCards, edges: validEdges } = postProcessCards(
-      responseCards,
+      validCards,
       responseEdges
     );
 
@@ -61,8 +96,16 @@ export function CanvasGenerator() {
       cards: processedCards,
       edges: validEdges,
       layoutType: responseLayoutType,
+      hasIncompleteCard: isLoading && responseCards.length > cardsToProcess.length,
     };
   }, [object, isLoading]);
+
+  // Use raw cards directly - no debounce, layout recalculates on each new card
+  const cards = rawCards;
+  const edges = rawEdges;
+
+  // Show content when we have cards OR when streaming has started with some object data
+  const hasContent = cards.length > 0 || (isLoading && object !== undefined);
 
   useEffect(() => {
     if (isLoading) {
@@ -82,6 +125,7 @@ export function CanvasGenerator() {
   const handleGenerate = async () => {
     if (!url.trim()) return;
 
+    setShareUrl(null);
     setGenerationStage('fetching');
 
     try {
@@ -113,7 +157,35 @@ export function CanvasGenerator() {
     }
   };
 
-  const hasContent = cards.length > 0;
+  const handleExport = async () => {
+    if (!cards.length) {
+      toast.error('Generate a canvas before exporting.');
+      return;
+    }
+
+    const payload: CanvasSharePayload = {
+      version: 1,
+      title: title || 'Visual Canvas',
+      url,
+      layoutType,
+      cards,
+      edges,
+    };
+
+    const encoded = encodeSharePayload(payload);
+    const link = `${window.location.origin}/canvas/share#${encoded}`;
+    setShareUrl(link);
+
+    const openShare = () => window.open(link, '_blank', 'noopener,noreferrer');
+
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success('Share link copied', { action: { label: 'Open', onClick: openShare } });
+    } catch (err) {
+      logger.warn('Failed to copy share link to clipboard', err);
+      toast.success('Share link ready', { action: { label: 'Open', onClick: openShare } });
+    }
+  };
 
   return (
     <section className="w-full min-h-screen relative overflow-hidden bg-stone-50 flex flex-col">
@@ -225,17 +297,54 @@ export function CanvasGenerator() {
       {hasContent && (
         <>
           <header className="w-full max-w-[900px] mx-auto px-6 pt-8 pb-4 text-center z-30">
-            <h1 className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-2">
-              {title || 'Visual Canvas'}
-            </h1>
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block font-mono text-xs text-stone-500 bg-stone-100 px-3 py-1.5 rounded-md hover:bg-stone-200 hover:text-teal-600 transition-colors truncate max-w-full"
-            >
-              {url}
-            </a>
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center">
+                <h1 className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-2">
+                  {title || 'Visual Canvas'}
+                </h1>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block font-mono text-xs text-stone-500 bg-stone-100 px-3 py-1.5 rounded-md hover:bg-stone-200 hover:text-teal-600 transition-colors truncate max-w-full"
+                >
+                  {url}
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-stone-200 rounded-lg text-stone-700 text-sm font-semibold shadow-sm hover:border-teal-300 hover:text-teal-700 transition-all"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 5v10" />
+                    <path d="M8 9l4-4 4 4" />
+                    <path d="M4 19h16" />
+                  </svg>
+                  <span>Export Link</span>
+                </button>
+
+                {shareUrl && (
+                  <a
+                    href={shareUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-teal-700 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors"
+                  >
+                    View Share
+                  </a>
+                )}
+              </div>
+            </div>
           </header>
 
           <div
@@ -247,6 +356,7 @@ export function CanvasGenerator() {
               edges={edges}
               layoutType={layoutType}
               isLoading={isLoading}
+              showSkeletonCard={hasIncompleteCard}
             />
           </div>
         </>

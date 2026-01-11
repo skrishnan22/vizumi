@@ -31,7 +31,7 @@ Each card is a container with:
 
 ### 1. Text Section
 
-Plain markdown content for explanations.
+Markdown content for explanations. Supports **bold**, _italic_, \`code\`, lists, etc.
 
 {
 "type": "text",
@@ -48,12 +48,12 @@ Grid of labeled icons for representing types/categories.
 "items": [
 { "icon": "document", "label": "PDF" },
 { "icon": "image", "label": "Images" },
-{ "icon": "audio", "label": "Audio" }
+{ "icon": "database", "label": "Storage" }
 ],
 "columns": 3
 }
 
-**Available icons**: document, image, audio, video, code, database, cloud, user, settings, chart
+**Available icons**: document, image, audio, video, code, database, cloud, user, settings, chart, terminal, server, cpu, git-branch, globe, api, package, layers, key, lock, shield, zap, search, link, download, upload, refresh, folder, target, filter, mail, calendar, clock, bot, sparkles, network
 
 ### 3. Visual Section - Flow
 
@@ -74,17 +74,17 @@ List with visual markers and optional annotations.
 "type": "visual",
 "visualType": "list",
 "items": [
-{ "marker": "box", "text": "First chunk (0-512 tokens)", "annotation": "c1" },
-{ "marker": "box-filled", "text": "Second chunk (256-768)", "annotation": "c2" },
-{ "marker": "circle", "text": "Third chunk", "annotation": "c3" }
+{ "marker": "box", "text": "First item", "annotation": "1" },
+{ "marker": "box-filled", "text": "Second item", "annotation": "2" },
+{ "marker": "circle", "text": "Third item" }
 ]
 }
 
-**Available markers**: box, box-filled, circle
+**Available markers**: box, box-filled, circle. Use same marker for all items in a list
 
 ### 5. Visual Section - Stats
 
-Display key metrics/numbers.
+Display key metrics/numbers prominently.
 
 {
 "type": "visual",
@@ -97,7 +97,7 @@ Display key metrics/numbers.
 
 ### 6. Visual Section - Comparison
 
-Side-by-side comparison.
+Side-by-side comparison of two options.
 
 {
 "type": "visual",
@@ -106,9 +106,70 @@ Side-by-side comparison.
 "right": { "title": "After", "items": ["item1", "item2"] }
 }
 
-### 7. Callout Section
+### 7. Visual Section - Timeline
 
-Highlighted important notes.
+Chronological events, milestones, or history.
+
+{
+"type": "visual",
+"visualType": "timeline",
+"events": [
+{ "date": "2020", "title": "Project Launch", "description": "Initial release" },
+{ "date": "2022", "title": "Series A", "description": "$10M funding" },
+{ "date": "2024", "title": "Global Expansion" }
+]
+}
+
+### 8. Visual Section - Table
+
+Tabular data with headers and rows.
+
+{
+"type": "visual",
+"visualType": "table",
+"headers": ["Feature", "Free", "Pro"],
+"rows": [
+["Storage", "5GB", "100GB"],
+["Support", "Email", "Priority"]
+]
+}
+
+### 9. Visual Section - Quote
+
+Key quotes, insights, or highlighted text.
+
+{
+"type": "visual",
+"visualType": "quote",
+"text": "The best code is no code at all.",
+"attribution": "Jeff Atwood"
+}
+
+### 10. Visual Section - Code Block
+
+Code snippets with language hint.
+
+{
+"type": "visual",
+"visualType": "code-block",
+"code": "const sum = (a, b) => a + b;",
+"language": "javascript"
+}
+
+### 11. Visual Section - Tags
+
+Keywords, categories, or tech stack.
+
+{
+"type": "visual",
+"visualType": "tags",
+"tags": ["React", "TypeScript", "Next.js", "Tailwind"],
+"variant": "colored" // or "default", "outline"
+}
+
+### 12. Callout Section
+
+Highlighted important notes with style.
 
 {
 "type": "callout",
@@ -130,13 +191,20 @@ Connect cards to show relationships:
 ## GUIDELINES
 
 1. **Rich cards**: Use multiple sections per card to create comprehensive, self-contained explanations
-2. **Visual variety**: Mix text with visuals (icon grids, flows, lists) for visual interest
-3. **Meaningful connections**: Only add edges that clarify relationships
-4. **Concise labels**: Keep edge labels to 2-4 words
-5. **Logical grouping**: Group related concepts in the same card when possible
-6. **Stats for numbers**: Use stats visual for key metrics/numbers
-7. **Flows for processes**: Use flow visual for step-by-step processes
-8. **Limit cards**: Create 3-8 cards max to avoid overwhelming the user
+2. **Visual variety**: Mix text with different visual types for engaging content
+3. **Choose appropriate visuals**:
+   - Use **timeline** for chronological events or history
+   - Use **table** for structured comparisons or data
+   - Use **quote** for key insights or memorable statements
+   - Use **code-block** for code examples
+   - Use **tags** for keywords, technologies, or categories
+   - Use **stats** for key metrics/numbers
+   - Use **flow** for step-by-step processes
+   - Use **icon-grid** for representing types or categories
+4. **Meaningful connections**: Only add edges that clarify relationships
+5. **Concise labels**: Keep edge labels to 2-4 words
+6. **Logical grouping**: Group related concepts in the same card when possible
+7. **Limit cards**: Create 5-10 cards max to avoid overwhelming the user. Use yout judgement based on content and volume of information
 
 ## EXAMPLE OUTPUT
 
@@ -144,69 +212,75 @@ Connect cards to show relationships:
 "layout": "layered",
 "cards": [
 {
-"id": "multimodal-rag",
-"title": "Multimodal RAG Pipeline",
+"id": "overview",
+"title": "Project Overview",
 "sections": [
 {
-"type": "visual",
-"visualType": "icon-grid",
-"items": [
-{ "icon": "image", "label": "Images" },
-{ "icon": "document", "label": "PDFs" },
-{ "icon": "video", "label": "Videos" }
-],
-"columns": 3
-},
-{
 "type": "text",
-"content": "Convert all input types to text using OCR and captioning models for unified processing."
+"content": "A modern **full-stack** application built with cutting-edge technologies."
 },
 {
 "type": "visual",
-"visualType": "flow",
-"items": ["Extract", "Chunk", "Embed", "Store"],
-"direction": "horizontal"
+"visualType": "tags",
+"tags": ["React", "Node.js", "PostgreSQL", "Docker"],
+"variant": "colored"
+},
+{
+"type": "visual",
+"visualType": "timeline",
+"events": [
+{ "date": "Q1 2024", "title": "Alpha Release" },
+{ "date": "Q2 2024", "title": "Beta Testing" },
+{ "date": "Q3 2024", "title": "Production Launch" }
+]
 }
 ]
 },
 {
-"id": "chunking-strategy",
-"title": "Chunking Strategy",
+"id": "architecture",
+"title": "System Architecture",
 "sections": [
 {
 "type": "visual",
-"visualType": "list",
-"items": [
-{ "marker": "box", "text": "512 tokens per chunk" },
-{ "marker": "box-filled", "text": "256 token overlap" },
-{ "marker": "circle", "text": "Preserves context" }
-]
+"visualType": "flow",
+"items": ["Client", "API Gateway", "Services", "Database"],
+"direction": "horizontal"
 },
 {
-"type": "callout",
-"style": "tip",
-"text": "Overlapping chunks improve retrieval recall by 15-20%"
+"type": "visual",
+"visualType": "icon-grid",
+"items": [
+{ "icon": "globe", "label": "Frontend" },
+{ "icon": "server", "label": "Backend" },
+{ "icon": "database", "label": "Storage" }
+],
+"columns": 3
 }
 ]
 },
 {
 "id": "metrics",
-"title": "Performance",
+"title": "Performance Metrics",
 "sections": [
 {
 "type": "visual",
 "visualType": "stats",
 "items": [
-{ "value": "0.87", "label": "Precision" },
-{ "value": "0.92", "label": "Recall" }
+{ "value": "99.9%", "label": "Uptime" },
+{ "value": "<50ms", "label": "Latency" }
 ]
+},
+{
+"type": "callout",
+"style": "success",
+"text": "Exceeds industry benchmarks for reliability and speed"
 }
 ]
 }
 ],
 "edges": [
-{ "id": "e1", "source": "multimodal-rag", "target": "chunking-strategy", "label": "processes via" },
-{ "id": "e2", "source": "chunking-strategy", "target": "metrics", "label": "achieves" }
+{ "id": "e1", "source": "overview", "target": "architecture", "label": "implements" },
+{ "id": "e2", "source": "architecture", "target": "metrics", "label": "achieves" }
 ]
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -14,16 +14,20 @@ import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
   MarkerType,
+  ReactFlowProvider,
+  useNodesInitialized,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import { WhiteboardCard } from './nodes/WhiteboardCard';
+import { SkeletonCard } from './nodes/SkeletonCard';
 import { ChipEdge } from './edges/ChipEdge';
 import type { ProcessedCard, CanvasEdge as CanvasEdgeType } from '@/lib/canvas/schemas-v2';
 import { calculateLayout } from '@/lib/canvas/layout';
 
 const nodeTypes = {
   whiteboardCard: WhiteboardCard,
+  skeletonCard: SkeletonCard,
 } as const;
 
 const edgeTypes = {
@@ -35,38 +39,203 @@ type CanvasBoardProps = {
   edges: CanvasEdgeType[];
   layoutType: 'hierarchical' | 'layered' | 'radial' | 'grid';
   isLoading?: boolean;
+  showSkeletonCard?: boolean;
 };
 
-export function CanvasBoard({ cards, edges, layoutType, isLoading }: CanvasBoardProps) {
+type NodeDimensions = Record<string, { width: number; height: number }>;
+
+type LayoutResult = { nodes: Node[]; edges: Edge[] };
+
+function buildNodeDimensions(nodes: Node[]): NodeDimensions {
+  const dims: NodeDimensions = {};
+
+  for (const node of nodes) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nodeAny = node as any;
+
+    const width = nodeAny.measured?.width ?? nodeAny.width;
+    const height = nodeAny.measured?.height ?? nodeAny.height;
+
+    if (typeof width === 'number' && typeof height === 'number' && width > 0 && height > 0) {
+      dims[node.id] = { width, height };
+    }
+  }
+
+  return dims;
+}
+
+function getNodeHeightForPlacement(node: Node): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nodeAny = node as any;
+  return nodeAny.measured?.height ?? nodeAny.height ?? 300;
+}
+
+function CanvasBoardInner({
+  cards,
+  edges,
+  layoutType,
+  isLoading,
+  showSkeletonCard,
+}: CanvasBoardProps) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [flowEdges, setFlowEdges] = useState<Edge[]>([]);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [isLayouting, setIsLayouting] = useState(false);
   const fitViewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const nodesInitialized = useNodesInitialized();
+
+  const layoutKey = useMemo(() => {
+    const cardIds = cards.map((c) => c.id).join(',');
+    const edgeIds = edges.map((e) => e.id).join(',');
+    return `${layoutType}|${cardIds}|${edgeIds}`;
+  }, [cards, edges, layoutType]);
+
+  const rfEdgesInput: Edge[] = useMemo(
+    () =>
+      edges.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        label: edge.label,
+      })),
+    [edges]
+  );
+
+  const applyLayoutResult = useCallback(
+    ({ nodes: layoutedNodes, edges: layoutedEdges }: LayoutResult) => {
+      const processedEdges: Edge[] = layoutedEdges.map((edge) => ({
+        ...edge,
+        type: 'chip',
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: '#94a3b8',
+        },
+      }));
+
+      let finalNodes = layoutedNodes;
+
+      if (showSkeletonCard) {
+        let maxY = 0;
+        let nodeAtMaxY: Node | null = null;
+
+        for (const node of layoutedNodes) {
+          const nodeBottom = node.position.y + getNodeHeightForPlacement(node);
+          if (nodeBottom > maxY) {
+            maxY = nodeBottom;
+            nodeAtMaxY = node;
+          }
+        }
+
+        const skeletonX = nodeAtMaxY ? nodeAtMaxY.position.x : 100;
+        const skeletonY = maxY + 80;
+
+        const skeletonNode: Node = {
+          id: '__skeleton__',
+          type: 'skeletonCard',
+          position: { x: skeletonX, y: skeletonY },
+          data: {},
+          width: 340,
+          height: 200,
+        };
+
+        finalNodes = [...layoutedNodes, skeletonNode];
+      }
+
+      setNodes(finalNodes);
+      setFlowEdges(processedEdges);
+    },
+    [showSkeletonCard]
+  );
+
+  // We want to run a second layout pass (once) after ReactFlow has measured node sizes.
+  const measuredRelayoutKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (cards.length === 0) {
+    // Reset the "measured" pass whenever the input graph changes.
+    measuredRelayoutKeyRef.current = null;
+  }, [layoutKey]);
+
+  useEffect(() => {
+    if (cards.length === 0 && !showSkeletonCard) {
       setNodes([]);
       setFlowEdges([]);
       return;
     }
 
+    // If we only have skeleton to show (no cards yet during streaming), show it immediately.
+    if (cards.length === 0 && showSkeletonCard) {
+      const skeletonNode: Node = {
+        id: '__skeleton__',
+        type: 'skeletonCard',
+        position: { x: 100, y: 100 },
+        data: {},
+        width: 340,
+        height: 200,
+      };
+      setNodes([skeletonNode]);
+      setFlowEdges([]);
+      return;
+    }
+
+    let isCancelled = false;
+
     setIsLayouting(true);
-    calculateLayout(cards, edges, layoutType)
-      .then(({ nodes: layoutedNodes, edges: layoutedEdges }) => {
-        const processedEdges: Edge[] = layoutedEdges.map((edge) => ({
-          ...edge,
-          type: 'chip',
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: '#94a3b8',
-          },
-        }));
-        setNodes(layoutedNodes);
-        setFlowEdges(processedEdges);
+    calculateLayout(cards, rfEdgesInput, layoutType)
+      .then((result) => {
+        if (isCancelled) return;
+        applyLayoutResult(result);
       })
-      .finally(() => setIsLayouting(false));
-  }, [cards, edges, layoutType]);
+      .finally(() => {
+        if (!isCancelled) setIsLayouting(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [cards, rfEdgesInput, layoutType, showSkeletonCard, applyLayoutResult]);
+
+  useEffect(() => {
+    if (!nodesInitialized) return;
+    if (cards.length === 0) return;
+    if (isLoading) return;
+
+    // Wait for at least one node to have measurements.
+    const nodeDimensions = buildNodeDimensions(nodes);
+    if (Object.keys(nodeDimensions).length === 0) return;
+
+    const hasAllCardDimensions = cards.every((card) => nodeDimensions[card.id]);
+    if (!hasAllCardDimensions) return;
+
+    // Only once per input graph after streaming completes.
+    if (measuredRelayoutKeyRef.current === layoutKey) return;
+    measuredRelayoutKeyRef.current = layoutKey;
+
+    let isCancelled = false;
+
+    setIsLayouting(true);
+    calculateLayout(cards, rfEdgesInput, layoutType, nodeDimensions)
+      .then((result) => {
+        if (isCancelled) return;
+        applyLayoutResult(result);
+      })
+      .finally(() => {
+        if (!isCancelled) setIsLayouting(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    nodesInitialized,
+    layoutKey,
+    nodes,
+    cards,
+    rfEdgesInput,
+    layoutType,
+    applyLayoutResult,
+    isLoading,
+  ]);
 
   useEffect(() => {
     if (rfInstance && nodes.length > 0 && !isLayouting) {
@@ -148,5 +317,13 @@ export function CanvasBoard({ cards, edges, layoutType, isLoading }: CanvasBoard
         </div>
       )}
     </div>
+  );
+}
+
+export function CanvasBoard(props: CanvasBoardProps) {
+  return (
+    <ReactFlowProvider>
+      <CanvasBoardInner {...props} />
+    </ReactFlowProvider>
   );
 }

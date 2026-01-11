@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
+import { Handle, Position, type NodeProps } from 'reactflow';
 import { DiagramRenderer } from '@/components/DiagramRenderer';
 import type { DiagramNodeData } from '@/lib/canvas/schemas';
 

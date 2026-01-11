@@ -17,6 +17,7 @@ export const TextSectionSchema = z.object({
 export const IconGridItemSchema = z.object({
   icon: z
     .enum([
+      // Original icons
       'document',
       'image',
       'audio',
@@ -27,6 +28,37 @@ export const IconGridItemSchema = z.object({
       'user',
       'settings',
       'chart',
+      // Tech/Development
+      'terminal',
+      'server',
+      'cpu',
+      'git-branch',
+      'globe',
+      'api',
+      'package',
+      'layers',
+      // Security/Auth
+      'key',
+      'lock',
+      'shield',
+      // Actions
+      'zap',
+      'search',
+      'link',
+      'download',
+      'upload',
+      'refresh',
+      // Organization
+      'folder',
+      'target',
+      'filter',
+      // Communication
+      'mail',
+      'calendar',
+      'clock',
+      'bot',
+      'sparkles',
+      'network',
     ])
     .describe('Icon type from predefined set'),
   label: z.string().describe('Label for the icon'),
@@ -88,12 +120,64 @@ export const ComparisonVisualSchema = z.object({
   }),
 });
 
+// NEW VISUAL TYPES
+
+// Timeline - for events, milestones, history
+export const TimelineEventSchema = z.object({
+  date: z.string().describe('Date or time period'),
+  title: z.string().describe('Event title'),
+  description: z.string().optional().describe('Optional description'),
+});
+
+export const TimelineVisualSchema = z.object({
+  type: z.literal('visual'),
+  visualType: z.literal('timeline'),
+  events: z.array(TimelineEventSchema).describe('Timeline events in chronological order'),
+});
+
+// Table - simple tabular data
+export const TableVisualSchema = z.object({
+  type: z.literal('visual'),
+  visualType: z.literal('table'),
+  headers: z.array(z.string()).describe('Column headers'),
+  rows: z.array(z.array(z.string())).describe('Table rows (array of arrays)'),
+});
+
+// Quote - key quotes or insights
+export const QuoteVisualSchema = z.object({
+  type: z.literal('visual'),
+  visualType: z.literal('quote'),
+  text: z.string().describe('Quote text'),
+  attribution: z.string().optional().describe('Quote attribution (author, source)'),
+});
+
+// Code Block - code snippets
+export const CodeBlockVisualSchema = z.object({
+  type: z.literal('visual'),
+  visualType: z.literal('code-block'),
+  code: z.string().describe('Code content'),
+  language: z.string().optional().describe('Programming language for syntax hints'),
+});
+
+// Tags - keyword cloud, tech stack, categories
+export const TagsVisualSchema = z.object({
+  type: z.literal('visual'),
+  visualType: z.literal('tags'),
+  tags: z.array(z.string()).describe('List of tags or keywords'),
+  variant: z.enum(['default', 'outline', 'colored']).optional().describe('Visual variant'),
+});
+
 export const VisualSectionSchema = z.discriminatedUnion('visualType', [
   IconGridVisualSchema,
   FlowVisualSchema,
   AnnotatedListVisualSchema,
   StatsVisualSchema,
   ComparisonVisualSchema,
+  TimelineVisualSchema,
+  TableVisualSchema,
+  QuoteVisualSchema,
+  CodeBlockVisualSchema,
+  TagsVisualSchema,
 ]);
 
 export const CalloutStyleSchema = z.enum(['info', 'warning', 'success', 'tip']);
@@ -116,6 +200,11 @@ export type FlowVisual = z.infer<typeof FlowVisualSchema>;
 export type AnnotatedListVisual = z.infer<typeof AnnotatedListVisualSchema>;
 export type StatsVisual = z.infer<typeof StatsVisualSchema>;
 export type ComparisonVisual = z.infer<typeof ComparisonVisualSchema>;
+export type TimelineVisual = z.infer<typeof TimelineVisualSchema>;
+export type TableVisual = z.infer<typeof TableVisualSchema>;
+export type QuoteVisual = z.infer<typeof QuoteVisualSchema>;
+export type CodeBlockVisual = z.infer<typeof CodeBlockVisualSchema>;
+export type TagsVisual = z.infer<typeof TagsVisualSchema>;
 export type VisualSection = z.infer<typeof VisualSectionSchema>;
 export type CalloutSection = z.infer<typeof CalloutSectionSchema>;
 export type Section = z.infer<typeof SectionSchema>;

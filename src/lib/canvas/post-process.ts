@@ -57,6 +57,12 @@ const VISUAL_HEIGHTS: Record<string, number> = {
   list: 150,
   stats: 60,
   comparison: 200,
+  // New visual types
+  timeline: 180,
+  table: 160,
+  quote: 80,
+  'code-block': 120,
+  tags: 50,
 };
 
 export function assignColors(cards: CardNode[]): ProcessedCard[] {
