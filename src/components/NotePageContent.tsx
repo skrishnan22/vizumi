@@ -1,7 +1,8 @@
 'use client';
 
 import { NoteBoard } from './NoteBoard';
-import { useNoteDoc } from '@/hooks/useNoteDoc';
+import { useGraphDoc } from '@/hooks/useGraphDoc';
+import Link from 'next/link';
 import { ErrorBoundary } from 'react-error-boundary';
 import { toast } from 'sonner';
 import { ErrorFallback } from './ErrorFallback';
@@ -10,6 +11,7 @@ import { NoteHeader } from './NoteHeader';
 import { getNoteMetadata } from '@/lib/db/actions';
 import { type NoteMetadata } from '@/lib/db/noteMetadata';
 import { useEffect, useState } from 'react';
+import { useNoteStore } from '@/store/noteStore';
 
 type NotePageContentProps = {
   noteId: string;
@@ -22,9 +24,15 @@ export function NotePageContent({
   metadata: metadataOverride,
   isMetadataLoading: isMetadataLoadingOverride,
 }: NotePageContentProps) {
-  const { isLoading } = useNoteDoc(noteId);
+  const { isLoading, isEmpty } = useGraphDoc({ docId: noteId, kind: 'note' });
+  const setNoteId = useNoteStore((state) => state.setNoteId);
   const [metadata, setMetadata] = useState<NoteMetadata | undefined>(metadataOverride);
   const [isMetadataLoading, setIsMetadataLoading] = useState(metadataOverride ? false : true);
+
+  useEffect(() => {
+    setNoteId(noteId);
+    return () => setNoteId(null);
+  }, [noteId, setNoteId]);
 
   useEffect(() => {
     if (metadataOverride) {
@@ -57,6 +65,25 @@ export function NotePageContent({
     );
   }
 
+  if (isEmpty) {
+    return (
+      <main className="min-h-screen bg-stone-50 flex items-center justify-center px-6">
+        <div className="max-w-md text-center bg-white border border-stone-200 rounded-2xl p-8 shadow-lg">
+          <h1 className="text-2xl font-bold text-stone-900 mb-3">Note not found</h1>
+          <p className="text-sm text-stone-600 mb-6">
+            This note doesn&apos;t exist or hasn&apos;t been created yet.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors"
+          >
+            Create a new note
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
       <NoteHeader metadata={metadata} isLoading={isMetadataLoading} />
@@ -75,7 +102,7 @@ export function NotePageContent({
             toast.error('Something went wrong. Please try again.');
           }}
         >
-          <NoteBoard noteId={noteId} />
+          <NoteBoard noteId={noteId} isLoading={isLoading} isEmpty={isEmpty} />
         </ErrorBoundary>
       </main>
     </div>

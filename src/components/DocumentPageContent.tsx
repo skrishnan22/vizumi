@@ -68,9 +68,7 @@ export function DocumentPageContent({ docId }: DocumentPageContentProps) {
     );
   }
 
-  const kind = metadata.kind ?? 'note';
-
-  if (kind === 'canvas') {
+  if (metadata.kind === 'canvas') {
     return <CanvasPageContent canvasId={docId} metadata={metadata} isMetadataLoading={false} />;
   }
 

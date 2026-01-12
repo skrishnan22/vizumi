@@ -199,6 +199,7 @@ export function CanvasGenerator() {
 
       let fetchedMarkdown: string | undefined;
       let resolvedTitle = 'Visual Canvas';
+      let resolvedOgImage: string | undefined;
 
       try {
         const metadataRes = await fetch('/api/url-metadata', {
@@ -208,11 +209,18 @@ export function CanvasGenerator() {
         });
 
         if (metadataRes.ok) {
-          const { title: fetchedTitle, markdown: responseMarkdown } = await metadataRes.json();
+          const {
+            title: fetchedTitle,
+            ogImage,
+            markdown: responseMarkdown,
+          } = await metadataRes.json();
           if (fetchedTitle) {
             resolvedTitle = fetchedTitle;
             setTitle(fetchedTitle);
             setMeta(docId, { title: fetchedTitle });
+          }
+          if (ogImage) {
+            resolvedOgImage = ogImage;
           }
           if (responseMarkdown) {
             fetchedMarkdown = responseMarkdown;
@@ -226,6 +234,7 @@ export function CanvasGenerator() {
         noteId: docId,
         url: trimmedUrl,
         title: resolvedTitle,
+        ogImage: resolvedOgImage,
         kind: 'canvas',
       });
 

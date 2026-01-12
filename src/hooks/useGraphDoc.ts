@@ -45,13 +45,11 @@ export function useGraphDoc({ docId, kind }: UseGraphDocParams) {
       const edges = Array.from(yEdges.values()) as Edge[];
 
       setGraph(nodes, edges);
+      setIsEmpty(yNodes.size === 0);
     };
 
     const handleSynced = () => {
       setIsLoading(false);
-
-      const yNodes = ydoc.getMap('nodes');
-      setIsEmpty(yNodes.size === 0);
 
       syncToStore();
     };

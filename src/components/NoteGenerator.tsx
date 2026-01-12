@@ -6,8 +6,9 @@ import { LLMNoteSchema, LLMNoteBlockSchema } from '@/lib/schemas';
 import type { LLMNoteBlock } from '@/lib/schemas';
 import { NoteBoard } from './NoteBoard';
 import styles from './NoteGenerator.module.css';
-import { syncBlocksToYDoc } from '@/lib/yjs/actions';
+import { syncBlocksToGraph } from '@/lib/graph/noteActions';
 import { useNoteStore } from '@/store/noteStore';
+import { useGraphDoc } from '@/hooks/useGraphDoc';
 import { createNoteMetadata, deleteNoteMetadata, getNoteByUrl } from '@/lib/db/actions';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,6 +19,7 @@ import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
 import { HEADERS } from '@/lib/constants';
 import { ModelSelector } from './ModelSelector';
+import { setMeta } from '@/lib/graph/actions';
 
 type NoteGeneratorProps = {
   noteId: string;
@@ -56,6 +58,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
   const setNoteId = useNoteStore((state) => state.setNoteId);
   const setMarkdownForNote = useNoteStore((state) => state.setMarkdownForNote);
   const setGenerating = useNoteStore((state) => state.setGenerating);
+  useGraphDoc({ docId: noteId, kind: 'note' });
 
   // Set noteId in store once on mount
   useEffect(() => {
@@ -101,7 +104,7 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
     const newBlocks = blocks.filter((block) => !syncedBlockIdsRef.current.has(block.id));
 
     if (newBlocks.length > 0) {
-      syncBlocksToYDoc(noteId, blocks);
+      syncBlocksToGraph(noteId, blocks);
       newBlocks.forEach((block) => syncedBlockIdsRef.current.add(block.id));
     }
   }, [blocks, noteId]);
@@ -133,18 +136,19 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
 
   // Handle generation with metadata saving
   const handleGenerate = async () => {
-    if (!url.trim()) return;
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
 
     setGenerationStage('fetching');
 
     try {
-      const existingNote = await getNoteByUrl(url.trim());
+      const existingNote = await getNoteByUrl(trimmedUrl, 'note');
       if (existingNote) {
         toast.info('A note already exists for this URL', {
           description: existingNote.title || 'View the existing note',
           action: {
             label: 'View Note',
-            onClick: () => router.push(`/notes/${existingNote.noteId}`),
+            onClick: () => router.push(`/doc/${existingNote.noteId}`),
           },
           duration: 8000,
         });
@@ -152,18 +156,21 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
         return;
       }
 
+      setMeta(noteId, { kind: 'note', url: trimmedUrl });
+
       let fetchedMarkdown: string | undefined;
 
       try {
         const metadataRes = await fetch('/api/url-metadata', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url: trimmedUrl }),
         });
 
         if (metadataRes.ok) {
           const { title, ogImage, markdown: responseMarkdown } = await metadataRes.json();
           if (title) setTitle(title);
+          if (title) setMeta(noteId, { title });
           if (responseMarkdown) {
             fetchedMarkdown = responseMarkdown;
             setMarkdown(responseMarkdown);
@@ -172,16 +179,17 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
 
           await createNoteMetadata({
             noteId,
-            url,
+            url: trimmedUrl,
             title,
             ogImage,
+            kind: 'note',
           });
         }
       } catch (error) {
         logger.error('Error saving metadata:', error);
       }
 
-      submit({ url, markdown: fetchedMarkdown });
+      submit({ url: trimmedUrl, markdown: fetchedMarkdown });
     } catch (error) {
       logger.error('Error in handleGenerate:', error);
       setGenerationStage(null);
@@ -217,7 +225,9 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
       </div>
 
       {/* Main Input - Fades out when content is generated */}
-      <div className={`${styles.contentContainer} ${blocks.length > 0 ? styles.contentHidden : styles.contentCentered}`}>
+      <div
+        className={`${styles.contentContainer} ${blocks.length > 0 ? styles.contentHidden : styles.contentCentered}`}
+      >
         {/* Animated Illustration */}
         <div className={styles.illustrationWrapper}>
           <HeroIllustration />
@@ -303,7 +313,6 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
             )}
           </button>
         </div>
-
       </div>
 
       {/* Generated Header - Appears when content is generated */}

@@ -3,11 +3,12 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useCompletion } from '@ai-sdk/react';
 import type { Node } from 'reactflow';
+import { useGraphStore } from '@/store/graphStore';
 import { useNoteStore } from '@/store/noteStore';
 import { getModeTitle, type DeepDiveMode } from '@/lib/deepDiveHelpers';
-import { addNodeFromBlock, updateNodeData } from '@/lib/yjs/actions';
+import { addNodeFromBlock, updateNodeData } from '@/lib/graph/noteActions';
 import type { NoteBlock } from '@/lib/schemas';
-import type { NoteNodeData } from '@/lib/yjs/utils';
+import type { NoteNodeData } from '@/lib/graph/noteUtils';
 import { logger } from '@/lib/logger.client';
 import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
@@ -15,7 +16,7 @@ import { getNoteMetadata } from '@/lib/db/actions';
 
 export function useDeepDive() {
   const noteId = useNoteStore((state) => state.noteId);
-  const storeNodes = useNoteStore((state) => state.nodes);
+  const storeNodes = useGraphStore((state) => state.nodes) as Node<NoteNodeData>[];
   const setDeepDiveStreaming = useNoteStore((state) => state.setDeepDiveStreaming);
   const markdownCache = useNoteStore((state) => state.markdownCache);
   const { getRequestHeaders } = useSettings();

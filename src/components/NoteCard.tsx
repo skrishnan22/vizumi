@@ -10,7 +10,7 @@ type NoteCardProps = {
   url: string;
   ogImage?: string;
   updatedAt: Date;
-  kind?: DocKind;
+  kind: DocKind;
   onClick: () => void;
   onDelete: () => void;
 };

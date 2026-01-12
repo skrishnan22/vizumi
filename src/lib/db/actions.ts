@@ -1,5 +1,4 @@
 import { db, type NoteMetadata } from './noteMetadata';
-import { deleteYDoc } from '@/lib/yjs/doc';
 import { deleteGraphDoc } from '@/lib/graph/doc';
 
 /**
@@ -12,7 +11,6 @@ export async function createNoteMetadata(
   const existing = await db.notes.get(metadata.noteId);
   const fullMetadata: NoteMetadata = {
     ...metadata,
-    kind: metadata.kind ?? 'note',
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
@@ -60,28 +58,15 @@ export async function getNoteMetadata(noteId: string): Promise<NoteMetadata | un
  */
 export async function getNoteByUrl(
   url: string,
-  kind?: NoteMetadata['kind']
+  kind: NoteMetadata['kind']
 ): Promise<NoteMetadata | undefined> {
   const matches = await db.notes.where('url').equals(url).toArray();
-  if (!kind) {
-    return matches[0];
-  }
-
-  return matches.find((note) => (note.kind ?? 'note') === kind);
+  return matches.find((note) => note.kind === kind);
 }
 
 /**
  * Delete a note completely (both metadata and Y.Doc from IndexedDB)
  */
-export async function deleteNote(noteId: string): Promise<void> {
-  const metadata = await getNoteMetadata(noteId);
-  const kind = metadata?.kind ?? 'note';
-
-  if (kind === 'canvas') {
-    await Promise.all([deleteNoteMetadata(noteId), deleteGraphDoc(noteId)]);
-    return;
-  }
-
-  // Delete both in parallel for better performance
-  await Promise.all([deleteNoteMetadata(noteId), deleteYDoc(noteId)]);
+export async function deleteNote(noteId: string, _kind: NoteMetadata['kind']): Promise<void> {
+  await Promise.all([deleteNoteMetadata(noteId), deleteGraphDoc(noteId)]);
 }

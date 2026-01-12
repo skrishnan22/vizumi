@@ -4,13 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useNotesList } from '@/hooks/useNotesList';
 import { NoteCard } from './NoteCard';
 import { deleteNote } from '@/lib/db/actions';
+import type { DocKind } from '@/lib/db/noteMetadata';
 import { toast } from 'sonner';
 
 export function NotesList() {
   const { notes, isLoading, refetch } = useNotesList();
   const router = useRouter();
 
-  const handleDelete = async (noteId: string, title: string) => {
+  const handleDelete = async (noteId: string, title: string, kind: DocKind) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${title}"?\n\nThis action cannot be undone.`
     );
@@ -18,7 +19,7 @@ export function NotesList() {
     if (!confirmed) return;
 
     try {
-      await deleteNote(noteId);
+      await deleteNote(noteId, kind);
       toast.success(`"${title}" deleted successfully`);
       // Refresh the notes list
       refetch();
@@ -82,7 +83,7 @@ export function NotesList() {
           updatedAt={note.updatedAt}
           kind={note.kind}
           onClick={() => router.push(`/doc/${note.noteId}`)}
-          onDelete={() => handleDelete(note.noteId, note.title)}
+          onDelete={() => handleDelete(note.noteId, note.title, note.kind)}
         />
       ))}
     </div>
