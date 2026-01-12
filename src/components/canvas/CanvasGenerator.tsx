@@ -2,11 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
-import {
-  CanvasAgentResponseSchema,
-  type CanvasEdge as CanvasEdgeType,
-} from '@/lib/canvas/schemas-v2';
-import { CanvasBoard, type CanvasBoardHandle } from './CanvasBoard';
+import { CanvasAgentResponseSchema } from '@/lib/canvas/schemas-v2';
+import { CanvasDocBoard, type CanvasBoardHandle } from './CanvasDocBoard';
 import { postProcessCards } from '@/lib/canvas/post-process';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -16,9 +13,26 @@ import { showApiErrorToast } from '@/lib/api/client-error-handler';
 import { HEADERS } from '@/lib/constants';
 import { ModelSelector } from '@/components/ModelSelector';
 import { encodeSharePayload, type CanvasSharePayload } from '@/lib/canvas/share';
+import { useGraphDoc } from '@/hooks/useGraphDoc';
+import { buildCanvasGraph } from '@/lib/canvas/graph';
+import { setGraph, setMeta, type GraphMetaPatch } from '@/lib/graph/actions';
+import { createNoteMetadata, deleteNoteMetadata, getNoteByUrl } from '@/lib/db/actions';
+import { useRouter } from 'next/navigation';
 
 export function CanvasGenerator() {
   const { apiKey, modelPrefs } = useSettings();
+  const router = useRouter();
+  const docIdRef = useRef<string | null>(null);
+
+  if (!docIdRef.current) {
+    docIdRef.current =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `canvas-${Date.now()}`;
+  }
+
+  const docId = docIdRef.current;
+  const { isLoading: isDocLoading } = useGraphDoc({ docId, kind: 'canvas' });
 
   const [sessionModel, setSessionModel] = useState<string | null>(null);
   const effectiveModel = sessionModel ?? modelPrefs.generate;
@@ -45,6 +59,7 @@ export function CanvasGenerator() {
   const [generationStage, setGenerationStage] = useState<'fetching' | 'generating' | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const canvasRef = useRef<CanvasBoardHandle | null>(null);
+  const layoutRunRef = useRef(0);
 
   // Process cards with N-1 streaming strategy
   const {
@@ -109,6 +124,38 @@ export function CanvasGenerator() {
   const hasContent = cards.length > 0 || (isLoading && object !== undefined);
 
   useEffect(() => {
+    if (cards.length === 0) return;
+
+    let isCancelled = false;
+    const runId = ++layoutRunRef.current;
+
+    const persistLayout = async () => {
+      try {
+        const { nodes, edges: layoutedEdges } = await buildCanvasGraph(cards, edges, layoutType);
+
+        if (isCancelled || runId !== layoutRunRef.current) return;
+
+        const metaPatch: GraphMetaPatch = {
+          kind: 'canvas',
+          layoutType,
+        };
+
+        setGraph(docId, nodes, layoutedEdges, metaPatch);
+      } catch (err) {
+        if (!isCancelled) {
+          logger.error('Failed to persist canvas layout:', err);
+        }
+      }
+    };
+
+    persistLayout();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [cards, edges, layoutType, docId]);
+
+  useEffect(() => {
     if (isLoading) {
       setGenerationStage('generating');
     } else {
@@ -119,29 +166,54 @@ export function CanvasGenerator() {
   useEffect(() => {
     if (error) {
       showApiErrorToast(error, { showRetryHint: true });
+      deleteNoteMetadata(docId).catch((err) => {
+        logger.error('Failed to cleanup metadata on error:', err);
+      });
       setGenerationStage(null);
     }
-  }, [error]);
+  }, [error, docId]);
 
   const handleGenerate = async () => {
-    if (!url.trim()) return;
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
 
     setShareUrl(null);
     setGenerationStage('fetching');
 
     try {
+      const existingNote = await getNoteByUrl(trimmedUrl, 'canvas');
+      if (existingNote) {
+        toast.info('A canvas already exists for this URL', {
+          description: existingNote.title || 'View the existing canvas',
+          action: {
+            label: 'View Canvas',
+            onClick: () => router.push(`/doc/${existingNote.noteId}`),
+          },
+          duration: 8000,
+        });
+        setGenerationStage(null);
+        return;
+      }
+
+      setMeta(docId, { kind: 'canvas', url: trimmedUrl });
+
       let fetchedMarkdown: string | undefined;
+      let resolvedTitle = 'Visual Canvas';
 
       try {
         const metadataRes = await fetch('/api/url-metadata', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url: trimmedUrl }),
         });
 
         if (metadataRes.ok) {
           const { title: fetchedTitle, markdown: responseMarkdown } = await metadataRes.json();
-          if (fetchedTitle) setTitle(fetchedTitle);
+          if (fetchedTitle) {
+            resolvedTitle = fetchedTitle;
+            setTitle(fetchedTitle);
+            setMeta(docId, { title: fetchedTitle });
+          }
           if (responseMarkdown) {
             fetchedMarkdown = responseMarkdown;
           }
@@ -150,7 +222,14 @@ export function CanvasGenerator() {
         logger.error('Error fetching metadata:', err);
       }
 
-      submit({ url, markdown: fetchedMarkdown });
+      await createNoteMetadata({
+        noteId: docId,
+        url: trimmedUrl,
+        title: resolvedTitle,
+        kind: 'canvas',
+      });
+
+      submit({ url: trimmedUrl, markdown: fetchedMarkdown });
     } catch (err) {
       logger.error('Error in handleGenerate:', err);
       toast.error('Failed to generate canvas');
@@ -395,11 +474,9 @@ export function CanvasGenerator() {
             className="w-full relative"
             style={{ height: 'calc(100vh - 120px)', minHeight: '500px' }}
           >
-            <CanvasBoard
-              cards={cards}
-              edges={edges}
-              layoutType={layoutType}
-              isLoading={isLoading}
+            <CanvasDocBoard
+              docId={docId}
+              isLoading={isLoading || isDocLoading}
               showSkeletonCard={hasIncompleteCard}
               ref={canvasRef}
             />

@@ -30,20 +30,9 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { toPng } from 'html-to-image';
 
-import { WhiteboardCard } from './nodes/WhiteboardCard';
-import { SkeletonCard } from './nodes/SkeletonCard';
-import { ChipEdge } from './edges/ChipEdge';
+import { canvasNodeTypes, canvasEdgeTypes } from './flowConfig';
 import type { ProcessedCard, CanvasEdge as CanvasEdgeType } from '@/lib/canvas/schemas-v2';
 import { calculateLayout } from '@/lib/canvas/layout';
-
-const nodeTypes = {
-  whiteboardCard: WhiteboardCard,
-  skeletonCard: SkeletonCard,
-} as const;
-
-const edgeTypes = {
-  chip: ChipEdge,
-} as const;
 
 type CanvasBoardProps = {
   cards: ProcessedCard[];
@@ -326,8 +315,8 @@ const CanvasBoardInner = forwardRef<CanvasBoardHandle, CanvasBoardProps>(functio
         edges={flowEdges}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
+        nodeTypes={canvasNodeTypes}
+        edgeTypes={canvasEdgeTypes}
         defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
         minZoom={0.1}
         maxZoom={2}

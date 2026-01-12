@@ -44,7 +44,10 @@ export function NotesList() {
 
   if (notes.length === 0) {
     return (
-      <div className="col-span-full flex flex-col items-center justify-center py-24 px-6 text-center bg-gray-50 rounded-3xl border border-gray-100" data-testid="notes-list-empty">
+      <div
+        className="col-span-full flex flex-col items-center justify-center py-24 px-6 text-center bg-gray-50 rounded-3xl border border-gray-100"
+        data-testid="notes-list-empty"
+      >
         <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
           <svg
             className="w-10 h-10 text-gray-400"
@@ -77,7 +80,8 @@ export function NotesList() {
           url={note.url}
           ogImage={note.ogImage}
           updatedAt={note.updatedAt}
-          onClick={() => router.push(`/notes/${note.noteId}`)}
+          kind={note.kind}
+          onClick={() => router.push(`/doc/${note.noteId}`)}
           onDelete={() => handleDelete(note.noteId, note.title)}
         />
       ))}

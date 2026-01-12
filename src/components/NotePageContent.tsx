@@ -13,14 +13,28 @@ import { useEffect, useState } from 'react';
 
 type NotePageContentProps = {
   noteId: string;
+  metadata?: NoteMetadata;
+  isMetadataLoading?: boolean;
 };
 
-export function NotePageContent({ noteId }: NotePageContentProps) {
+export function NotePageContent({
+  noteId,
+  metadata: metadataOverride,
+  isMetadataLoading: isMetadataLoadingOverride,
+}: NotePageContentProps) {
   const { isLoading } = useNoteDoc(noteId);
-  const [metadata, setMetadata] = useState<NoteMetadata | undefined>(undefined);
-  const [isMetadataLoading, setIsMetadataLoading] = useState(true);
+  const [metadata, setMetadata] = useState<NoteMetadata | undefined>(metadataOverride);
+  const [isMetadataLoading, setIsMetadataLoading] = useState(metadataOverride ? false : true);
 
   useEffect(() => {
+    if (metadataOverride) {
+      setMetadata(metadataOverride);
+      setIsMetadataLoading(isMetadataLoadingOverride ?? false);
+      return;
+    }
+
+    setMetadata(undefined);
+    setIsMetadataLoading(true);
     getNoteMetadata(noteId)
       .then((data) => {
         setMetadata(data);
@@ -30,7 +44,7 @@ export function NotePageContent({ noteId }: NotePageContentProps) {
         clientLogger.error('Failed to fetch note metadata', err);
         setIsMetadataLoading(false);
       });
-  }, [noteId]);
+  }, [noteId, metadataOverride, isMetadataLoadingOverride]);
 
   if (isLoading) {
     return (
@@ -48,7 +62,6 @@ export function NotePageContent({ noteId }: NotePageContentProps) {
       <NoteHeader metadata={metadata} isLoading={isMetadataLoading} />
 
       <main className="flex-1 relative flex flex-col">
-
         <ErrorBoundary
           fallbackRender={({ resetErrorBoundary }) => (
             <ErrorFallback
@@ -65,6 +78,6 @@ export function NotePageContent({ noteId }: NotePageContentProps) {
           <NoteBoard noteId={noteId} />
         </ErrorBoundary>
       </main>
-    </div >
+    </div>
   );
 }

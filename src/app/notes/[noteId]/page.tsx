@@ -1,4 +1,4 @@
-import { NotePageContent } from '@/components/NotePageContent';
+import { DocumentPageContent } from '@/components/DocumentPageContent';
 
 type Props = {
   params: Promise<{ noteId: string }>;
@@ -7,5 +7,5 @@ type Props = {
 export default async function NotePage({ params }: Props) {
   const { noteId } = await params;
 
-  return <NotePageContent noteId={noteId} />;
+  return <DocumentPageContent docId={noteId} />;
 }

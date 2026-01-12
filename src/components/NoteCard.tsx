@@ -3,12 +3,14 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import type { DocKind } from '@/lib/db/noteMetadata';
 
 type NoteCardProps = {
   title: string;
   url: string;
   ogImage?: string;
   updatedAt: Date;
+  kind?: DocKind;
   onClick: () => void;
   onDelete: () => void;
 };
@@ -26,12 +28,25 @@ function getGradientForTitle(title: string): string {
   return gradients[hash % gradients.length];
 }
 
-export function NoteCard({ title, url, ogImage, updatedAt, onClick, onDelete }: NoteCardProps) {
+export function NoteCard({
+  title,
+  url,
+  ogImage,
+  updatedAt,
+  kind,
+  onClick,
+  onDelete,
+}: NoteCardProps) {
   const [imageError, setImageError] = useState(false);
   const timeAgo = formatDistanceToNow(new Date(updatedAt), { addSuffix: true });
   const domain = new URL(url).hostname.replace('www.', '');
   const gradient = getGradientForTitle(title);
   const showFallback = !ogImage || imageError;
+  const kindLabel = kind === 'canvas' ? 'Canvas' : 'Note';
+  const kindBadgeClass =
+    kind === 'canvas'
+      ? 'border-teal-200 bg-teal-50 text-teal-700'
+      : 'border-blue-200 bg-blue-50 text-blue-700';
 
   return (
     <div className="group relative flex flex-col w-full h-full bg-white border border-gray-200/60 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-gray-300 hover:-translate-y-1 transition-all duration-300">
@@ -60,6 +75,12 @@ export function NoteCard({ title, url, ogImage, updatedAt, onClick, onDelete }: 
         </svg>
       </button>
 
+      <div
+        className={`absolute top-3 left-3 z-10 px-2.5 py-1 text-[11px] font-semibold rounded-full border ${kindBadgeClass}`}
+      >
+        {kindLabel}
+      </div>
+
       {/* Card Content - Now clickable */}
       <button
         onClick={onClick}
@@ -68,67 +89,67 @@ export function NoteCard({ title, url, ogImage, updatedAt, onClick, onDelete }: 
       >
         {/* Card Image Area */}
         <div className="relative w-full h-48 overflow-hidden bg-gray-50 border-b border-gray-100">
-        {showFallback ? (
-          <div className={`w-full h-full bg-gradient-to-br ${gradient} p-6 relative`}>
-            {/* Abstract Pattern Overlay */}
-            <div
-              className="absolute inset-0 opacity-10 mix-blend-overlay"
-              style={{
-                backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-                backgroundSize: '16px 16px',
-              }}
-            />
+          {showFallback ? (
+            <div className={`w-full h-full bg-gradient-to-br ${gradient} p-6 relative`}>
+              {/* Abstract Pattern Overlay */}
+              <div
+                className="absolute inset-0 opacity-10 mix-blend-overlay"
+                style={{
+                  backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                  backgroundSize: '16px 16px',
+                }}
+              />
 
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-2xl bg-white/30 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/40 group-hover:scale-110 transition-transform duration-500">
-                <svg
-                  className="w-8 h-8 text-gray-700 opacity-80"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                  />
-                </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-white/30 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/40 group-hover:scale-110 transition-transform duration-500">
+                  <svg
+                    className="w-8 h-8 text-gray-700 opacity-80"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <Image
-            src={ogImage}
-            alt={title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-            onError={() => setImageError(true)}
-            unoptimized
-          />
-        )}
+          ) : (
+            <Image
+              src={ogImage}
+              alt={title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+              onError={() => setImageError(true)}
+              unoptimized
+            />
+          )}
 
-        {/* Subtle inner shadow top */}
-        <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-t-3xl pointer-events-none" />
-      </div>
-
-      {/* Content Area */}
-      <div className="flex flex-col flex-1 p-6">
-        <h3 className="font-bold text-zinc-700 text-lg tracking-tight leading-snug mb-3 line-clamp-2">
-          <span className="bg-gradient-to-r from-yellow-300 to-yellow-300 bg-[length:0%_6px] bg-no-repeat bg-left-bottom group-hover:bg-[length:100%_6px] transition-all duration-300 box-decoration-clone">
-            {title}
-          </span>
-        </h3>
-
-        <div className="mt-auto pt-4 flex items-center justify-between text-sm text-gray-500 border-t border-gray-100">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-400 truncate max-w-[120px]">{domain}</span>
-          </div>
-          <span className="text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors bg-blue-50 text-blue-700">
-            {timeAgo}
-          </span>
+          {/* Subtle inner shadow top */}
+          <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-t-3xl pointer-events-none" />
         </div>
-      </div>
+
+        {/* Content Area */}
+        <div className="flex flex-col flex-1 p-6">
+          <h3 className="font-bold text-zinc-700 text-lg tracking-tight leading-snug mb-3 line-clamp-2">
+            <span className="bg-gradient-to-r from-yellow-300 to-yellow-300 bg-[length:0%_6px] bg-no-repeat bg-left-bottom group-hover:bg-[length:100%_6px] transition-all duration-300 box-decoration-clone">
+              {title}
+            </span>
+          </h3>
+
+          <div className="mt-auto pt-4 flex items-center justify-between text-sm text-gray-500 border-t border-gray-100">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-gray-400 truncate max-w-[120px]">{domain}</span>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors bg-blue-50 text-blue-700">
+              {timeAgo}
+            </span>
+          </div>
+        </div>
       </button>
     </div>
   );
