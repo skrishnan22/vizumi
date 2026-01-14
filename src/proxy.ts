@@ -30,10 +30,10 @@ export default function proxy(request: NextRequest) {
 
   // Proxy validation only for LLM routes
   if (
-    path.startsWith('/api/generate') ||
+    path.startsWith('/api/note') ||
+    path.startsWith('/api/canvas') ||
     path.startsWith('/api/deep-dive') ||
-    path.startsWith('/api/render-d2') ||
-    path.startsWith('/api/canvas-agent')
+    path.startsWith('/api/render-d2')
   ) {
     const hasUserKey = !!request.headers.get(HEADERS.API_KEY);
     const requestedModel = request.headers.get(HEADERS.MODEL);

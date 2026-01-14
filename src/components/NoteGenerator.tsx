@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { LLMNoteSchema, LLMNoteBlockSchema } from '@/lib/schemas';
 import type { LLMNoteBlock } from '@/lib/schemas';
+import { CanvasAgentResponseSchema } from '@/lib/canvas/schemas-v2';
 import { NoteBoard } from './NoteBoard';
+import { CanvasDocBoard } from './canvas/CanvasDocBoard';
 import styles from './NoteGenerator.module.css';
 import { syncBlocksToGraph } from '@/lib/graph/noteActions';
 import { useNoteStore } from '@/store/noteStore';
 import { useGraphDoc } from '@/hooks/useGraphDoc';
-import { createNoteMetadata, deleteNoteMetadata, getNoteByUrl } from '@/lib/db/actions';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HeroIllustration } from './HeroIllustration';
@@ -19,136 +20,254 @@ import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
 import { HEADERS } from '@/lib/constants';
 import { ModelSelector } from './ModelSelector';
-import { setMeta } from '@/lib/graph/actions';
+import { postProcessCards } from '@/lib/canvas/post-process';
+import { buildCanvasGraph } from '@/lib/canvas/graph';
+import { setGraph, type GraphMetaPatch } from '@/lib/graph/actions';
+import { prepareDocGeneration, cleanupDocGeneration } from '@/lib/generator';
+import type { DocKind } from '@/lib/db/noteMetadata';
 
 type NoteGeneratorProps = {
-  noteId: string;
+  docId: string;
 };
 
-export function NoteGenerator({ noteId }: NoteGeneratorProps) {
-  const router = useRouter();
-  const { apiKey, modelPrefs } = useSettings();
+type GeneratorMode = DocKind;
 
-  // Session-specific model selection (defaults to user's saved preference)
+export function NoteGenerator({ docId }: NoteGeneratorProps) {
+  const router = useRouter();
+  const { modelPrefs, getRequestHeaders } = useSettings();
+  const { isLoading: isDocLoading } = useGraphDoc({ docId });
+
+  const [mode, setMode] = useState<GeneratorMode>('canvas');
+  const [isModeLocked, setIsModeLocked] = useState(false);
+
   const [sessionModel, setSessionModel] = useState<string | null>(null);
   const effectiveModel = sessionModel ?? modelPrefs.generate;
 
-  // Compute headers with the effective model
   const requestHeaders = useMemo(() => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      [HEADERS.MODEL]: effectiveModel,
-    };
-    if (apiKey) {
-      headers[HEADERS.API_KEY] = apiKey;
+    const headers = getRequestHeaders('generate');
+    if (sessionModel) {
+      return { ...headers, [HEADERS.MODEL]: sessionModel };
     }
     return headers;
-  }, [effectiveModel, apiKey]);
+  }, [getRequestHeaders, sessionModel]);
 
-  const { object, submit, isLoading, error } = useObject({
-    api: '/api/generate',
+  const noteResponse = useObject({
+    api: '/api/note',
     schema: LLMNoteSchema,
+    headers: requestHeaders,
+  });
+
+  const canvasResponse = useObject({
+    api: '/api/canvas',
+    schema: CanvasAgentResponseSchema,
     headers: requestHeaders,
   });
 
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
-  const [markdown, setMarkdown] = useState<string | null>(null);
   const [generationStage, setGenerationStage] = useState<'fetching' | 'generating' | null>(null);
+
   const setNoteId = useNoteStore((state) => state.setNoteId);
   const setMarkdownForNote = useNoteStore((state) => state.setMarkdownForNote);
   const setGenerating = useNoteStore((state) => state.setGenerating);
-  useGraphDoc({ docId: noteId, kind: 'note' });
 
-  // Set noteId in store once on mount
   useEffect(() => {
-    setNoteId(noteId);
-    // Cleanup: Clear noteId when component unmounts
+    if (mode !== 'note') {
+      setNoteId(null);
+      return;
+    }
+
+    setNoteId(docId);
     return () => setNoteId(null);
-  }, [noteId, setNoteId]);
+  }, [docId, mode, setNoteId]);
 
-  /**
-   * Track synced block IDs to prevent re-syncing.
-   *
-   * Why useRef instead of useState?
-   * - During streaming, blocks array changes frequently
-   * - We only want to sync INCREMENTAL changes (new blocks)
-   * - Using state would trigger extra re-renders
-   * - Ref lets us track "side effect state" without affecting render cycle
-   */
   const syncedBlockIdsRef = useRef<Set<string>>(new Set());
+  const layoutRunRef = useRef(0);
 
-  const blocks = (object?.blocks || [])
-    .reduce((acc, block) => {
-      const result = LLMNoteBlockSchema.safeParse(block);
-      if (result.success) {
-        acc.push(result.data);
-      }
-      return acc;
-    }, [] as LLMNoteBlock[])
-    .map((block, index) => {
-      if (index === 0) {
-        // Root block - no parent.adding blockType since LLM doesn't generate it
-        return { ...block, parentId: undefined, blockType: 'content' as const };
-      } else {
-        // All other blocks are children of the first block
-        const rootId = object?.blocks?.[0]?.id;
+  const noteBlocks = useMemo(() => {
+    return (noteResponse.object?.blocks || [])
+      .reduce((acc, block) => {
+        const result = LLMNoteBlockSchema.safeParse(block);
+        if (result.success) {
+          acc.push(result.data);
+        }
+        return acc;
+      }, [] as LLMNoteBlock[])
+      .map((block, index) => {
+        if (index === 0) {
+          return { ...block, parentId: undefined, blockType: 'content' as const };
+        }
+
+        const rootId = noteResponse.object?.blocks?.[0]?.id;
         return { ...block, parentId: rootId, blockType: 'content' as const };
-      }
-    });
+      });
+  }, [noteResponse.object]);
 
-  // Sync blocks to Y.Doc incrementally as they arrive. Layout calculation is async and batched
   useEffect(() => {
-    if (blocks.length === 0) return;
+    if (mode !== 'note' || noteBlocks.length === 0) return;
 
-    const newBlocks = blocks.filter((block) => !syncedBlockIdsRef.current.has(block.id));
+    const newBlocks = noteBlocks.filter((block) => !syncedBlockIdsRef.current.has(block.id));
 
     if (newBlocks.length > 0) {
-      syncBlocksToGraph(noteId, blocks);
+      syncBlocksToGraph(docId, noteBlocks);
       newBlocks.forEach((block) => syncedBlockIdsRef.current.add(block.id));
     }
-  }, [blocks, noteId]);
+  }, [docId, mode, noteBlocks]);
 
-  // Reset state when starting new generation
   useEffect(() => {
-    if (isLoading) {
+    if (noteResponse.isLoading) {
       syncedBlockIdsRef.current.clear();
-      setGenerationStage('generating');
-      setGenerating(true);
-    } else {
-      setGenerationStage(null);
-      setGenerating(false);
     }
-  }, [isLoading, setGenerating]);
+  }, [noteResponse.isLoading]);
 
-  // Show toast on API error and cleanup metadata
   useEffect(() => {
-    if (error) {
-      showApiErrorToast(error, { showRetryHint: true });
+    if (mode !== 'note') {
+      setGenerating(false);
+      return;
+    }
 
-      deleteNoteMetadata(noteId).catch((err) => {
-        logger.error('Failed to cleanup metadata on error:', err);
-      });
+    setGenerating(noteResponse.isLoading);
+  }, [mode, noteResponse.isLoading, setGenerating]);
 
+  const {
+    cards: canvasCards,
+    edges: canvasEdges,
+    layoutType,
+    hasIncompleteCard,
+  } = useMemo(() => {
+    if (!canvasResponse.object) {
+      return {
+        cards: [],
+        edges: [],
+        layoutType: 'layered' as const,
+        hasIncompleteCard: false,
+      };
+    }
+
+    const responseCards = (canvasResponse.object.cards as any[]) ?? [];
+    const responseEdges = (canvasResponse.object.edges as any[]) ?? [];
+    const responseLayoutType = canvasResponse.object.layout || 'layered';
+
+    if (canvasResponse.isLoading) {
+      logger.info(
+        `[Streaming] Cards received: ${responseCards.length}, isLoading: ${canvasResponse.isLoading}`
+      );
+    }
+
+    const cardsToProcess =
+      canvasResponse.isLoading && responseCards.length > 0
+        ? responseCards.slice(0, responseCards.length - 1)
+        : responseCards;
+
+    const validCards = cardsToProcess.filter((card) => {
+      if (!card || typeof card !== 'object') return false;
+      if (!card.id || typeof card.id !== 'string') return false;
+      if (!card.title || typeof card.title !== 'string') return false;
+      if (!Array.isArray(card.sections) || card.sections.length === 0) return false;
+      if (!card.sections[0]?.type) return false;
+      return true;
+    });
+
+    if (canvasResponse.isLoading) {
+      logger.info(`[Streaming] Valid cards after N-1: ${validCards.length}`);
+    }
+
+    const { cards: processedCards, edges: validEdges } = postProcessCards(
+      validCards,
+      responseEdges
+    );
+
+    return {
+      cards: processedCards,
+      edges: validEdges,
+      layoutType: responseLayoutType,
+      hasIncompleteCard: canvasResponse.isLoading && responseCards.length > cardsToProcess.length,
+    };
+  }, [canvasResponse.isLoading, canvasResponse.object]);
+
+  useEffect(() => {
+    if (mode !== 'canvas' || canvasCards.length === 0) return;
+
+    let isCancelled = false;
+    const runId = ++layoutRunRef.current;
+
+    const persistLayout = async () => {
+      try {
+        const { nodes, edges: layoutedEdges } = await buildCanvasGraph(
+          canvasCards,
+          canvasEdges,
+          layoutType
+        );
+
+        if (isCancelled || runId !== layoutRunRef.current) return;
+
+        const metaPatch: GraphMetaPatch = {
+          kind: 'canvas',
+          layoutType,
+        };
+
+        setGraph(docId, nodes, layoutedEdges, metaPatch);
+      } catch (error) {
+        if (!isCancelled) {
+          logger.error('Failed to persist canvas layout:', error);
+        }
+      }
+    };
+
+    persistLayout();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [canvasCards, canvasEdges, docId, layoutType, mode]);
+
+  const activeIsLoading = mode === 'note' ? noteResponse.isLoading : canvasResponse.isLoading;
+  const activeError = mode === 'note' ? noteResponse.error : canvasResponse.error;
+
+  useEffect(() => {
+    if (activeIsLoading) {
+      setGenerationStage('generating');
+      return;
+    }
+
+    if (generationStage === 'generating') {
       setGenerationStage(null);
     }
-  }, [error, noteId]);
+  }, [activeIsLoading, generationStage]);
 
-  // Handle generation with metadata saving
+  useEffect(() => {
+    if (!activeError) return;
+
+    showApiErrorToast(activeError, { showRetryHint: true });
+    cleanupDocGeneration(docId);
+    setGenerationStage(null);
+  }, [activeError, docId]);
+
   const handleGenerate = async () => {
     const trimmedUrl = url.trim();
-    if (!trimmedUrl) return;
+    if (!trimmedUrl || generationStage) return;
+
+    if (!isModeLocked) {
+      setIsModeLocked(true);
+    }
 
     setGenerationStage('fetching');
 
     try {
-      const existingNote = await getNoteByUrl(trimmedUrl, 'note');
-      if (existingNote) {
-        toast.info('A note already exists for this URL', {
-          description: existingNote.title || 'View the existing note',
+      const result = await prepareDocGeneration({
+        docId,
+        kind: mode,
+        url: trimmedUrl,
+        fallbackTitle: mode === 'canvas' ? 'Visual Canvas' : 'Visual Note',
+      });
+
+      if (result.kind === 'duplicate') {
+        const label = mode === 'canvas' ? 'Canvas' : 'Note';
+        toast.info(`A ${label.toLowerCase()} already exists for this URL`, {
+          description: result.existing.title || `View the existing ${label.toLowerCase()}`,
           action: {
-            label: 'View Note',
-            onClick: () => router.push(`/doc/${existingNote.noteId}`),
+            label: `View ${label}`,
+            onClick: () => router.push(`/doc/${result.existing.noteId}`),
           },
           duration: 8000,
         });
@@ -156,56 +275,45 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
         return;
       }
 
-      setMeta(noteId, { kind: 'note', url: trimmedUrl });
+      setTitle(result.metadata.title);
+      setUrl(result.metadata.url);
 
-      let fetchedMarkdown: string | undefined;
-
-      try {
-        const metadataRes = await fetch('/api/url-metadata', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: trimmedUrl }),
-        });
-
-        if (metadataRes.ok) {
-          const { title, ogImage, markdown: responseMarkdown } = await metadataRes.json();
-          if (title) setTitle(title);
-          if (title) setMeta(noteId, { title });
-          if (responseMarkdown) {
-            fetchedMarkdown = responseMarkdown;
-            setMarkdown(responseMarkdown);
-            setMarkdownForNote(noteId, responseMarkdown);
-          }
-
-          await createNoteMetadata({
-            noteId,
-            url: trimmedUrl,
-            title,
-            ogImage,
-            kind: 'note',
-          });
-        }
-      } catch (error) {
-        logger.error('Error saving metadata:', error);
+      if (result.metadata.markdown && mode === 'note') {
+        setMarkdownForNote(docId, result.metadata.markdown);
       }
 
-      submit({ url: trimmedUrl, markdown: fetchedMarkdown });
+      const payload = { url: result.metadata.url, markdown: result.metadata.markdown };
+
+      if (mode === 'note') {
+        noteResponse.submit(payload);
+      } else {
+        canvasResponse.submit(payload);
+      }
     } catch (error) {
       logger.error('Error in handleGenerate:', error);
+      toast.error('Failed to generate the document.');
       setGenerationStage(null);
     }
   };
 
+  const hasCanvasContent =
+    canvasCards.length > 0 || (canvasResponse.isLoading && canvasResponse.object !== undefined);
+  const hasNoteContent = noteBlocks.length > 0;
+  const hasContent = mode === 'note' ? hasNoteContent : hasCanvasContent;
+
+  const heroSubtitle =
+    mode === 'canvas'
+      ? 'Paste a URL and watch as AI creates a visual canvas of key ideas'
+      : 'Paste a URL and watch as AI creates an interactive mind map of key concepts';
+
   return (
     <section className={styles.wrapper}>
-      {/* Animated background orbs */}
       <div className={styles.backgroundOrbs} aria-hidden="true">
         <div className={`${styles.orb} ${styles.orb1}`} />
         <div className={`${styles.orb} ${styles.orb2}`} />
         <div className={`${styles.orb} ${styles.orb3}`} />
       </div>
 
-      {/* Home button */}
       <div className={styles.homeButtonWrapper}>
         <Link href="/" className={styles.homeButton}>
           <svg
@@ -224,20 +332,18 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
         </Link>
       </div>
 
-      {/* Main Input - Fades out when content is generated */}
       <div
-        className={`${styles.contentContainer} ${blocks.length > 0 ? styles.contentHidden : styles.contentCentered}`}
+        className={`${styles.contentContainer} ${
+          hasContent ? styles.contentHidden : styles.contentCentered
+        }`}
       >
-        {/* Animated Illustration */}
         <div className={styles.illustrationWrapper}>
           <HeroIllustration />
         </div>
 
         <div className={styles.heroSection}>
           <h1 className={styles.heroTitle}>Transform any article into visual notes</h1>
-          <p className={styles.heroSubtitle}>
-            Paste a URL and watch as AI creates an interactive mind map of key concepts
-          </p>
+          <p className={styles.heroSubtitle}>{heroSubtitle}</p>
         </div>
 
         <div className={styles.inputCard}>
@@ -273,6 +379,25 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
 
           <div className={styles.inputDivider} />
 
+          <div className={styles.modeToggle} aria-label="Document mode">
+            <button
+              type="button"
+              className={`${styles.modeButton} ${mode === 'canvas' ? styles.modeButtonActive : ''}`}
+              onClick={() => setMode('canvas')}
+              disabled={isModeLocked || !!generationStage}
+            >
+              Canvas
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeButton} ${mode === 'note' ? styles.modeButtonActive : ''}`}
+              onClick={() => setMode('note')}
+              disabled={isModeLocked || !!generationStage}
+            >
+              Note
+            </button>
+          </div>
+
           <ModelSelector
             value={effectiveModel}
             onChange={setSessionModel}
@@ -291,7 +416,11 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
               <>
                 <span className={styles.spinner} />
                 <span>
-                  {generationStage === 'fetching' ? 'Fetching content...' : 'Creating notes...'}
+                  {generationStage === 'fetching'
+                    ? 'Fetching content...'
+                    : mode === 'canvas'
+                      ? 'Creating canvas...'
+                      : 'Creating notes...'}
                 </span>
               </>
             ) : (
@@ -308,24 +437,35 @@ export function NoteGenerator({ noteId }: NoteGeneratorProps) {
                 >
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
-                <span>Generate Notes</span>
+                <span>{mode === 'canvas' ? 'Generate Canvas' : 'Generate Notes'}</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Generated Header - Appears when content is generated */}
-      {blocks.length > 0 && (
+      {hasContent && (
         <>
           <header className={styles.generatedHeader}>
-            <h1 className={styles.generatedTitle}>{title || 'Visual Note'}</h1>
+            <h1 className={styles.generatedTitle}>
+              {title || (mode === 'canvas' ? 'Visual Canvas' : 'Visual Note')}
+            </h1>
             <a href={url} target="_blank" rel="noopener noreferrer" className={styles.generatedUrl}>
               {url}
             </a>
           </header>
           <div className={styles.boardContainer}>
-            <NoteBoard noteId={noteId} />
+            {mode === 'canvas' ? (
+              <div className="w-full relative" style={{ height: 'calc(100vh - 120px)' }}>
+                <CanvasDocBoard
+                  docId={docId}
+                  isLoading={canvasResponse.isLoading || isDocLoading}
+                  showSkeletonCard={hasIncompleteCard}
+                />
+              </div>
+            ) : (
+              <NoteBoard noteId={docId} />
+            )}
           </div>
         </>
       )}

@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  useImperativeHandle,
+} from 'react';
 import Link from 'next/link';
 import ReactFlow, {
   Background,
@@ -9,8 +17,11 @@ import ReactFlow, {
   type NodeChange,
   type EdgeChange,
   type ReactFlowInstance,
+  getNodesBounds,
+  getViewportForBounds,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { toPng } from 'html-to-image';
 import { type NoteBlock } from '@/lib/schemas';
 import { NoteBlockNode } from './NoteBlockNode';
 import { DeepDiveDrawer } from './DeepDiveDrawer';
@@ -26,15 +37,23 @@ type NoteBoardProps = {
   isEmpty?: boolean;
 };
 
+export type NoteBoardHandle = {
+  exportPng: () => Promise<string>;
+};
+
 // Must be defined outside component or memoized to prevent ReactFlow warnings
 const nodeTypes = {
   note: NoteBlockNode,
 } as const;
 
-export function NoteBoard({ noteId, isLoading = false, isEmpty = false }: NoteBoardProps) {
+export const NoteBoard = forwardRef<NoteBoardHandle, NoteBoardProps>(function NoteBoard(
+  { noteId, isLoading = false, isEmpty = false }: NoteBoardProps,
+  ref
+) {
   const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance<NoteNodeData, any> | null>(null);
   const fitViewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const nodes = useGraphStore((state) => state.nodes) as Node<NoteNodeData>[];
   const edges = useGraphStore((state) => state.edges);
@@ -141,6 +160,39 @@ export function NoteBoard({ noteId, isLoading = false, isEmpty = false }: NoteBo
   // Handle edge changes (selection, etc.)
   const handleEdgesChange = useCallback((_changes: EdgeChange[]) => {}, []);
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      exportPng: async () => {
+        const viewport = wrapperRef.current?.querySelector(
+          '.react-flow__viewport'
+        ) as HTMLElement | null;
+
+        if (!viewport || nodes.length === 0) {
+          throw new Error('Note is not ready to export.');
+        }
+
+        const bounds = getNodesBounds(nodes);
+        const padding = 140;
+        const width = Math.max(bounds.width + padding * 2, 1000);
+        const height = Math.max(bounds.height + padding * 2, 700);
+        const view = getViewportForBounds(bounds, width, height, 0.1, 2, 0.1);
+
+        return toPng(viewport, {
+          width,
+          height,
+          backgroundColor: '#ffffff',
+          style: {
+            width: `${width}px`,
+            height: `${height}px`,
+            transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
+          },
+        });
+      },
+    }),
+    [nodes]
+  );
+
   /**
    * Inject stable callbacks into nodes.
    *
@@ -213,7 +265,7 @@ export function NoteBoard({ noteId, isLoading = false, isEmpty = false }: NoteBo
 
   return (
     <section className={styles.boardSection} aria-label="Generated visual notes">
-      <div className={styles.flowShell}>
+      <div className={styles.flowShell} ref={wrapperRef}>
         <ReactFlow
           nodes={nodesWithCallbacks}
           edges={edges}
@@ -247,4 +299,4 @@ export function NoteBoard({ noteId, isLoading = false, isEmpty = false }: NoteBo
       />
     </section>
   );
-}
+});
