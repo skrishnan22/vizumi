@@ -33,6 +33,7 @@ import { type NoteNodeData } from '@/lib/graph/noteUtils';
 
 type NoteBoardProps = {
   noteId: string;
+  sessionModel?: string;
   isLoading?: boolean;
   isEmpty?: boolean;
 };
@@ -47,7 +48,7 @@ const nodeTypes = {
 } as const;
 
 export const NoteBoard = forwardRef<NoteBoardHandle, NoteBoardProps>(function NoteBoard(
-  { noteId, isLoading = false, isEmpty = false }: NoteBoardProps,
+  { noteId, sessionModel, isLoading = false, isEmpty = false }: NoteBoardProps,
   ref
 ) {
   const [selectedDeepDiveId, setSelectedDeepDiveId] = useState<string | null>(null);
@@ -159,7 +160,6 @@ export const NoteBoard = forwardRef<NoteBoardHandle, NoteBoardProps>(function No
 
   // Handle edge changes (selection, etc.)
   const handleEdgesChange = useCallback((_changes: EdgeChange[]) => {}, []);
-
   useImperativeHandle(
     ref,
     () => ({
@@ -215,6 +215,7 @@ export const NoteBoard = forwardRef<NoteBoardHandle, NoteBoardProps>(function No
         onSaveRenderedSvg: handleSaveRenderedSvg,
         onUpdateBlockData: handleUpdateBlockData,
         onOpenDrawer: handleOpenDrawer,
+        sessionModel, // Pass session model to nodes for DiagramRenderer
       },
     }));
   }, [
@@ -224,6 +225,7 @@ export const NoteBoard = forwardRef<NoteBoardHandle, NoteBoardProps>(function No
     handleSaveRenderedSvg,
     handleUpdateBlockData,
     handleOpenDrawer,
+    sessionModel,
   ]);
 
   // Loading state while IndexedDB syncs

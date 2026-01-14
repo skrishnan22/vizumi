@@ -9,6 +9,7 @@ type DiagramModalProps = {
   code: string;
   cachedSvg?: string;
   title: string;
+  model?: string;
   onClose: () => void;
   onSvgRendered?: (svg: string) => void;
   onRenderFailure?: () => void;
@@ -18,6 +19,7 @@ export function DiagramModal({
   code,
   cachedSvg,
   title,
+  model,
   onClose,
   onSvgRendered,
   onRenderFailure,
@@ -100,6 +102,7 @@ export function DiagramModal({
             code={code}
             cachedSvg={cachedSvg}
             className={styles.modalDiagram}
+            model={model}
             onSvgRendered={onSvgRendered}
             onRenderFailure={onRenderFailure}
           />

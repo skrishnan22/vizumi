@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useCompletion } from '@ai-sdk/react';
 import type { Node } from 'reactflow';
 import { useGraphStore } from '@/store/graphStore';
@@ -13,19 +13,34 @@ import { logger } from '@/lib/logger.client';
 import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
 import { getNoteMetadata } from '@/lib/db/actions';
+import { HEADERS } from '@/lib/constants';
 
-export function useDeepDive() {
+export function useDeepDive(sessionModel?: string) {
   const noteId = useNoteStore((state) => state.noteId);
   const storeNodes = useGraphStore((state) => state.nodes) as Node<NoteNodeData>[];
   const setDeepDiveStreaming = useNoteStore((state) => state.setDeepDiveStreaming);
   const markdownCache = useNoteStore((state) => state.markdownCache);
-  const { getRequestHeaders } = useSettings();
+  const { getRequestHeaders, apiKey } = useSettings();
 
   const currentDeepDiveNodeIdRef = useRef<string | null>(null);
 
+  const headers = useMemo(() => {
+    if (sessionModel) {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        [HEADERS.MODEL]: sessionModel,
+      };
+      if (apiKey) {
+        headers[HEADERS.API_KEY] = apiKey;
+      }
+      return headers;
+    }
+    return getRequestHeaders('deepDive');
+  }, [sessionModel, apiKey, getRequestHeaders]);
+
   const { completion, complete, isLoading, error } = useCompletion({
     api: '/api/deep-dive',
-    headers: getRequestHeaders('deepDive'),
+    headers,
   });
 
   // Update summary as streaming progresses

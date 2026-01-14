@@ -39,12 +39,13 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
     onSaveRenderedSvg,
     onUpdateBlockData,
     onOpenDrawer,
+    sessionModel,
   } = data;
 
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const isDeepDiveStreaming = useNoteStore((state) => state.isDeepDiveStreaming);
   const isGenerating = useNoteStore((state) => state.isGenerating);
-  const { requestDeepDive } = useDeepDive();
+  const { requestDeepDive } = useDeepDive(data.sessionModel);
 
   // Only render diagram when we have complete d2Code (not while streaming)
   const hasDiagram = block.d2Code && Boolean(block.d2Code?.trim()) && !isGenerating;
@@ -253,6 +254,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
               code={block.d2Code ?? ''}
               cachedSvg={block.renderedSvg}
               className={styles.nodeDiagram}
+              model={sessionModel}
               onSuccess={() => requestAnimationFrame(() => measureHeight())}
               onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
               onRenderFailure={handleDiagramFailure}
@@ -265,6 +267,7 @@ function NoteBlockNodeComponent({ id, data, selected }: NodeProps<NoteNodeData>)
           code={block.d2Code}
           cachedSvg={block.renderedSvg}
           title={block.title || 'Diagram'}
+          model={sessionModel}
           onClose={() => setIsModalOpen(false)}
           onSvgRendered={(svg) => onSaveRenderedSvg?.(id, svg)}
           onRenderFailure={handleDiagramFailure}

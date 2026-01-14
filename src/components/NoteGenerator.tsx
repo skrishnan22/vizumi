@@ -464,7 +464,7 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
                 />
               </div>
             ) : (
-              <NoteBoard noteId={docId} />
+              <NoteBoard noteId={docId} sessionModel={effectiveModel} />
             )}
           </div>
         </>
