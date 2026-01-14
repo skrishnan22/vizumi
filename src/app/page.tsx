@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { NotesList } from '@/components/NotesList';
+import { DocsList } from '@/components/DocsList';
 import { HeroAnimation } from '@/components/HeroAnimation';
 import { Settings } from 'lucide-react';
 
@@ -62,7 +62,7 @@ export default function Home() {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Create New Note
+              Create New
             </Link>
           </div>
 
@@ -77,7 +77,7 @@ export default function Home() {
           <div className="flex items-end justify-between mb-8 border-b border-gray-200 pb-4">
             <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Your Library</h2>
           </div>
-          <NotesList />
+          <DocsList />
         </section>
       </div>
     </main>

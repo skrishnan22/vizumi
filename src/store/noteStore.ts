@@ -1,8 +1,6 @@
 'use client';
 
 import { create } from 'zustand';
-import type { Node, Edge } from 'reactflow';
-import type { NoteNodeData } from '@/lib/yjs/utils';
 
 type NoteStore = {
   // Active note ID for Y.js binding
@@ -16,15 +14,6 @@ type NoteStore = {
   setDeepDiveStreaming: (isStreaming: boolean) => void;
   isGenerating: boolean;
   setGenerating: (isGenerating: boolean) => void;
-
-  // Y.js Integration - Single source of truth for ReactFlow
-  // These are the ONLY place where nodes/edges live in React state
-  nodes: Node<NoteNodeData>[];
-  edges: Edge[];
-  setGraph: (nodes: Node<NoteNodeData>[], edges: Edge[]) => void;
-
-  // Individual node updates (for streaming/editing without full graph replacement)
-  updateNode: (nodeId: string, updates: Partial<Node<NoteNodeData>>) => void;
 
   // Markdown cache for deep-dive context (session-only storage)
   // Maps noteId -> markdown content
@@ -45,26 +34,6 @@ export const useNoteStore = create<NoteStore>((set) => ({
   setDeepDiveStreaming: (isStreaming) => set({ isDeepDiveStreaming: isStreaming }),
   isGenerating: false,
   setGenerating: (isGenerating) => set({ isGenerating }),
-
-  // Y.js Integration
-  nodes: [],
-  edges: [],
-  setGraph: (newNodes, edges) =>
-    set((state) => {
-      // Preserve selection state from current nodes (selection is ephemeral, not in Y.Doc)
-      const selectionMap = new Map(state.nodes.map((n) => [n.id, n.selected]));
-      const nodesWithSelection = newNodes.map((n) => ({
-        ...n,
-        selected: selectionMap.get(n.id) ?? false,
-      }));
-      return { nodes: nodesWithSelection, edges };
-    }),
-
-  // Optimized individual node updates
-  updateNode: (nodeId, updates) =>
-    set((state) => ({
-      nodes: state.nodes.map((node) => (node.id === nodeId ? { ...node, ...updates } : node)),
-    })),
 
   markdownCache: {},
   setMarkdownForNote: (noteId, markdown) =>

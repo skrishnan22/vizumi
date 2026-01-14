@@ -1,18 +1,12 @@
 import { streamObject } from 'ai';
-import { LLMNoteSchema } from '@/lib/schemas';
-import {
-  SYSTEM_PROMPT_SECURE,
-  SYSTEM_PROMPT_WITH_D2_REF_SECURE,
-} from '@/lib/prompts';
+import { CanvasAgentResponseSchema } from '@/lib/canvas/schemas-v2';
+import { CANVAS_AGENT_V2_SYSTEM_PROMPT_SECURE } from '@/lib/canvas/prompts-v2';
 import { processUrl } from '@/lib/url-processor';
 import { logger } from '@/lib/logger';
 import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
-import { FEATURE_FLAGS } from '@/lib/constants';
-import { createSecureContentPrompt, sanitizeBlocks, type Block } from '@/lib/security';
+import { createSecureContentPrompt } from '@/lib/security';
 
-// Next.js segment config values must be statically analyzable literals.
-// Using the imported constant directly trips the validator, so inline the value.
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
@@ -30,7 +24,6 @@ export async function POST(req: Request) {
 
     let content: string;
 
-    // Use provided markdown if available, otherwise fetch and convert
     if (markdown && typeof markdown === 'string' && markdown.trim()) {
       const metadata = `Source: ${url}\n\n`;
       content = metadata + markdown;
@@ -50,18 +43,14 @@ export async function POST(req: Request) {
     const openrouter = getOpenRouterClient(req);
     const model = getModel(req, 'generate');
 
-    // Use security-hardened system prompt
-    const systemPrompt = FEATURE_FLAGS.USE_ENHANCED_PROMPT
-      ? SYSTEM_PROMPT_WITH_D2_REF_SECURE
-      : SYSTEM_PROMPT_SECURE;
-
-    // Create secure prompt with delimiters and anti-injection instructions
     const securePrompt = createSecureContentPrompt(url, content);
+
+    logger.info({ model, url }, 'Starting canvas agent V2 generation');
 
     const result = streamObject({
       model: openrouter(model),
-      schema: LLMNoteSchema,
-      system: systemPrompt,
+      schema: CanvasAgentResponseSchema,
+      system: CANVAS_AGENT_V2_SYSTEM_PROMPT_SECURE,
       prompt: securePrompt,
     });
 

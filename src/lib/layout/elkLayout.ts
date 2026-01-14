@@ -1,8 +1,8 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
 import type { Node, Edge } from 'reactflow';
 import { MarkerType } from 'reactflow';
-import type { NoteNodeData } from '@/lib/yjs/utils';
-import { NODE_WIDTH } from '@/lib/yjs/utils';
+import type { NoteNodeData } from '@/lib/graph/noteUtils';
+import { NODE_WIDTH } from '@/lib/graph/noteUtils';
 
 const elk = new ELK();
 

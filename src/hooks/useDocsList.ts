@@ -5,29 +5,29 @@ import { getAllNotes } from '@/lib/db/actions';
 import type { NoteMetadata } from '@/lib/db/noteMetadata';
 import { logger } from '@/lib/logger.client';
 
-export function useNotesList() {
-  const [notes, setNotes] = useState<NoteMetadata[]>([]);
+export function useDocsList() {
+  const [docs, setDocs] = useState<NoteMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchNotes = useCallback(async () => {
+  const fetchDocs = useCallback(async () => {
     setIsLoading(true);
     try {
       const allNotes = await getAllNotes();
-      setNotes(allNotes);
+      setDocs(allNotes);
     } catch (error) {
-      logger.error('Failed to fetch notes:', error);
+      logger.error('Failed to fetch documents:', error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
+    fetchDocs();
+  }, [fetchDocs]);
 
   const refetch = useCallback(() => {
-    fetchNotes();
-  }, [fetchNotes]);
+    fetchDocs();
+  }, [fetchDocs]);
 
-  return { notes, isLoading, refetch };
+  return { docs, isLoading, refetch };
 }

@@ -8,15 +8,15 @@ import { ErrorFallback } from '@/components/ErrorFallback';
 import { clientLogger } from '@/lib/client-logger';
 
 export default function NewNotePage() {
-  // Generate noteId once on mount
-  const noteId = useMemo(() => crypto.randomUUID(), []);
+  // Generate docId once on mount
+  const docId = useMemo(() => crypto.randomUUID(), []);
 
   return (
     <ErrorBoundary
       fallbackRender={({ resetErrorBoundary }) => (
         <ErrorFallback
           title="Generation failed"
-          message="An error occurred while generating the note. Please try again."
+          message="An error occurred while generating the document. Please try again."
           onReset={resetErrorBoundary}
           showHomeButton
           containerClassName="min-h-screen bg-neutral-50"
@@ -27,7 +27,7 @@ export default function NewNotePage() {
         toast.error('Something went wrong. Please try again.');
       }}
     >
-      <NoteGenerator noteId={noteId} />
+      <NoteGenerator docId={docId} />
     </ErrorBoundary>
   );
 }

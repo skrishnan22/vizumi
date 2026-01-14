@@ -30,7 +30,8 @@ export default function proxy(request: NextRequest) {
 
   // Proxy validation only for LLM routes
   if (
-    path.startsWith('/api/generate') ||
+    path.startsWith('/api/note') ||
+    path.startsWith('/api/canvas') ||
     path.startsWith('/api/deep-dive') ||
     path.startsWith('/api/render-d2')
   ) {

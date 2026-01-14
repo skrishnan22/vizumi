@@ -19,7 +19,7 @@ export type NoteNodeData = {
 
 /**
  * Convert a NoteBlock to a React Flow Node.
- * This is the single source of truth for block → node conversion.
+ * This is the single source of truth for block -> node conversion.
  */
 export function blockToNode(
   block: NoteBlock,
