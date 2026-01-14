@@ -141,7 +141,11 @@ const CanvasDocBoardInner = forwardRef<CanvasBoardHandle, CanvasDocBoardProps>(
     const handleNodesChange = useCallback(
       (changes: NodeChange[]) => {
         for (const change of changes) {
-          if (change.id === '__skeleton__') continue;
+          const changeId =
+            'id' in change ? change.id : change.type === 'add' ? change.item.id : null;
+
+          if (changeId === '__skeleton__') continue;
+          if (!('id' in change)) continue;
 
           if (change.type === 'select') {
             updateNode(change.id, { selected: change.selected });

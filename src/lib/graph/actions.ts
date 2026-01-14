@@ -28,7 +28,7 @@ export function setGraph(
   doc.transact(() => {
     const yNodes = doc.getMap('nodes');
     const yEdges = doc.getMap('edges');
-    const yMeta = doc.getMap('meta');
+    const yMeta = doc.getMap<GraphMetaValue>('meta');
 
     yNodes.clear();
     nodes.forEach((node) => {
@@ -71,7 +71,7 @@ export function updateEdge(docId: string, edgeId: string, patch: Partial<Edge>):
 export function setMeta(docId: string, metaPatch: GraphMetaPatch): void {
   const { doc } = getOrCreateGraphDoc(docId);
   doc.transact(() => {
-    const yMeta = doc.getMap('meta');
+    const yMeta = doc.getMap<GraphMetaValue>('meta');
     applyMetaPatch(yMeta, metaPatch);
   });
 }
