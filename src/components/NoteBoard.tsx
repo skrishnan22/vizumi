@@ -61,6 +61,11 @@ export const NoteBoard = forwardRef<NoteBoardHandle, NoteBoardProps>(function No
   const setAutoLayoutEnabled = useNoteStore((state) => state.setAutoLayoutEnabled);
   const updateNode = useGraphStore((state) => state.updateNode);
 
+  // Store nodes in ref to access in callbacks without adding to dependencies.
+  // This prevents callback recreation on every nodes change (rule: rerender-functional-setstate).
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
+
   // Trigger fitView when new nodes are added (debounced)
   useEffect(() => {
     if (rfInstance && nodes.length > 0) {

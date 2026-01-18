@@ -81,12 +81,10 @@ function SettingsForm({
                 <Key className="w-5 h-5 text-stone-700" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-stone-900 mb-1">
-                  OpenRouter API Key
-                </h2>
+                <h2 className="text-lg font-semibold text-stone-900 mb-1">OpenRouter API Key</h2>
                 <p className="text-sm text-stone-600">
-                  Add your OpenRouter API key to use any model. Without a key, only free
-                  tier models are available.{' '}
+                  Add your OpenRouter API key to use any model. Without a key, only free tier models
+                  are available.{' '}
                   <a
                     href="https://openrouter.ai/keys"
                     target="_blank"
@@ -106,10 +104,13 @@ function SettingsForm({
                 </label>
                 <input
                   id="api-key"
+                  name="apiKey"
                   type="password"
                   value={keyInput}
                   onChange={(e) => setKeyInput(e.target.value)}
                   placeholder="sk-or-..."
+                  autoComplete="off"
+                  spellCheck={false}
                   className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
                 />
               </div>
@@ -148,32 +149,27 @@ function SettingsForm({
                 <Sparkles className="w-5 h-5 text-stone-700" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-stone-900 mb-1">
-                  Default Model
-                </h2>
+                <h2 className="text-lg font-semibold text-stone-900 mb-1">Default Model</h2>
                 <p className="text-sm text-stone-600">
-                  Choose which AI model to use for generating notes, deep dives, and diagram
-                  fixes. Premium models require an API key.
+                  Choose which AI model to use for generating notes, deep dives, and diagram fixes.
+                  Premium models require an API key.
                 </p>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-3">
-                Select Model
-              </label>
-              <ModelSelector
-                value={modelPrefs.generate}
-                onChange={handleModelChange}
-              />
+              <label className="block text-sm font-medium text-stone-700 mb-3">Select Model</label>
+              <ModelSelector value={modelPrefs.generate} onChange={handleModelChange} />
 
               {/* Model usage note */}
               <div className="mt-4 flex items-start gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200">
                 <Info className="w-4 h-4 text-stone-500 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-stone-600">
                   <p>
-                    Your chosen model is used for note generation and deep dives. If diagram code fails to compile,
-                    we use <span className="font-medium text-stone-700">{DEFAULT_MODELS.d2Fix}</span> to attempt fixes.
+                    Your chosen model is used for note generation and deep dives. If diagram code
+                    fails to compile, we use{' '}
+                    <span className="font-medium text-stone-700">{DEFAULT_MODELS.d2Fix}</span> to
+                    attempt fixes.
                   </p>
                 </div>
               </div>
@@ -197,14 +193,8 @@ function SettingsForm({
 }
 
 export function SettingsPage() {
-  const {
-    apiKey,
-    modelPrefs,
-    saveApiKey,
-    clearApiKey,
-    setModelPreference,
-    isLoaded,
-  } = useSettings();
+  const { apiKey, modelPrefs, saveApiKey, clearApiKey, setModelPreference, isLoaded } =
+    useSettings();
 
   if (!isLoaded) {
     return (

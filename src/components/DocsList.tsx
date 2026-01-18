@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useDocsList } from '@/hooks/useDocsList';
 import { DocCard } from './DocCard';
 import { deleteNote } from '@/lib/db/actions';
@@ -9,7 +8,6 @@ import { toast } from 'sonner';
 
 export function DocsList() {
   const { docs, isLoading, refetch } = useDocsList();
-  const router = useRouter();
 
   const handleDelete = async (docId: string, title: string, kind: DocKind) => {
     const confirmed = window.confirm(
@@ -79,10 +77,10 @@ export function DocsList() {
           key={doc.noteId}
           title={doc.title}
           url={doc.url}
+          href={`/doc/${doc.noteId}`}
           ogImage={doc.ogImage}
           updatedAt={doc.updatedAt}
           kind={doc.kind}
-          onClick={() => router.push(`/doc/${doc.noteId}`)}
           onDelete={() => handleDelete(doc.noteId, doc.title, doc.kind)}
         />
       ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { DocKind } from '@/lib/db/noteMetadata';
@@ -8,10 +9,10 @@ import type { DocKind } from '@/lib/db/noteMetadata';
 type DocCardProps = {
   title: string;
   url: string;
+  href: string;
   ogImage?: string;
   updatedAt: Date;
   kind: DocKind;
-  onClick: () => void;
   onDelete: () => void;
 };
 
@@ -28,7 +29,7 @@ function getGradientForTitle(title: string): string {
   return gradients[hash % gradients.length];
 }
 
-export function DocCard({ title, url, ogImage, updatedAt, kind, onClick, onDelete }: DocCardProps) {
+export function DocCard({ title, url, href, ogImage, updatedAt, kind, onDelete }: DocCardProps) {
   const [imageError, setImageError] = useState(false);
   const timeAgo = formatDistanceToNow(new Date(updatedAt), { addSuffix: true });
   const domain = new URL(url).hostname.replace('www.', '');
@@ -74,11 +75,7 @@ export function DocCard({ title, url, ogImage, updatedAt, kind, onClick, onDelet
       </div>
 
       {/* Card Content - Now clickable */}
-      <button
-        onClick={onClick}
-        className="flex flex-col w-full h-full text-left"
-        data-testid="doc-card"
-      >
+      <Link href={href} className="flex flex-col w-full h-full text-left" data-testid="doc-card">
         {/* Card Image Area */}
         <div className="relative w-full h-48 overflow-hidden bg-gray-50 border-b border-gray-100">
           {showFallback ? (
@@ -117,7 +114,7 @@ export function DocCard({ title, url, ogImage, updatedAt, kind, onClick, onDelet
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               onError={() => setImageError(true)}
-              unoptimized
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           )}
 
@@ -142,7 +139,7 @@ export function DocCard({ title, url, ogImage, updatedAt, kind, onClick, onDelet
             </span>
           </div>
         </div>
-      </button>
+      </Link>
     </div>
   );
 }

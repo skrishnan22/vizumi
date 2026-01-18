@@ -22,7 +22,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} font-sans antialiased`}>
-        {children}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow"
+        >
+          Skip to content
+        </a>
+        <div id="main-content" tabIndex={-1}>
+          {children}
+        </div>
         <Toaster position="top-right" richColors />
       </body>
     </html>

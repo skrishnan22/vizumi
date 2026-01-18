@@ -29,6 +29,11 @@ export function HeroAnimation() {
             transform: translateY(-15px);
           }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-float {
+            animation: none;
+          }
+        }
       `}</style>
     </div>
   );
