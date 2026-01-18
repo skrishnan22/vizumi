@@ -25,10 +25,10 @@ export function DocumentPageContent({ docId }: DocumentPageContentProps) {
   const canvasBoardRef = useRef<CanvasBoardHandle | null>(null);
   const setNoteId = useNoteStore((state) => state.setNoteId);
 
-  const { isLoading: isDocLoading, isEmpty } = useGraphDoc({
-    docId,
-    kind: metadata?.kind,
-  });
+  // Start loading graph doc immediately (without kind) to parallelize with metadata fetch.
+  // The kind is optional and only needed to set metadata on new docs.
+  // This eliminates the waterfall: metadata fetch and doc loading now happen in parallel.
+  const { isLoading: isDocLoading, isEmpty } = useGraphDoc({ docId });
 
   useEffect(() => {
     let isMounted = true;

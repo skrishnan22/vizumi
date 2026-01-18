@@ -14,6 +14,21 @@ import { useSettings } from '@/hooks/use-settings';
 import { showApiErrorToast } from '@/lib/api/client-error-handler';
 import { getNoteMetadata } from '@/lib/db/actions';
 import { HEADERS } from '@/lib/constants';
+import type { NoteMetadata } from '@/lib/db/noteMetadata';
+
+// Simple cache for note metadata to avoid redundant calls
+const metadataCache = new Map<string, { data: NoteMetadata | undefined; timestamp: number }>();
+const CACHE_TTL = 60000; // 1 minute
+
+async function getCachedNoteMetadata(noteId: string): Promise<NoteMetadata | undefined> {
+  const cached = metadataCache.get(noteId);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  const data = await getNoteMetadata(noteId);
+  metadataCache.set(noteId, { data, timestamp: Date.now() });
+  return data;
+}
 
 export function useDeepDive(sessionModel?: string) {
   const noteId = useNoteStore((state) => state.noteId);
@@ -99,7 +114,7 @@ export function useDeepDive(sessionModel?: string) {
       const markdown = markdownCache[noteId];
       let url: string | undefined;
       try {
-        const metadata = await getNoteMetadata(noteId);
+        const metadata = await getCachedNoteMetadata(noteId);
         url = metadata?.url;
       } catch (err) {
         logger.warn('Failed to fetch note metadata for URL:', err);

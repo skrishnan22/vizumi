@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { DocsList } from '@/components/DocsList';
 import { HeroAnimation } from '@/components/HeroAnimation';
@@ -18,7 +16,7 @@ export default function Home() {
             href="/settings"
             className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4" aria-hidden="true" />
             <span className="text-sm font-medium">Settings</span>
           </Link>
         </div>
@@ -47,13 +45,14 @@ export default function Home() {
 
             <Link
               href="/new"
-              className="group inline-flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 ring-2 ring-transparent hover:ring-gray-200"
+              className="group inline-flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-black transition-colors hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 ring-2 ring-transparent hover:ring-gray-200"
             >
               <svg
                 className="w-5 h-5 group-hover:rotate-90 transition-transform"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"

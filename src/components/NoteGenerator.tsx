@@ -185,25 +185,34 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
     };
   }, [canvasResponse.isLoading, canvasResponse.object]);
 
+  // Create a stable key based on card/edge IDs to prevent effect re-runs when
+  // array references change but content is the same (rule: rerender-dependencies)
+  const canvasLayoutKey = useMemo(() => {
+    const cardIds = canvasCards.map((c) => c.id).join(',');
+    const edgeIds = canvasEdges.map((e) => e.id).join(',');
+    return `${layoutType}|${cardIds}|${edgeIds}`;
+  }, [canvasCards, canvasEdges, layoutType]);
+
+  // Store current canvas data in refs to access in effect without adding to dependencies
+  const canvasDataRef = useRef({ cards: canvasCards, edges: canvasEdges, layoutType });
+  canvasDataRef.current = { cards: canvasCards, edges: canvasEdges, layoutType };
+
   useEffect(() => {
-    if (mode !== 'canvas' || canvasCards.length === 0) return;
+    const { cards, edges, layoutType: layout } = canvasDataRef.current;
+    if (mode !== 'canvas' || cards.length === 0) return;
 
     let isCancelled = false;
     const runId = ++layoutRunRef.current;
 
     const persistLayout = async () => {
       try {
-        const { nodes, edges: layoutedEdges } = await buildCanvasGraph(
-          canvasCards,
-          canvasEdges,
-          layoutType
-        );
+        const { nodes, edges: layoutedEdges } = await buildCanvasGraph(cards, edges, layout);
 
         if (isCancelled || runId !== layoutRunRef.current) return;
 
         const metaPatch: GraphMetaPatch = {
           kind: 'canvas',
-          layoutType,
+          layoutType: layout,
         };
 
         setGraph(docId, nodes, layoutedEdges, metaPatch);
@@ -219,7 +228,7 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
     return () => {
       isCancelled = true;
     };
-  }, [canvasCards, canvasEdges, docId, layoutType, mode]);
+  }, [canvasLayoutKey, docId, mode]);
 
   const activeIsLoading = mode === 'note' ? noteResponse.isLoading : canvasResponse.isLoading;
   const activeError = mode === 'note' ? noteResponse.error : canvasResponse.error;

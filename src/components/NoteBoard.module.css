@@ -107,7 +107,8 @@
 }
 
 .editor:focus {
-  outline: none;
+  outline: 2px solid rgba(28, 26, 23, 0.6);
+  outline-offset: 2px;
   border-color: rgba(28, 26, 23, 0.8);
 }
 
@@ -152,7 +153,11 @@
   font-family: var(--font-hand), 'Patrick Hand', cursive;
   font-size: 1rem;
   line-height: 1.5;
-  outline: none;
+}
+
+.richEditor :global(.ProseMirror:focus) {
+  outline: 2px solid rgba(28, 26, 23, 0.6);
+  outline-offset: 2px;
 }
 
 .richEditor :global(.ProseMirror p + p) {
@@ -525,7 +530,9 @@
   font-size: 0.9rem;
   font-family: var(--font-hand), 'Patrick Hand', cursive;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -539,4 +546,23 @@
 
 .readMoreButton:active {
   transform: translateX(0);
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay,
+  .modalContent,
+  .modalContentClosing,
+  .modalOverlayClosing {
+    animation: none;
+  }
+
+  .readMoreButton,
+  .toolbarButton,
+  .editButton,
+  .editorButton,
+  .editorButtonPrimary,
+  .modalClose {
+    transition: none;
+  }
 }
