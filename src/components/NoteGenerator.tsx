@@ -34,7 +34,7 @@ type GeneratorMode = DocKind;
 
 export function NoteGenerator({ docId }: NoteGeneratorProps) {
   const router = useRouter();
-  const { modelPrefs, getRequestHeaders } = useSettings();
+  const { modelPrefs, getRequestHeaders, hasApiKey } = useSettings();
   const { isLoading: isDocLoading } = useGraphDoc({ docId });
 
   const [mode, setMode] = useState<GeneratorMode>('canvas');
@@ -355,6 +355,27 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
           <p className={styles.heroSubtitle}>{heroSubtitle}</p>
         </div>
 
+        <div className={styles.modeToggleRow}>
+          <div className={styles.modeToggle} aria-label="Document mode">
+            <button
+              type="button"
+              className={`${styles.modeButton} ${mode === 'canvas' ? styles.modeButtonActive : ''}`}
+              onClick={() => setMode('canvas')}
+              disabled={isModeLocked || !!generationStage}
+            >
+              Canvas
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeButton} ${mode === 'note' ? styles.modeButtonActive : ''}`}
+              onClick={() => setMode('note')}
+              disabled={isModeLocked || !!generationStage}
+            >
+              Note
+            </button>
+          </div>
+        </div>
+
         <div className={styles.inputCard}>
           <div className={styles.inputWrapper}>
             <svg
@@ -388,30 +409,12 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
 
           <div className={styles.inputDivider} />
 
-          <div className={styles.modeToggle} aria-label="Document mode">
-            <button
-              type="button"
-              className={`${styles.modeButton} ${mode === 'canvas' ? styles.modeButtonActive : ''}`}
-              onClick={() => setMode('canvas')}
-              disabled={isModeLocked || !!generationStage}
-            >
-              Canvas
-            </button>
-            <button
-              type="button"
-              className={`${styles.modeButton} ${mode === 'note' ? styles.modeButtonActive : ''}`}
-              onClick={() => setMode('note')}
-              disabled={isModeLocked || !!generationStage}
-            >
-              Note
-            </button>
-          </div>
-
           <ModelSelector
             value={effectiveModel}
             onChange={setSessionModel}
             disabled={!!generationStage}
             className={styles.embeddedModelSelector}
+            hasApiKey={hasApiKey}
           />
 
           <button

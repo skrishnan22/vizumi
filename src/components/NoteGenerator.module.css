@@ -195,6 +195,13 @@
    INPUT CARD
    ============================================ */
 
+.modeToggleRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 50ms both;
+}
+
 .inputCard {
   background: #ffffff;
   border: 1px solid #e7e5e4;
@@ -220,6 +227,7 @@
 
 .inputWrapper {
   flex: 1;
+  min-width: 0;
   position: relative;
   display: flex;
   align-items: center;

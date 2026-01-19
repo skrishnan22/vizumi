@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { FREE_MODELS, HEADERS } from '@/lib/constants';
+import { DEFAULT_MODELS, FREE_MODELS, HEADERS } from '@/lib/constants';
 
 // CORS headers for API routes
 const corsHeaders = {
@@ -39,13 +39,20 @@ export default function proxy(request: NextRequest) {
     const requestedModel = request.headers.get(HEADERS.MODEL);
 
     if (!hasUserKey) {
-      const freeModelIds = FREE_MODELS.map((m) => m.id);
-      if (requestedModel && !freeModelIds.includes(requestedModel)) {
+      const freeModelIds = new Set(FREE_MODELS.map((m) => m.id));
+      const defaultModel = path.startsWith('/api/deep-dive')
+        ? DEFAULT_MODELS.deepDive
+        : path.startsWith('/api/render-d2')
+          ? DEFAULT_MODELS.d2Fix
+          : DEFAULT_MODELS.generate;
+      const modelToCheck = requestedModel ?? defaultModel;
+
+      if (modelToCheck && !freeModelIds.has(modelToCheck)) {
         return new NextResponse(
           JSON.stringify({
             error: {
               code: 'MODEL_REQUIRES_KEY',
-              message: `Model "${requestedModel}" requires an API key. Add your OpenRouter key in settings or choose a free model.`,
+              message: `Model "${modelToCheck}" requires an API key. Add your OpenRouter key in settings or choose a free model.`,
               retryable: false,
             },
           }),

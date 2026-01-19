@@ -35,8 +35,8 @@ describe('proxy', () => {
   });
 
   describe('LLM routes with user API key', () => {
-    it('should allow /api/generate with user API key and any model', () => {
-      const request = createMockRequest('/api/generate', {
+    it('should allow /api/note with user API key and any model', () => {
+      const request = createMockRequest('/api/note', {
         [HEADERS.API_KEY]: 'user-key',
         [HEADERS.MODEL]: 'openai/gpt-4',
       });
@@ -66,7 +66,7 @@ describe('proxy', () => {
 
   describe('LLM routes without user API key', () => {
     it('should allow free tier models without API key', async () => {
-      const request = createMockRequest('/api/generate', {
+      const request = createMockRequest('/api/note', {
         [HEADERS.MODEL]: 'google/gemini-2.0-flash-exp:free',
       });
       const response = proxy(request);
@@ -75,7 +75,7 @@ describe('proxy', () => {
     });
 
     it('should reject non-free models without API key', async () => {
-      const request = createMockRequest('/api/generate', {
+      const request = createMockRequest('/api/note', {
         [HEADERS.MODEL]: 'openai/gpt-4',
       });
       const response = proxy(request);
@@ -89,12 +89,15 @@ describe('proxy', () => {
       expect(body.error.retryable).toBe(false);
     });
 
-    it('should allow request without model header (will use default)', () => {
-      const request = createMockRequest('/api/generate', {});
+    it('should reject request without model header when default is paid', async () => {
+      const request = createMockRequest('/api/note', {});
       const response = proxy(request);
 
-      // Should allow through - the route will use default model
-      expect(response).toBeInstanceOf(NextResponse);
+      expect(response).toBeInstanceOf(Response);
+      expect(response.status).toBe(403);
+
+      const body = await response.json();
+      expect(body.error.code).toBe('MODEL_REQUIRES_KEY');
     });
 
     it('should reject paid model on /api/deep-dive without API key', async () => {
@@ -124,7 +127,7 @@ describe('proxy', () => {
   describe('Error message details', () => {
     it('should include model name in error message', async () => {
       const modelName = 'x-ai/grok-4-fast';
-      const request = createMockRequest('/api/generate', {
+      const request = createMockRequest('/api/note', {
         [HEADERS.MODEL]: modelName,
       });
       const response = proxy(request);
@@ -135,7 +138,7 @@ describe('proxy', () => {
     });
 
     it('should suggest adding API key or choosing free model', async () => {
-      const request = createMockRequest('/api/generate', {
+      const request = createMockRequest('/api/note', {
         [HEADERS.MODEL]: 'openai/gpt-4',
       });
       const response = proxy(request);
@@ -148,7 +151,7 @@ describe('proxy', () => {
 
   describe('CORS preflight handling', () => {
     it('should respond to OPTIONS with 204 and CORS headers', () => {
-      const request = createMockRequest('/api/generate', {}, 'OPTIONS');
+      const request = createMockRequest('/api/note', {}, 'OPTIONS');
       const response = proxy(request);
 
       expect(response.status).toBe(204);
@@ -167,7 +170,7 @@ describe('proxy', () => {
     });
 
     it('should add CORS headers to successful responses', () => {
-      const request = createMockRequest('/api/generate', {
+      const request = createMockRequest('/api/note', {
         [HEADERS.API_KEY]: 'user-key',
       });
       const response = proxy(request);
@@ -176,7 +179,7 @@ describe('proxy', () => {
     });
 
     it('should add CORS headers to error responses', async () => {
-      const request = createMockRequest('/api/generate', {
+      const request = createMockRequest('/api/note', {
         [HEADERS.MODEL]: 'openai/gpt-4',
       });
       const response = proxy(request);

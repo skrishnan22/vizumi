@@ -5,7 +5,6 @@ import { type NoteMetadata } from '@/lib/db/noteMetadata';
 type NoteHeaderProps = {
   metadata?: NoteMetadata;
   isLoading: boolean;
-  actions?: ReactNode;
 };
 
 export function NoteHeader({ metadata, isLoading, actions }: NoteHeaderProps) {
@@ -37,7 +36,7 @@ export function NoteHeader({ metadata, isLoading, actions }: NoteHeaderProps) {
           ) : (
             <div className="flex items-center gap-4">
               <h1 className="text-base font-semibold text-gray-900 leading-tight truncate max-w-xl">
-                {metadata?.title || 'Untitled Document'}
+                {metadata?.title || 'Untitled Note'}
               </h1>
               {metadata?.url && (
                 <a
@@ -67,7 +66,6 @@ export function NoteHeader({ metadata, isLoading, actions }: NoteHeaderProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          {actions}
           {metadata?.createdAt && (
             <span className="text-sm text-gray-600 px-3 py-1 rounded-md border border-gray-200 bg-gray-50">
               {new Date(metadata.createdAt).toLocaleDateString(undefined, {

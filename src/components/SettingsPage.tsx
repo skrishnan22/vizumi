@@ -159,7 +159,11 @@ function SettingsForm({
 
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-3">Select Model</label>
-              <ModelSelector value={modelPrefs.generate} onChange={handleModelChange} />
+              <ModelSelector
+                value={modelPrefs.generate}
+                onChange={handleModelChange}
+                hasApiKey={!!apiKey}
+              />
 
               {/* Model usage note */}
               <div className="mt-4 flex items-start gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200">

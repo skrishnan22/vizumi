@@ -29,34 +29,20 @@ export type ModelInfo = {
 };
 
 export const FREE_MODELS: ModelInfo[] = [
-  {
-    id: 'google/gemini-2.0-flash-exp:free',
-    label: 'Gemini 2.0 Flash',
-    description: 'Fast & capable',
-  },
+  { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast' },
   { id: 'openai/gpt-oss-20b', label: 'GPT OSS 20b', description: 'Open weights model from OpenAI' },
-  {
-    id: 'z-ai/glm-4-32b',
-    label: 'GLM 4.5 Air',
-    description: 'Z.AI model',
-  },
-
   {
     id: 'mistralai/devstral-2512:free',
     label: 'Mistral Devstral',
-    description: 'Balanced performance',
   },
-  { id: 'qwen/qwen3-14b:free', label: 'Qwen 3 14B', description: 'Strong reasoning' },
 ];
 
 export const PAID_MODELS: ModelInfo[] = [
-  { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast' },
-  { id: 'anthropic/claude-sonnet-4.5', label: 'Claude Sonnet 4.5' },
+  { id: 'google/gemini-3-flash-preview', label: 'Gemini 3 Flash' },
+  { id: 'minimax/minimax-m2', label: 'MiniMax M2' },
   { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
   { id: 'openai/gpt-5-mini', label: 'GPT-5 Mini' },
-  { id: 'google/gemini-3-flash-preview', label: 'Gemini 3 Flash' },
-  { id: 'z-ai/glm-4.7', label: 'GLM 4.7' },
-  { id: 'minimax/minimax-m2', label: 'MiniMax M2' },
+  { id: 'anthropic/claude-sonnet-4.5', label: 'Claude Sonnet 4.5' },
 ];
 
 // Combined flat list for backward compatibility
