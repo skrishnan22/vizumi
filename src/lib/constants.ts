@@ -30,7 +30,8 @@ export type ModelInfo = {
 
 export const FREE_MODELS: ModelInfo[] = [
   { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast' },
-  { id: 'openai/gpt-oss-20b', label: 'GPT OSS 20b', description: 'Open weights model from OpenAI' },
+  { id: 'openai/gpt-oss-20b', label: 'GPT OSS 20b' },
+  { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash' },
   {
     id: 'mistralai/devstral-2512:free',
     label: 'Mistral Devstral',

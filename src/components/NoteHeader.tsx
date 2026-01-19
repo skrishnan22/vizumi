@@ -5,6 +5,7 @@ import { type NoteMetadata } from '@/lib/db/noteMetadata';
 type NoteHeaderProps = {
   metadata?: NoteMetadata;
   isLoading: boolean;
+  actions?: ReactNode;
 };
 
 export function NoteHeader({ metadata, isLoading, actions }: NoteHeaderProps) {
