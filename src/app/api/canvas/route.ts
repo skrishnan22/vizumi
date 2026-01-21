@@ -5,6 +5,7 @@ import { processUrl } from '@/lib/url-processor';
 import { logger } from '@/lib/logger';
 import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
+import { createErrorAwareTextStreamResponse } from '@/lib/api/stream-response';
 import { createSecureContentPrompt } from '@/lib/security';
 
 export const runtime = 'nodejs';
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
       prompt: securePrompt,
     });
 
-    return result.toTextStreamResponse();
+    return createErrorAwareTextStreamResponse(result.fullStream);
   } catch (error) {
     return handleRouteError(error);
   }

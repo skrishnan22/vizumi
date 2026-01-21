@@ -3,6 +3,7 @@ import { getPromptForMode } from '@/lib/deepDivePrompts';
 import { logger } from '@/lib/logger';
 import { getOpenRouterClient, getModel } from '@/lib/api/route-helpers';
 import { handleRouteError } from '@/lib/api/error-handler';
+import { serializeStreamError } from '@/lib/api/stream-response';
 import { processUrl } from '@/lib/url-processor';
 import { createSecureDeepDivePrompt } from '@/lib/security';
 
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
       prompt: securePrompt,
     });
 
-    return result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse({ onError: serializeStreamError });
   } catch (error) {
     return handleRouteError(error);
   }

@@ -8,6 +8,14 @@ interface ParsedError {
   status: number;
 }
 
+export interface ApiErrorPayload {
+  error: {
+    code: string;
+    message: string;
+    retryable: boolean;
+  };
+}
+
 /**
  * User-friendly error messages for common HTTP status codes
  */
@@ -84,23 +92,29 @@ function parseError(error: unknown): ParsedError {
   };
 }
 
-/**
- * Handle errors in API routes and return appropriate Response
- * Logs error details and returns user-friendly error message
- */
-export function handleRouteError(error: unknown): Response {
+export function getApiErrorPayload(error: unknown): { status: number; payload: ApiErrorPayload } {
   const parsed = parseError(error);
 
-  logger.error({ code: parsed.code, status: parsed.status }, 'Route error');
-
-  return Response.json(
-    {
+  return {
+    status: parsed.status,
+    payload: {
       error: {
         code: parsed.code,
         message: parsed.message,
         retryable: parsed.retryable,
       },
     },
-    { status: parsed.status }
-  );
+  };
+}
+
+/**
+ * Handle errors in API routes and return appropriate Response
+ * Logs error details and returns user-friendly error message
+ */
+export function handleRouteError(error: unknown): Response {
+  const { status, payload } = getApiErrorPayload(error);
+
+  logger.error({ code: payload.error.code, status }, 'Route error');
+
+  return Response.json(payload, { status });
 }

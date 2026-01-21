@@ -48,3 +48,5 @@ evals/collected/*
 
 test-results/*
 playwright-report/*
+
+hero-video/*
