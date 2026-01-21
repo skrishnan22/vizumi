@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: #f6f1ea;
+  --color-ink: #161b22;
+  --color-accent: #1c8e9a;
+  --color-highlight: #f59e0b;
+  --color-mist: #f2f5f7;
+
+  --font-display: var(--font-instrument-serif);
+  --font-body: var(--font-space-grotesk);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+}
