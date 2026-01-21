@@ -53,6 +53,8 @@ Grid of labeled icons for representing types/categories.
 "columns": 3
 }
 
+When provided, "columns" must be an integer from 1 to 4.
+
 **Available icons**: document, image, audio, video, code, database, cloud, user, settings, chart, terminal, server, cpu, git-branch, globe, api, package, layers, key, lock, shield, zap, search, link, download, upload, refresh, folder, target, filter, mail, calendar, clock, bot, sparkles, network
 
 ### 3. Visual Section - Flow

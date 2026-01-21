@@ -68,7 +68,7 @@ export const IconGridVisualSchema = z.object({
   type: z.literal('visual'),
   visualType: z.literal('icon-grid'),
   items: z.array(IconGridItemSchema).describe('Array of icon items'),
-  columns: z.number().min(1).max(4).optional().describe('Number of columns in grid'),
+  columns: z.number().optional().describe('Number of columns in grid (1-4)'),
 });
 
 export const FlowVisualSchema = z.object({
