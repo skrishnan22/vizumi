@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
-import { Instrument_Serif, Space_Grotesk } from 'next/font/google';
+import { Fraunces, DM_Sans } from 'next/font/google';
 import './globals.css';
 
-const instrumentSerif = Instrument_Serif({
-  weight: '400',
-  variable: '--font-instrument-serif',
+const fraunces = Fraunces({
+  variable: '--font-fraunces',
   subsets: ['latin'],
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: '--font-space-grotesk',
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
   subsets: ['latin'],
 });
 
@@ -25,12 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${instrumentSerif.variable} ${spaceGrotesk.variable} antialiased bg-paper text-ink font-body`}
-      >
-        {children}
-      </body>
+    <html lang="en" className={`${fraunces.variable} ${dmSans.variable}`}>
+      <body className={`${dmSans.className} antialiased bg-paper text-ink`}>{children}</body>
     </html>
   );
 }

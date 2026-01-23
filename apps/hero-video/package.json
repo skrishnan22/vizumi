@@ -1,0 +1,26 @@
+{
+  "name": "hero-video",
+  "version": "1.0.0",
+  "description": "Hero demo video for landing page",
+  "main": "index.js",
+  "scripts": {
+    "start": "remotion studio",
+    "build": "remotion render src/index.tsx HeroDemo out/hero-demo.mp4 --concurrency=1",
+    "build:webm": "remotion render src/index.tsx HeroDemo out/hero-demo.webm --codec=vp8"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@remotion/bundler": "^4.0.407",
+    "@remotion/cli": "^4.0.407",
+    "@remotion/google-fonts": "^4.0.407",
+    "@remotion/media": "4.0.407",
+    "@remotion/transitions": "^4.0.407",
+    "@types/react": "^19.2.9",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "remotion": "^4.0.407",
+    "typescript": "^5.9.3"
+  }
+}

@@ -13,15 +13,25 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./apps/web/src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts", "**/*.mts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "evals/**/*.ts",
+    "evals/**/*.tsx",
+    "e2e/**/*.ts",
+    "e2e/**/*.tsx",
+    "scripts/**/*.ts",
+    "scripts/**/*.tsx",
+    "vite.config.evals.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "playwright.config.ts",
+    "apps/web/next-env.d.ts",
+    "apps/web/src/**/*.ts",
+    "apps/web/src/**/*.tsx",
+    "apps/web/src/**/*.mts"
+  ],
+  "exclude": ["node_modules", "apps/landing", "apps/hero-video", "apps/web/.next"]
 }

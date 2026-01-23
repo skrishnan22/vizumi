@@ -11,19 +11,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'dist/',
-        '.next/',
-        'e2e/',
-        '**/*.config.ts',
-        '**/*.d.ts',
-      ],
+      exclude: ['node_modules/', 'dist/', '.next/', 'e2e/', '**/*.config.ts', '**/*.d.ts'],
     },
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, './apps/web/src'),
     },
   },
 });

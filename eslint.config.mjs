@@ -18,6 +18,11 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     'coverage/**',
     'evals/datasets',
+    'apps/**/.next/**',
+    'apps/**/out/**',
+    'apps/**/build/**',
+    'apps/landing/**',
+    'apps/hero-video/**',
   ]),
   // Custom rules
   {

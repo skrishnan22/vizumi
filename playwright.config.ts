@@ -12,10 +12,7 @@ export default defineConfig({
 
   workers: process.env.CI ? 1 : undefined,
 
-  reporter: [
-    ['html'],
-    ['list'],
-  ],
+  reporter: [['html'], ['list']],
 
   // Shared settings for all tests
   use: {
@@ -42,7 +39,7 @@ export default defineConfig({
 
   // Start Next.js dev server before running tests
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run dev:web',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

@@ -7,16 +7,17 @@
   --color-highlight: #f59e0b;
   --color-mist: #f2f5f7;
 
-  --font-display: var(--font-instrument-serif);
-  --font-body: var(--font-space-grotesk);
-
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
+
+  --font-sans: var(--font-dm-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-display: var(--font-fraunces, Georgia, serif);
 }
 
 body {
   background-color: var(--color-paper);
   color: var(--color-ink);
+  font-family: var(--font-sans);
 }
 
 h1,

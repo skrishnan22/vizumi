@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/apps/**/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -16,6 +17,9 @@
 # next.js
 /.next/
 /out/
+/apps/**/.next/
+/apps/**/out/
+/apps/**/build/
 
 # production
 /build
@@ -48,5 +52,3 @@ evals/collected/*
 
 test-results/*
 playwright-report/*
-
-hero-video/*
