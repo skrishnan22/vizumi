@@ -13,7 +13,7 @@ export function Library() {
           className="p-8 rounded-2xl bg-paper border border-ink/5 inline-block"
         >
           <h2 className="text-2xl font-display text-ink mb-2">Your Library (on this device)</h2>
-          <p className="text-ink/60">
+          <p className="text-ink-muted">
             Every deck you generate shows up here automatically—private to this browser.
           </p>
         </motion.div>

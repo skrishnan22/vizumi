@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { Lock, Database, Key, Server } from 'lucide-react';
 
 export function LocalFirst() {
+  const iconColors = ['text-accent', 'text-highlight', 'text-accent', 'text-highlight'];
+  const iconBgs = ['bg-accent-soft', 'bg-highlight-soft', 'bg-accent-soft', 'bg-highlight-soft'];
+
   return (
     <section id="local-first" className="py-24 bg-mist/30">
       <div className="container mx-auto px-6 max-w-7xl">
@@ -15,10 +18,10 @@ export function LocalFirst() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-display text-ink mb-6">
-              Local-first by default.
+              Local-first <span className="text-accent">by default.</span>
             </h2>
-            <p className="text-xl text-ink/70 leading-relaxed mb-8">
-              VizDeck doesn’t need accounts or a database. Your library stays on this device.
+            <p className="text-xl text-ink-soft leading-relaxed mb-8">
+              Vizumi doesn't need accounts or a database. Your library stays on this device.
             </p>
 
             <div className="space-y-6">
@@ -26,7 +29,7 @@ export function LocalFirst() {
                 {
                   icon: Database,
                   title: 'Saved locally',
-                  desc: 'Decks are stored in your browser (IndexedDB)',
+                  desc: 'Notes are stored in your browser (IndexedDB)',
                 },
                 {
                   icon: Key,
@@ -45,12 +48,14 @@ export function LocalFirst() {
                 },
               ].map((item, i) => (
                 <div key={i} className="flex gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-white border border-ink/5 flex items-center justify-center shrink-0">
-                    <item.icon className="w-5 h-5 text-ink/60" />
+                  <div
+                    className={`w-10 h-10 rounded-lg ${iconBgs[i]} border border-ink/10 flex items-center justify-center shrink-0`}
+                  >
+                    <item.icon className={`w-5 h-5 ${iconColors[i]}`} />
                   </div>
                   <div>
                     <h4 className="font-bold text-ink">{item.title}</h4>
-                    <p className="text-sm text-ink/60">{item.desc}</p>
+                    <p className="text-sm text-ink-muted">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -67,7 +72,7 @@ export function LocalFirst() {
             <div className="aspect-square bg-white rounded-3xl shadow-xl border border-ink/5 p-8 flex flex-col items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-paper/50 bg-[radial-gradient(#161b2210_1px,transparent_1px)] [background-size:16px_16px]" />
 
-              <div className="w-48 h-48 rounded-full bg-accent/5 border border-accent/20 flex items-center justify-center relative z-10">
+              <div className="w-48 h-48 rounded-full bg-accent-soft border border-accent/20 flex items-center justify-center relative z-10">
                 <Lock className="w-20 h-20 text-accent" />
               </div>
 

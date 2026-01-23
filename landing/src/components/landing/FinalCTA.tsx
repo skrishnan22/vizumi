@@ -11,8 +11,6 @@ export function FinalCTA() {
 
   return (
     <section className="py-32 bg-ink text-white relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]" />
-
       {/* Glow effect */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[100px]" />
 
@@ -32,12 +30,12 @@ export function FinalCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="p-2 bg-white/5 rounded-2xl border border-white/10 flex flex-col md:flex-row gap-2 max-w-xl mx-auto backdrop-blur-sm mb-8"
+          className="p-2 bg-white/5 rounded-2xl border border-white/10 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 max-w-xl w-full mx-auto backdrop-blur-sm mb-8"
         >
           <input
             type="text"
             placeholder="Paste an article URL..."
-            className="flex-1 px-4 py-3 rounded-xl bg-transparent focus:outline-none text-white placeholder:text-white/30"
+            className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-transparent focus:outline-none text-white placeholder:text-white/40"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
@@ -57,7 +55,7 @@ export function FinalCTA() {
             </button>
           </div>
 
-          <Button className="shrink-0 h-auto py-3 md:py-0 bg-accent hover:bg-accent/90 text-white shadow-[0_0_20px_rgba(28,142,154,0.5)]">
+          <Button className="h-auto py-3 md:py-0 whitespace-nowrap bg-accent hover:bg-accent/90 text-white shadow-[0_0_20px_rgba(28,142,154,0.5)]">
             {mode === 'blueprints' ? 'Generate Blueprints' : 'Generate Canvas'}
           </Button>
         </motion.div>

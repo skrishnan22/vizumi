@@ -1,12 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Lock, HardDrive, Sparkles } from 'lucide-react';
 
 export function Hero() {
-  const [url, setUrl] = useState('');
   const [mode, setMode] = useState<'blueprints' | 'canvas'>('canvas');
   const preview =
     mode === 'blueprints'
@@ -46,16 +44,17 @@ export function Hero() {
               className="text-6xl md:text-7xl lg:text-8xl font-display font-medium leading-[0.9] text-ink tracking-tight"
             >
               From URL <br />
-              <span className="text-ink/40">to mental model.</span>
+              <span className="text-ink/40">to</span>{' '}
+              <span className="text-accent">mental model.</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg md:text-xl text-ink/70 max-w-lg leading-relaxed"
+              className="text-lg md:text-xl text-ink-soft max-w-lg leading-relaxed"
             >
-              Paste a link and VizDeck uses AI to build a deck: sectioned Blueprints with diagrams,
+              Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with diagrams,
               plus a connected Canvas that shows how the ideas fit together.
             </motion.p>
 
@@ -65,46 +64,42 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="space-y-4"
             >
-              <div className="p-1.5 bg-white rounded-2xl shadow-sm border border-ink/10 flex flex-col md:flex-row gap-2 max-w-xl">
+              <div className="p-1.5 bg-white rounded-2xl shadow-sm border border-ink/10 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 max-w-xl w-full">
                 <input
                   type="text"
-                  placeholder="Paste an article URL..."
-                  className="flex-1 px-4 py-3 rounded-xl bg-transparent focus:outline-none text-ink placeholder:text-ink/30"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="example.blog.com"
+                  className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-transparent focus:outline-none text-ink placeholder:text-ink-muted cursor-default"
+                  value="example.blog.com"
+                  readOnly
                 />
 
                 <div className="flex gap-1 p-1 bg-mist rounded-xl self-center md:self-auto">
                   <button
                     onClick={() => setMode('blueprints')}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'blueprints' ? 'bg-white shadow-sm text-ink' : 'text-ink/50 hover:text-ink'}`}
+                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'blueprints' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
                   >
                     Blueprints
                   </button>
                   <button
                     onClick={() => setMode('canvas')}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'canvas' ? 'bg-white shadow-sm text-ink' : 'text-ink/50 hover:text-ink'}`}
+                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'canvas' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
                   >
                     Canvas
                   </button>
                 </div>
-
-                <Button className="shrink-0 h-auto py-3 md:py-0">
-                  {mode === 'blueprints' ? 'Generate Blueprints' : 'Generate Canvas'}
-                </Button>
               </div>
 
-              <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-ink/40 px-2">
+              <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-ink-muted px-2">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                   No account required
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <HardDrive className="w-3 h-3" />
+                  <HardDrive className="w-3 h-3 text-accent" />
                   Saved locally
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Lock className="w-3 h-3" />
+                  <Lock className="w-3 h-3 text-highlight" />
                   Keys stored locally
                 </span>
               </div>

@@ -11,6 +11,7 @@ export function WhatYouGet() {
     { icon: Settings, title: 'Model choice', desc: 'Speed/quality/cost via OpenRouter.' },
     { icon: Zap, title: 'Zero setup', desc: 'Starter models available.' },
   ];
+  const iconColors = ['text-accent', 'text-highlight', 'text-accent', 'text-highlight', 'text-accent'];
 
   return (
     <section className="py-24 bg-paper">
@@ -22,7 +23,7 @@ export function WhatYouGet() {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-display text-ink"
           >
-            Built for content you actually want to remember.
+            Built for content you actually want to <span className="text-accent">remember.</span>
           </motion.h2>
         </div>
 
@@ -34,13 +35,13 @@ export function WhatYouGet() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="p-6 bg-mist/30 rounded-2xl border border-ink/5 flex flex-col items-center text-center hover:bg-white hover:shadow-md transition-all duration-300"
+              className="p-6 bg-mist/40 rounded-2xl border border-ink/5 flex flex-col items-center text-center hover:bg-white hover:shadow-md transition-all duration-300"
             >
-              <div className="w-12 h-12 rounded-xl bg-white border border-ink/5 flex items-center justify-center mb-4 text-accent">
+              <div className={`w-12 h-12 rounded-xl bg-white border border-ink/5 flex items-center justify-center mb-4 ${iconColors[i]}`}>
                 <feat.icon className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-ink mb-1">{feat.title}</h3>
-              <p className="text-sm text-ink/60">{feat.desc}</p>
+              <p className="text-sm text-ink-muted">{feat.desc}</p>
             </motion.div>
           ))}
         </div>

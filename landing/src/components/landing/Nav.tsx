@@ -39,8 +39,15 @@ export function Nav() {
             : 'bg-transparent py-0'
         )}
       >
-        <Link href="/" className="font-display text-2xl font-semibold tracking-tight text-ink">
-          VizDeck
+        <Link href="/" className="flex items-center">
+          <img
+            src="/logo.jpg"
+            alt="Vizumi"
+            className={cn(
+              'transition-all duration-300',
+              scrolled ? 'h-10' : 'h-14'
+            )}
+          />
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -56,7 +63,7 @@ export function Nav() {
         </div>
 
         <Button size="sm" className={scrolled ? 'h-9 text-sm' : ''}>
-          Create a Deck
+          Get Started
         </Button>
       </div>
     </motion.nav>

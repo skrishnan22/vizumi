@@ -9,6 +9,7 @@ export function ProblemSolution() {
     'Learn faster with diagram-first explanations',
     'Recall more by seeing how concepts connect',
   ];
+  const bulletColors = ['text-accent', 'text-highlight', 'text-accent'];
 
   return (
     <section className="py-24 bg-paper relative overflow-hidden">
@@ -23,7 +24,7 @@ export function ProblemSolution() {
               className="text-5xl md:text-6xl font-display text-ink leading-none"
             >
               Reading is linear. <br />
-              <span className="text-ink/30">Understanding isn’t.</span>
+              <span className="text-highlight">Understanding isn’t.</span>
             </motion.h2>
           </div>
 
@@ -37,10 +38,10 @@ export function ProblemSolution() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl text-ink/70 leading-relaxed"
+              className="text-xl text-ink-soft leading-relaxed"
             >
               Most content hides the structure you actually need—flows, dependencies, tradeoffs.
-              VizDeck reconstructs what you read into sections and visuals so you can see the shape
+              Vizumi reconstructs what you read into sections and visuals so you can see the shape
               of the ideas, not just the words.
             </motion.p>
 
@@ -54,8 +55,10 @@ export function ProblemSolution() {
                   transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
                   className="flex items-start gap-3"
                 >
-                  <CheckCircle2 className="w-6 h-6 text-accent shrink-0 mt-0.5" />
-                  <span className="text-lg text-ink font-medium">{bullet}</span>
+                  <CheckCircle2
+                    className={`w-6 h-6 ${bulletColors[i]} shrink-0 mt-0.5`}
+                  />
+                  <span className="text-lg text-ink-soft font-medium">{bullet}</span>
                 </motion.li>
               ))}
             </ul>
