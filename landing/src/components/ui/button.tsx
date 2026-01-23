@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Slot } from '@radix-ui/react-slot'; // Wait, I didn't install radix slot. I'll stick to simple button for now or just forwardRef.
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost';
