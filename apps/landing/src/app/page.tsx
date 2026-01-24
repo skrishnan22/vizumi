@@ -12,7 +12,7 @@ export default function Home() {
     <>
       <main className="min-h-screen bg-paper selection:bg-accent/20 selection:text-ink overflow-x-hidden">
         {/* Noise Texture Overlay */}
-        <div className="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply z-50 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        <div className="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply z-50 bg-[url('/noise.svg')]" />
 
         <Nav />
         <Hero />

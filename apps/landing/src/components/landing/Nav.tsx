@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
@@ -40,13 +41,13 @@ export function Nav() {
         )}
       >
         <Link href="/" className="flex items-center">
-          <img
+          <Image
             src="/logo.jpg"
             alt="Vizumi"
-            className={cn(
-              'transition-all duration-300',
-              scrolled ? 'h-10' : 'h-14'
-            )}
+            width={567}
+            height={440}
+            sizes="(min-width: 768px) 56px, 40px"
+            className={cn('w-auto transition-all duration-300', scrolled ? 'h-10' : 'h-14')}
           />
         </Link>
 

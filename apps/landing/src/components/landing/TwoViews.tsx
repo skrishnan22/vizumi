@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FileText, Network } from 'lucide-react';
 
@@ -55,11 +56,13 @@ export function TwoViews() {
               </ul>
 
               {/* Blueprint preview image */}
-              <div className="w-full aspect-[4/3] rounded-xl border border-ink/10 shadow-sm overflow-hidden">
-                <img
+              <div className="relative w-full aspect-[4/3] rounded-xl border border-ink/10 shadow-sm overflow-hidden">
+                <Image
                   src="/blueprint-original.png"
                   alt="Blueprint preview showing section cards with diagrams"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(min-width: 1024px) 540px, (min-width: 768px) 45vw, 90vw"
+                  className="object-cover"
                 />
               </div>
             </div>
@@ -102,11 +105,13 @@ export function TwoViews() {
               </ul>
 
               {/* Canvas preview image */}
-              <div className="w-full aspect-[4/3] rounded-xl border border-ink/10 shadow-sm overflow-hidden">
-                <img
+              <div className="relative w-full aspect-[4/3] rounded-xl border border-ink/10 shadow-sm overflow-hidden">
+                <Image
                   src="/canvas-original.png"
                   alt="Canvas preview showing connected concept map"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(min-width: 1024px) 540px, (min-width: 768px) 45vw, 90vw"
+                  className="object-cover"
                 />
               </div>
             </div>

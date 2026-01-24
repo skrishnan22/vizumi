@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Lock, HardDrive, Sparkles } from 'lucide-react';
 
@@ -9,11 +10,11 @@ export function Hero() {
   const preview =
     mode === 'blueprints'
       ? {
-          src: '/blueprint.png',
+          src: '/blueprint-original.png',
           alt: 'Blueprints preview showing section cards and diagrams',
         }
       : {
-          src: '/canvas.png',
+          src: '/canvas-original.png',
           alt: 'Canvas preview showing a connected map of concepts',
         };
 
@@ -54,8 +55,8 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-ink-soft max-w-lg leading-relaxed"
             >
-              Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with diagrams,
-              plus a connected Canvas that shows how the ideas fit together.
+              Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with
+              diagrams, plus a connected Canvas that shows how the ideas fit together.
             </motion.p>
 
             <motion.div
@@ -118,16 +119,23 @@ export function Hero() {
               <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-[28px] bg-ink/5 border border-ink/10" />
               <div className="relative aspect-[16/10] rounded-[28px] border border-ink/10 bg-white/80 shadow-[0_35px_80px_-45px_rgba(15,23,42,0.6)] overflow-hidden">
                 <AnimatePresence mode="wait">
-                  <motion.img
+                  <motion.div
                     key={preview.src}
-                    src={preview.src}
-                    alt={preview.alt}
-                    className="h-full w-full object-cover"
+                    className="absolute inset-0"
                     initial={{ opacity: 0, y: 14, scale: 0.985 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -12, scale: 0.985 }}
                     transition={{ duration: 0.35, ease: 'easeOut' }}
-                  />
+                  >
+                    <Image
+                      src={preview.src}
+                      alt={preview.alt}
+                      fill
+                      sizes="(min-width: 1024px) 640px, 100vw"
+                      className="object-cover"
+                      priority={mode === 'canvas'}
+                    />
+                  </motion.div>
                 </AnimatePresence>
               </div>
               <div className="absolute -bottom-4 left-6 rounded-full border border-ink/10 bg-white/90 px-3 py-1 text-xs font-medium text-ink/70 shadow-sm">

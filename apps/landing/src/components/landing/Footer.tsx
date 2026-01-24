@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Twitter, Github, Linkedin } from 'lucide-react';
 
 export function Footer() {
@@ -10,10 +11,13 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-4 mb-4 md:mb-0">
             <Link href="/">
-              <img
+              <Image
                 src="/logo.jpg"
                 alt="Vizumi"
-                className="h-8 brightness-0 invert"
+                width={567}
+                height={440}
+                sizes="32px"
+                className="h-8 w-auto brightness-0 invert"
               />
             </Link>
             <p className="text-sm">© {new Date().getFullYear()} Vizumi. All rights reserved.</p>

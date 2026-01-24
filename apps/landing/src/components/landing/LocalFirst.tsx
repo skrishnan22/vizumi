@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Lock, Database, Key, Server } from 'lucide-react';
 
@@ -69,18 +70,22 @@ export function LocalFirst() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <div className="aspect-square bg-white rounded-3xl shadow-xl border border-ink/5 p-8 flex flex-col items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-paper/50 bg-[radial-gradient(#161b2210_1px,transparent_1px)] [background-size:16px_16px]" />
-
-              <div className="w-48 h-48 rounded-full bg-accent-soft border border-accent/20 flex items-center justify-center relative z-10">
-                <Lock className="w-20 h-20 text-accent" />
-              </div>
-
-              <div className="mt-8 text-center relative z-10">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-700 rounded-full text-sm font-medium border border-green-500/20">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  End-to-End Private
+            <div className="relative w-full max-w-[560px] mx-auto">
+              <div className="absolute -inset-8 bg-accent/10 blur-3xl opacity-60" />
+              <div className="relative overflow-hidden rounded-3xl border border-ink/5 bg-white shadow-xl">
+                <div className="relative aspect-[3/2]">
+                  <Image
+                    src="/privacy-illustration.png"
+                    alt="Stacked local note cards with a privacy lock"
+                    fill
+                    sizes="(min-width: 1024px) 560px, (min-width: 768px) 45vw, 90vw"
+                    className="object-cover"
+                  />
                 </div>
+              </div>
+              <div className="absolute -bottom-4 left-8 inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-700 rounded-full text-sm font-medium border border-green-500/20 backdrop-blur">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                End-to-End Private
               </div>
             </div>
           </motion.div>
