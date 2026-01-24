@@ -109,7 +109,7 @@ export function DocumentPageContent({ docId }: DocumentPageContentProps) {
             This document doesn&apos;t exist or hasn&apos;t been created yet.
           </p>
           <Link
-            href="/new"
+            href="/"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors"
           >
             Create New

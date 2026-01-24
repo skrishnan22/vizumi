@@ -24,7 +24,10 @@ import { postProcessCards } from '@/lib/canvas/post-process';
 import { buildCanvasGraph } from '@/lib/canvas/graph';
 import { setGraph, type GraphMetaPatch } from '@/lib/graph/actions';
 import { prepareDocGeneration, cleanupDocGeneration } from '@/lib/generator';
+import { getNoteByUrl } from '@/lib/db/actions';
 import type { DocKind } from '@/lib/db/noteMetadata';
+import { useGenerationStore } from '@/store/generationStore';
+import { validateUrl } from '@/lib/validation';
 
 type NoteGeneratorProps = {
   docId: string;
@@ -36,12 +39,16 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
   const router = useRouter();
   const { modelPrefs, getRequestHeaders, hasApiKey } = useSettings();
   const { isLoading: isDocLoading } = useGraphDoc({ docId });
+  const clearPending = useGenerationStore((state) => state.clearPending);
 
   const [mode, setMode] = useState<GeneratorMode>('canvas');
   const [isModeLocked, setIsModeLocked] = useState(false);
 
   const [sessionModel, setSessionModel] = useState<string | null>(null);
   const effectiveModel = sessionModel ?? modelPrefs.generate;
+
+  // Track if we've consumed pending data to avoid re-triggering
+  const pendingConsumedRef = useRef(false);
 
   const requestHeaders = useMemo(() => {
     const headers = getRequestHeaders('generate');
@@ -64,12 +71,32 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
   });
 
   const [url, setUrl] = useState('');
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [generationStage, setGenerationStage] = useState<'fetching' | 'generating' | null>(null);
+  const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
+  const [cameFromHome, setCameFromHome] = useState(false);
 
   const setNoteId = useNoteStore((state) => state.setNoteId);
   const setMarkdownForNote = useNoteStore((state) => state.setMarkdownForNote);
   const setGenerating = useNoteStore((state) => state.setGenerating);
+
+  // Check for pending generation data on mount
+  useEffect(() => {
+    if (pendingConsumedRef.current) return;
+
+    const pending = clearPending();
+    if (pending) {
+      pendingConsumedRef.current = true;
+      setUrl(pending.url);
+      setMode(pending.mode);
+      if (pending.model) {
+        setSessionModel(pending.model);
+      }
+      setCameFromHome(true);
+      setShouldAutoGenerate(true);
+    }
+  }, [clearPending]);
 
   useEffect(() => {
     if (mode !== 'note') {
@@ -250,11 +277,35 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
     showApiErrorToast(activeError, { showRetryHint: true });
     cleanupDocGeneration(docId);
     setGenerationStage(null);
-  }, [activeError, docId]);
+    router.push('/');
+  }, [activeError, docId, router]);
 
   const handleGenerate = async () => {
-    const trimmedUrl = url.trim();
-    if (!trimmedUrl || generationStage) return;
+    if (generationStage) return;
+
+    const validation = validateUrl(url);
+    if (!validation.valid) {
+      setUrlError(validation.error);
+      return;
+    }
+
+    const validatedUrl = validation.url;
+
+    // Check for duplicate before showing loading state
+    const existing = await getNoteByUrl(validatedUrl, mode);
+    if (existing) {
+      const label = mode === 'canvas' ? 'Canvas' : 'Blueprint';
+      toast.info(`A ${label.toLowerCase()} already exists for this URL`, {
+        description: existing.title || `View the existing ${label.toLowerCase()}`,
+        action: {
+          label: `View ${label}`,
+          onClick: () => router.push(`/doc/${existing.noteId}`),
+        },
+        duration: 8000,
+      });
+      router.push('/');
+      return;
+    }
 
     if (!isModeLocked) {
       setIsModeLocked(true);
@@ -266,21 +317,13 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
       const result = await prepareDocGeneration({
         docId,
         kind: mode,
-        url: trimmedUrl,
-        fallbackTitle: mode === 'canvas' ? 'Visual Canvas' : 'Visual Note',
+        url: validatedUrl,
+        fallbackTitle: mode === 'canvas' ? 'Visual Canvas' : 'Visual Blueprint',
       });
 
+      // Should not happen since we check above, but handle for type safety
       if (result.kind === 'duplicate') {
-        const label = mode === 'canvas' ? 'Canvas' : 'Note';
-        toast.info(`A ${label.toLowerCase()} already exists for this URL`, {
-          description: result.existing.title || `View the existing ${label.toLowerCase()}`,
-          action: {
-            label: `View ${label}`,
-            onClick: () => router.push(`/doc/${result.existing.noteId}`),
-          },
-          duration: 8000,
-        });
-        setGenerationStage(null);
+        router.push('/');
         return;
       }
 
@@ -301,14 +344,28 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
     } catch (error) {
       logger.error('Error in handleGenerate:', error);
       toast.error('Failed to generate the document.');
+      cleanupDocGeneration(docId);
       setGenerationStage(null);
+      router.push('/');
     }
   };
+
+  // Auto-generate when coming from home page with pending data
+  useEffect(() => {
+    if (shouldAutoGenerate && url.trim()) {
+      setShouldAutoGenerate(false);
+      handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldAutoGenerate, url]);
 
   const hasCanvasContent =
     canvasCards.length > 0 || (canvasResponse.isLoading && canvasResponse.object !== undefined);
   const hasNoteContent = noteBlocks.length > 0;
   const hasContent = mode === 'note' ? hasNoteContent : hasCanvasContent;
+
+  // Determine if we should show loading state (came from home, no content yet)
+  const showLoadingState = cameFromHome && !hasContent;
 
   const heroSubtitle =
     mode === 'canvas'
@@ -341,126 +398,165 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
         </Link>
       </div>
 
-      <div
-        className={`${styles.contentContainer} ${
-          hasContent ? styles.contentHidden : styles.contentCentered
-        }`}
-      >
-        <div className={styles.illustrationWrapper}>
-          <HeroIllustration />
-        </div>
-
-        <div className={styles.heroSection}>
-          <h1 className={styles.heroTitle}>Transform any article into visual notes</h1>
-          <p className={styles.heroSubtitle}>{heroSubtitle}</p>
-        </div>
-
-        <div className={styles.modeToggleRow}>
-          <div className={styles.modeToggle} aria-label="Document mode">
-            <button
-              type="button"
-              className={`${styles.modeButton} ${mode === 'canvas' ? styles.modeButtonActive : ''}`}
-              onClick={() => setMode('canvas')}
-              disabled={isModeLocked || !!generationStage}
-            >
-              Canvas
-            </button>
-            <button
-              type="button"
-              className={`${styles.modeButton} ${mode === 'note' ? styles.modeButtonActive : ''}`}
-              onClick={() => setMode('note')}
-              disabled={isModeLocked || !!generationStage}
-            >
-              Note
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.inputCard}>
-          <div className={styles.inputWrapper}>
-            <svg
-              className={styles.inputIcon}
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && url.trim() && !generationStage) {
-                  handleGenerate();
-                }
-              }}
-              className={styles.urlInput}
-              placeholder="Paste article URL..."
-              data-testid="url-input"
-            />
-          </div>
-
-          <div className={styles.inputDivider} />
-
-          <ModelSelector
-            value={effectiveModel}
-            onChange={setSessionModel}
-            disabled={!!generationStage}
-            className={styles.embeddedModelSelector}
-            hasApiKey={hasApiKey}
-          />
-
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={!!generationStage || !url.trim()}
-            className={styles.generateButton}
-            data-testid="generate-button"
-          >
-            {generationStage ? (
-              <>
-                <span className={styles.spinner} />
-                <span>
+      {/* Hide content container entirely when came from home and has content */}
+      {!(cameFromHome && hasContent) && (
+        <div
+          className={`${styles.contentContainer} ${
+            hasContent ? styles.contentHidden : styles.contentCentered
+          }`}
+        >
+          {showLoadingState ? (
+            /* Loading state when auto-generating from home page */
+            <div className={styles.loadingState}>
+              <div className={styles.loadingIllustration}>
+                {/* Placeholder for custom loading illustration */}
+                <img
+                  src="/loading-illustration.png"
+                  alt="Generating visual notes"
+                  width={320}
+                  height={240}
+                  className={styles.loadingImage}
+                />
+              </div>
+              <div className={styles.loadingContent}>
+                <h2 className={styles.loadingTitle}>
                   {generationStage === 'fetching'
-                    ? 'Fetching content...'
+                    ? 'Fetching article content...'
                     : mode === 'canvas'
-                      ? 'Creating canvas...'
-                      : 'Creating notes...'}
-                </span>
-              </>
-            ) : (
-              <>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                      ? 'Creating your visual canvas...'
+                      : 'Creating your visual blueprint...'}
+                </h2>
+                <p className={styles.loadingSubtitle}>{url}</p>
+                {/*<div className={styles.loadingSpinner}>
+                <span className={styles.spinnerLarge} />
+              </div>*/}
+              </div>
+            </div>
+          ) : (
+            /* Normal input UI */
+            <>
+              <div className={styles.illustrationWrapper}>
+                <HeroIllustration />
+              </div>
+
+              <div className={styles.heroSection}>
+                <h1 className={styles.heroTitle}>Transform any article into visual notes</h1>
+                <p className={styles.heroSubtitle}>{heroSubtitle}</p>
+              </div>
+
+              <div className={styles.modeToggleRow}>
+                <div className={styles.modeToggle} aria-label="Document mode">
+                  <button
+                    type="button"
+                    className={`${styles.modeButton} ${mode === 'canvas' ? styles.modeButtonActive : ''}`}
+                    onClick={() => setMode('canvas')}
+                    disabled={isModeLocked || !!generationStage}
+                  >
+                    Canvas
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.modeButton} ${mode === 'note' ? styles.modeButtonActive : ''}`}
+                    onClick={() => setMode('note')}
+                    disabled={isModeLocked || !!generationStage}
+                  >
+                    Blueprint
+                  </button>
+                </div>
+              </div>
+
+              <div className={`${styles.inputCard} ${urlError ? styles.inputCardError : ''}`}>
+                <div className={styles.inputWrapper}>
+                  <svg
+                    className={styles.inputIcon}
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => {
+                      setUrl(e.target.value);
+                      if (urlError) setUrlError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !generationStage) {
+                        handleGenerate();
+                      }
+                    }}
+                    className={styles.urlInput}
+                    placeholder="Paste article URL..."
+                    data-testid="url-input"
+                  />
+                </div>
+
+                <div className={styles.inputDivider} />
+
+                <ModelSelector
+                  value={effectiveModel}
+                  onChange={setSessionModel}
+                  disabled={!!generationStage}
+                  className={styles.embeddedModelSelector}
+                  hasApiKey={hasApiKey}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={!!generationStage}
+                  className={styles.generateButton}
+                  data-testid="generate-button"
                 >
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-                <span>{mode === 'canvas' ? 'Generate Canvas' : 'Generate Notes'}</span>
-              </>
-            )}
-          </button>
+                  {generationStage ? (
+                    <>
+                      <span className={styles.spinner} />
+                      <span>
+                        {generationStage === 'fetching'
+                          ? 'Fetching content...'
+                          : mode === 'canvas'
+                            ? 'Creating canvas...'
+                            : 'Creating blueprint...'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                      <span>{mode === 'canvas' ? 'Generate Canvas' : 'Generate Blueprint'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              {urlError && <p className={styles.errorMessage}>{urlError}</p>}
+            </>
+          )}
         </div>
-      </div>
+      )}
 
       {hasContent && (
         <>
           <header className={styles.generatedHeader}>
             <h1 className={styles.generatedTitle}>
-              {title || (mode === 'canvas' ? 'Visual Canvas' : 'Visual Note')}
+              {title || (mode === 'canvas' ? 'Visual Canvas' : 'Visual Blueprint')}
             </h1>
             <a href={url} target="_blank" rel="noopener noreferrer" className={styles.generatedUrl}>
               {url}

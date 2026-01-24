@@ -35,7 +35,7 @@ export function DocCard({ title, url, href, ogImage, updatedAt, kind, onDelete }
   const domain = new URL(url).hostname.replace('www.', '');
   const gradient = getGradientForTitle(title);
   const showFallback = !ogImage || imageError;
-  const kindLabel = kind === 'canvas' ? 'Canvas' : 'Note';
+  const kindLabel = kind === 'canvas' ? 'Canvas' : 'Blueprint';
   const kindBadgeClass =
     kind === 'canvas'
       ? 'border-teal-200 bg-teal-50 text-teal-700'

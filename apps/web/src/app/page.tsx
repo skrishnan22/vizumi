@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DocsList } from '@/components/DocsList';
 import { HeroAnimation } from '@/components/HeroAnimation';
+import { HeroInput } from '@/components/HeroInput';
 import { Settings } from 'lucide-react';
 
 export default function Home() {
@@ -43,26 +44,7 @@ export default function Home() {
               connections, and master new topics faster than ever.
             </p>
 
-            <Link
-              href="/new"
-              className="group inline-flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-black transition-colors hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 ring-2 ring-transparent hover:ring-gray-200"
-            >
-              <svg
-                className="w-5 h-5 group-hover:rotate-90 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Create New
-            </Link>
+            <HeroInput />
           </div>
 
           {/* Hero Animation Section */}
