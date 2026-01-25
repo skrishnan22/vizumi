@@ -18,10 +18,10 @@ export function LocalFirst() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl md:text-5xl font-display text-ink mb-6">
+            <h2 className="text-4xl md:text-5xl font-display text-ink mb-6 text-balance">
               Local-first <span className="text-accent">by default.</span>
             </h2>
-            <p className="text-xl text-ink-soft leading-relaxed mb-8">
+            <p className="text-xl text-ink-soft leading-relaxed mb-8 text-pretty">
               Vizumi doesn't need accounts or a database. Your library stays on this device.
             </p>
 
@@ -50,12 +50,12 @@ export function LocalFirst() {
               ].map((item, i) => (
                 <div key={i} className="flex gap-4">
                   <div
-                    className={`w-10 h-10 rounded-lg ${iconBgs[i]} border border-ink/10 flex items-center justify-center shrink-0`}
+                    className={`size-10 rounded-lg ${iconBgs[i]} border border-ink/10 flex items-center justify-center shrink-0`}
                   >
-                    <item.icon className={`w-5 h-5 ${iconColors[i]}`} />
+                    <item.icon className={`size-5 ${iconColors[i]}`} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-ink">{item.title}</h4>
+                    <h3 className="font-bold text-ink">{item.title}</h3>
                     <p className="text-sm text-ink-muted">{item.desc}</p>
                   </div>
                 </div>
@@ -71,7 +71,7 @@ export function LocalFirst() {
             className="relative"
           >
             <div className="relative w-full max-w-[560px] mx-auto">
-              <div className="absolute -inset-8 bg-accent/10 blur-3xl opacity-60" />
+              <div className="absolute -inset-8 bg-accent/10 blur-2xl opacity-60" />
               <div className="relative overflow-hidden rounded-3xl border border-ink/5 bg-white shadow-xl">
                 <div className="relative aspect-[3/2]">
                   <Image
@@ -83,8 +83,8 @@ export function LocalFirst() {
                   />
                 </div>
               </div>
-              <div className="absolute -bottom-4 left-8 inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-700 rounded-full text-sm font-medium border border-green-500/20 backdrop-blur">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="absolute -bottom-4 left-8 inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-700 rounded-full text-sm font-medium border border-green-500/20">
+                <span className="size-2 rounded-full bg-green-500 motion-safe:animate-pulse" />
                 End-to-End Private
               </div>
             </div>
