@@ -23,10 +23,7 @@ export const IntroScene: React.FC = () => {
   const words = ['From', 'URL', 'to', 'mental', 'model'];
 
   return (
-    <DramaticBackground
-      intensity={1.2}
-      lightRayOrigin={{ x: 50, y: 35 }}
-    >
+    <DramaticBackground intensity={1.2} lightRayOrigin={{ x: 50, y: 35 }}>
       <AbsoluteFill
         style={{
           justifyContent: 'center',
@@ -38,7 +35,7 @@ export const IntroScene: React.FC = () => {
           <div style={{ textAlign: 'center' }}>
             {/* Main logo with letter-by-letter reveal */}
             <ImpactTitle
-              text="VizDeck"
+              text="Vizumi"
               delay={8}
               staggerFrames={3}
               fontSize={120}

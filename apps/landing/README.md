@@ -1,6 +1,6 @@
-# VizDeck Landing Page
+# Vizumi Landing Page
 
-This is the marketing landing page for VizDeck, built with Next.js 16 and Tailwind CSS v4.
+This is the marketing landing page for Vizumi, built with Next.js 16 and Tailwind CSS v4.
 
 ## Getting Started
 

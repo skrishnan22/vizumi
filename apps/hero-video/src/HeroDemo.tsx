@@ -55,8 +55,12 @@ const BackgroundMusic: React.FC<{ src: string }> = ({ src }) => {
   const fadeOutStart = durationInFrames - 2 * fps;
 
   const volume = (f: number) => {
-    if (f < fadeInEnd) return interpolate(f, [0, fadeInEnd], [0, 0.4], { extrapolateRight: 'clamp' });
-    if (f > fadeOutStart) return interpolate(f, [fadeOutStart, durationInFrames], [0.4, 0], { extrapolateLeft: 'clamp' });
+    if (f < fadeInEnd)
+      return interpolate(f, [0, fadeInEnd], [0, 0.4], { extrapolateRight: 'clamp' });
+    if (f > fadeOutStart)
+      return interpolate(f, [fadeOutStart, durationInFrames], [0.4, 0], {
+        extrapolateLeft: 'clamp',
+      });
     return 0.4;
   };
 
@@ -96,7 +100,7 @@ const EnhancedBrowserMockup: React.FC<{
   children: React.ReactNode;
   url?: string;
   delay?: number;
-}> = ({ children, url = 'vizdeck.app', delay = 0 }) => {
+}> = ({ children, url = 'Vizumi.app', delay = 0 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -115,12 +119,10 @@ const EnhancedBrowserMockup: React.FC<{
   const shadowPulse = Math.sin(frame * 0.04) * 3 + 22;
 
   // Slow zoom during playback
-  const zoomProgress = interpolate(
-    frame - delay - 20,
-    [0, 150],
-    [1, 1.02],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
+  const zoomProgress = interpolate(frame - delay - 20, [0, 150], [1, 1.02], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <div
@@ -170,12 +172,14 @@ const EnhancedBrowserMockup: React.FC<{
         <div style={{ width: 60 }} />
       </div>
       {/* Video content with zoom */}
-      <div style={{
-        position: 'relative',
-        overflow: 'hidden',
-        transform: `scale(${zoomProgress})`,
-        transformOrigin: 'center center',
-      }}>
+      <div
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          transform: `scale(${zoomProgress})`,
+          transformOrigin: 'center center',
+        }}
+      >
         {children}
       </div>
     </div>
@@ -187,19 +191,26 @@ const AnimatedHeadline: React.FC<{
   line1: string;
   line2: string;
   emphasisWord?: string;
-  delay?: number
-}> = ({
-  line1,
-  line2,
-  emphasisWord = "isn't",
-  delay = 0,
-}) => {
+  delay?: number;
+}> = ({ line1, line2, emphasisWord = "isn't", delay = 0 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const line1Progress = spring({ frame: frame - delay, fps, config: { damping: 12, stiffness: 60 } });
-  const line2Progress = spring({ frame: frame - delay - 10, fps, config: { damping: 12, stiffness: 60 } });
-  const emphasisPulse = spring({ frame: frame - delay - 25, fps, config: { damping: 8, stiffness: 100 } });
+  const line1Progress = spring({
+    frame: frame - delay,
+    fps,
+    config: { damping: 12, stiffness: 60 },
+  });
+  const line2Progress = spring({
+    frame: frame - delay - 10,
+    fps,
+    config: { damping: 12, stiffness: 60 },
+  });
+  const emphasisPulse = spring({
+    frame: frame - delay - 25,
+    fps,
+    config: { damping: 8, stiffness: 100 },
+  });
 
   const line1Y = interpolate(line1Progress, [0, 1], [50, 0]);
   const line1Opacity = interpolate(line1Progress, [0, 1], [0, 1]);
@@ -313,12 +324,7 @@ const IntroScene: React.FC = () => (
           pulseSpeed={0.05}
           style={{ display: 'inline-block' }}
         >
-          <ImpactTitle
-            text="VizDeck"
-            delay={15}
-            fontSize={120}
-            staggerFrames={3}
-          />
+          <ImpactTitle text="Vizumi" delay={15} fontSize={120} staggerFrames={3} />
         </GlowingGradientText>
         <TypewriterTagline text="From URL to mental model" delay={60} />
       </div>
@@ -351,13 +357,23 @@ const FeatureScene: React.FC<{ icon: string; title: string; subtitle: string }> 
 const VideoSceneWithCallouts: React.FC<{
   src: string;
   url?: string;
-  callouts: Array<{ x: number; y: number; label: string; direction: 'left' | 'right' | 'top' | 'bottom'; delay: number }>;
+  callouts: Array<{
+    x: number;
+    y: number;
+    label: string;
+    direction: 'left' | 'right' | 'top' | 'bottom';
+    delay: number;
+  }>;
 }> = ({ src, url, callouts }) => (
   <DramaticBackground showParticles showAurora showLightRays={false} intensity={0.5}>
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: 40 }}>
       <div style={{ position: 'relative' }}>
         <EnhancedBrowserMockup url={url} delay={5}>
-          <OffthreadVideo src={src} muted style={{ width: '100%', height: 'auto', display: 'block' }} />
+          <OffthreadVideo
+            src={src}
+            muted
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
         </EnhancedBrowserMockup>
         {/* Callout overlays */}
         {callouts.map((callout, i) => (
@@ -383,7 +399,11 @@ const OutroScene: React.FC = () => {
   const logoScale = interpolate(logoProgress, [0, 1], [0.7, 1]);
   const logoOpacity = interpolate(logoProgress, [0, 1], [0, 1]);
 
-  const taglineProgress = spring({ frame: frame - 40, fps, config: { damping: 15, stiffness: 80 } });
+  const taglineProgress = spring({
+    frame: frame - 40,
+    fps,
+    config: { damping: 15, stiffness: 80 },
+  });
   const taglineY = interpolate(taglineProgress, [0, 1], [20, 0]);
   const taglineOpacity = interpolate(taglineProgress, [0, 1], [0, 1]);
 
@@ -398,12 +418,7 @@ const OutroScene: React.FC = () => {
               pulseSpeed={0.06}
               style={{ display: 'inline-block' }}
             >
-              <ImpactTitle
-                text="VizDeck"
-                delay={0}
-                fontSize={100}
-                staggerFrames={2}
-              />
+              <ImpactTitle text="Vizumi" delay={0} fontSize={100} staggerFrames={2} />
             </GlowingGradientText>
           </div>
           <div
@@ -433,15 +448,15 @@ export const HeroDemo: React.FC = () => {
 
   // New timeline (~45 seconds)
   const SCENE = {
-    intro: Math.round(5 * fps),      // 5s - 150 frames
-    problem: Math.round(4 * fps),    // 4s - 120 frames
-    feature1: Math.round(3 * fps),   // 3s - 90 frames
-    video1: Math.round(6 * fps),     // 6s - 180 frames
-    feature2: Math.round(3 * fps),   // 3s - 90 frames
-    video2: Math.round(7 * fps),     // 7s - 210 frames
-    feature3: Math.round(3 * fps),   // 3s - 90 frames
-    video3: Math.round(7 * fps),     // 7s - 210 frames
-    outro: Math.round(5 * fps),      // 5s - 150 frames
+    intro: Math.round(5 * fps), // 5s - 150 frames
+    problem: Math.round(4 * fps), // 4s - 120 frames
+    feature1: Math.round(3 * fps), // 3s - 90 frames
+    video1: Math.round(6 * fps), // 6s - 180 frames
+    feature2: Math.round(3 * fps), // 3s - 90 frames
+    video2: Math.round(7 * fps), // 7s - 210 frames
+    feature3: Math.round(3 * fps), // 3s - 90 frames
+    video3: Math.round(7 * fps), // 7s - 210 frames
+    outro: Math.round(5 * fps), // 5s - 150 frames
   };
 
   const TRANS = Math.round(0.5 * fps);
@@ -456,7 +471,10 @@ export const HeroDemo: React.FC = () => {
           <IntroScene />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: TRANS })} />
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: TRANS })}
+        />
 
         {/* Problem */}
         <TransitionSeries.Sequence durationInFrames={SCENE.problem}>
@@ -473,25 +491,35 @@ export const HeroDemo: React.FC = () => {
           <FeatureScene icon="🔗" title="Paste any URL" subtitle="Articles, blogs, documentation" />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition presentation={wipe({ direction: 'from-bottom' })} timing={linearTiming({ durationInFrames: TRANS })} />
+        <TransitionSeries.Transition
+          presentation={wipe({ direction: 'from-bottom' })}
+          timing={linearTiming({ durationInFrames: TRANS })}
+        />
 
         {/* Video 1: URL Input */}
         <TransitionSeries.Sequence durationInFrames={SCENE.video1}>
           <VideoSceneWithCallouts
             src={urlInputVideo}
-            url="vizdeck.app"
+            url="Vizumi.app"
             callouts={[
-              { x: 50, y: 8, label: "Paste any URL", direction: 'bottom', delay: 30 },
-              { x: 85, y: 50, label: "AI processing", direction: 'left', delay: 100 },
+              { x: 50, y: 8, label: 'Paste any URL', direction: 'bottom', delay: 30 },
+              { x: 85, y: 50, label: 'AI processing', direction: 'left', delay: 100 },
             ]}
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: TRANS })} />
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: TRANS })}
+        />
 
         {/* Feature 2: Visual Notes */}
         <TransitionSeries.Sequence durationInFrames={SCENE.feature2}>
-          <FeatureScene icon="🎨" title="AI creates visual notes" subtitle="Diagrams, mind maps, structured cards" />
+          <FeatureScene
+            icon="🎨"
+            title="AI creates visual notes"
+            subtitle="Diagrams, mind maps, structured cards"
+          />
         </TransitionSeries.Sequence>
 
         <TransitionSeries.Transition
@@ -503,36 +531,49 @@ export const HeroDemo: React.FC = () => {
         <TransitionSeries.Sequence durationInFrames={SCENE.video2}>
           <VideoSceneWithCallouts
             src={canvasStreamingVideo}
-            url="vizdeck.app/canvas"
+            url="Vizumi.app/canvas"
             callouts={[
-              { x: 50, y: 8, label: "Visual notes appear", direction: 'bottom', delay: 40 },
-              { x: 15, y: 50, label: "Connections form", direction: 'right', delay: 120 },
+              { x: 50, y: 8, label: 'Visual notes appear', direction: 'bottom', delay: 40 },
+              { x: 15, y: 50, label: 'Connections form', direction: 'right', delay: 120 },
             ]}
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: TRANS })} />
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: TRANS })}
+        />
 
         {/* Feature 3: Connections */}
         <TransitionSeries.Sequence durationInFrames={SCENE.feature3}>
-          <FeatureScene icon="🧠" title="See how ideas connect" subtitle="Interactive canvas for deep understanding" />
+          <FeatureScene
+            icon="🧠"
+            title="See how ideas connect"
+            subtitle="Interactive canvas for deep understanding"
+          />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition presentation={wipe({ direction: 'from-right' })} timing={linearTiming({ durationInFrames: TRANS })} />
+        <TransitionSeries.Transition
+          presentation={wipe({ direction: 'from-right' })}
+          timing={linearTiming({ durationInFrames: TRANS })}
+        />
 
         {/* Video 3: Blueprint */}
         <TransitionSeries.Sequence durationInFrames={SCENE.video3}>
           <VideoSceneWithCallouts
             src={blueprintStreamingVideo}
-            url="vizdeck.app/blueprints"
+            url="Vizumi.app/blueprints"
             callouts={[
-              { x: 50, y: 8, label: "Interactive canvas", direction: 'bottom', delay: 40 },
-              { x: 85, y: 60, label: "Deep understanding", direction: 'left', delay: 130 },
+              { x: 50, y: 8, label: 'Interactive canvas', direction: 'bottom', delay: 40 },
+              { x: 85, y: 60, label: 'Deep understanding', direction: 'left', delay: 130 },
             ]}
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: TRANS })} />
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: TRANS })}
+        />
 
         {/* Outro */}
         <TransitionSeries.Sequence durationInFrames={SCENE.outro}>

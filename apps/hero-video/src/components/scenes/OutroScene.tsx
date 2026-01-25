@@ -17,11 +17,7 @@ export const OutroScene: React.FC = () => {
     config: { damping: 8, stiffness: 100, mass: 1.2 },
   });
 
-  const logoScale = interpolate(
-    logoProgress,
-    [0, 0.4, 0.7, 1],
-    [0, 1.25, 0.95, 1]
-  );
+  const logoScale = interpolate(logoProgress, [0, 0.4, 0.7, 1], [0, 1.25, 0.95, 1]);
   const logoY = interpolate(logoProgress, [0, 1], [120, 0]);
   const logoOpacity = interpolate(logoProgress, [0, 0.2], [0, 1], {
     extrapolateRight: 'clamp',
@@ -54,17 +50,9 @@ export const OutroScene: React.FC = () => {
   const logoGlow = 20 + Math.sin((frame - 30) * 0.06) * 15;
 
   return (
-    <DramaticBackground
-      intensity={1.3}
-      lightRayOrigin={{ x: 50, y: 40 }}
-    >
+    <DramaticBackground intensity={1.3} lightRayOrigin={{ x: 50, y: 40 }}>
       {/* Extra light rays for drama */}
-      <LightRays
-        originX={50}
-        originY={35}
-        rayCount={16}
-        intensity={1.5}
-      />
+      <LightRays originX={50} originY={35} rayCount={16} intensity={1.5} />
 
       {/* Shake on logo land */}
       <ImpactShake triggerFrame={25} scale={1.04}>
@@ -83,11 +71,7 @@ export const OutroScene: React.FC = () => {
                 filter: `drop-shadow(0 0 ${logoGlow}px rgba(13, 148, 136, 0.5))`,
               }}
             >
-              <GlowingGradientText
-                pulseSpeed={0.06}
-                minGlow={15}
-                maxGlow={40}
-              >
+              <GlowingGradientText pulseSpeed={0.06} minGlow={15} maxGlow={40}>
                 <span
                   style={{
                     fontSize: 110,
@@ -96,7 +80,7 @@ export const OutroScene: React.FC = () => {
                     letterSpacing: '-0.03em',
                   }}
                 >
-                  VizDeck
+                  Vizumi
                 </span>
               </GlowingGradientText>
             </div>

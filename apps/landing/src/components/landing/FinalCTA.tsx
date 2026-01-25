@@ -18,7 +18,7 @@ export function FinalCTA() {
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-50px' }}
           className="text-5xl md:text-7xl font-display mb-8"
         >
           Turn the next link <br />
@@ -28,7 +28,7 @@ export function FinalCTA() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-50px' }}
           transition={{ delay: 0.2 }}
           className="p-2 bg-white/5 rounded-2xl border border-white/10 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 max-w-xl w-full mx-auto backdrop-blur-sm mb-8"
         >
@@ -63,7 +63,7 @@ export function FinalCTA() {
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-50px' }}
           transition={{ delay: 0.4 }}
           className="text-white/40 flex items-center justify-center gap-2"
         >
