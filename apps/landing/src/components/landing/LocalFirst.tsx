@@ -15,7 +15,7 @@ export function LocalFirst() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-display text-ink mb-6">
@@ -30,7 +30,7 @@ export function LocalFirst() {
                 {
                   icon: Database,
                   title: 'Saved locally',
-                  desc: 'Notes are stored in your browser (IndexedDB)',
+                  desc: 'Notes are stored in your browser',
                 },
                 {
                   icon: Key,
@@ -66,7 +66,7 @@ export function LocalFirst() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >

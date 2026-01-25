@@ -11,7 +11,13 @@ export function WhatYouGet() {
     { icon: Settings, title: 'Model choice', desc: 'Speed/quality/cost via OpenRouter.' },
     { icon: Zap, title: 'Zero setup', desc: 'Starter models available.' },
   ];
-  const iconColors = ['text-accent', 'text-highlight', 'text-accent', 'text-highlight', 'text-accent'];
+  const iconColors = [
+    'text-accent',
+    'text-highlight',
+    'text-accent',
+    'text-highlight',
+    'text-accent',
+  ];
 
   return (
     <section className="py-24 bg-paper">
@@ -20,7 +26,7 @@ export function WhatYouGet() {
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: '-50px' }}
             className="text-4xl md:text-5xl font-display text-ink"
           >
             Built for content you actually want to <span className="text-accent">remember.</span>
@@ -33,11 +39,13 @@ export function WhatYouGet() {
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: '-50px' }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="p-6 bg-mist/40 rounded-2xl border border-ink/5 flex flex-col items-center text-center hover:bg-white hover:shadow-md transition-all duration-300"
+              className="p-6 bg-mist/40 rounded-2xl border border-ink/5 flex flex-col items-center text-center hover:bg-white hover:shadow-md transition-shadow transition-colors duration-300"
             >
-              <div className={`w-12 h-12 rounded-xl bg-white border border-ink/5 flex items-center justify-center mb-4 ${iconColors[i]}`}>
+              <div
+                className={`w-12 h-12 rounded-xl bg-white border border-ink/5 flex items-center justify-center mb-4 ${iconColors[i]}`}
+              >
                 <feat.icon className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-ink mb-1">{feat.title}</h3>

@@ -22,17 +22,6 @@ export function Footer() {
             </Link>
             <p className="text-sm">© {new Date().getFullYear()} Vizumi. All rights reserved.</p>
           </div>
-          <div className="flex gap-4">
-            <Link href="#" className="hover:text-white transition-colors">
-              <Twitter className="w-5 h-5" />
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              <Github className="w-5 h-5" />
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              <Linkedin className="w-5 h-5" />
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

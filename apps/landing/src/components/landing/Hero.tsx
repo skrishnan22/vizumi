@@ -112,7 +112,7 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: 'easeOut', delay: 0.4 }}
-            className="relative h-[600px] w-full hidden lg:flex items-center"
+            className="relative h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px] w-full flex items-center"
           >
             <div className="relative w-full max-w-[640px] mx-auto">
               <div className="absolute -inset-8 bg-accent/10 blur-3xl opacity-60" />
