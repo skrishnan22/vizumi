@@ -26,77 +26,112 @@ export function Nav() {
 
   return (
     <motion.nav
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-6 py-4',
-        scrolled ? 'py-3' : 'py-6'
-      )}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-6 py-4"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
+      {/* Floating Island Container */}
       <div
         className={cn(
-          'flex items-center justify-between w-full max-w-6xl rounded-full px-6 transition-opacity duration-200',
+          'flex items-center justify-between rounded-full transition-all duration-500 ease-out',
           scrolled
-            ? 'bg-paper/80 backdrop-blur-sm border border-ink/5 shadow-sm py-2'
-            : 'bg-transparent py-0'
+            ? 'bg-paper/80 backdrop-blur-xl border border-white/40 shadow-xl shadow-primary-900/10 px-3 py-2 max-w-3xl w-full mx-auto mt-3'
+            : 'bg-transparent px-6 py-4 max-w-6xl w-full'
         )}
       >
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/logo.jpg"
-            alt="Vizumi"
-            width={567}
-            height={440}
-            sizes="(min-width: 768px) 56px, 40px"
-            className={cn('w-auto', scrolled ? 'h-10' : 'h-14')}
-          />
+        {/* Logo */}
+        <Link href="/" className="flex items-center shrink-0">
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+            <Image
+              src="/logo.jpg"
+              alt="Vizumi"
+              width={567}
+              height={440}
+              sizes="(min-width: 768px) 56px, 40px"
+              className={cn('w-auto transition-all duration-300', scrolled ? 'h-8' : 'h-10')}
+            />
+          </motion.div>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop Navigation - Monospace, All Caps */}
+        <div className="hidden md:flex items-center gap-1">
           {links.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className="text-sm font-medium text-ink/70 hover:text-ink transition-colors"
+              className={cn(
+                'px-4 py-2 text-xs font-mono font-medium uppercase tracking-[0.15em] transition-all duration-300 rounded-full',
+                'text-ink/60 hover:text-ink hover:bg-white/50',
+                scrolled ? 'text-ink/70' : 'text-ink/60'
+              )}
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        <Button size="sm" className={scrolled ? 'h-9 text-sm' : ''}>
-          Get Started
-        </Button>
+        {/* CTA Button */}
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            className={cn(
+              'font-mono uppercase tracking-wider text-xs transition-all duration-300',
+              scrolled
+                ? 'h-8 px-4 rounded-full bg-primary-500 text-white hover:bg-primary-600 shadow-md shadow-primary-500/20'
+                : 'h-10 px-5 rounded-full bg-primary-500 text-white hover:bg-primary-600 shadow-lg shadow-primary-500/30 hover:shadow-primary-500/40'
+            )}
+          >
+            Get Started
+          </Button>
 
-        <button
-          className="md:hidden ml-2 p-2 text-ink/70 hover:text-ink transition-colors"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-        >
-          {mobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
-        </button>
+          {/* Mobile Menu Toggle */}
+          <button
+            className="md:hidden ml-2 p-2 rounded-full text-ink/70 hover:text-ink hover:bg-white/50 transition-all"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
       </div>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-full left-6 right-6 mt-2 p-4 bg-paper/90 backdrop-blur-sm rounded-2xl border border-ink/5 shadow-lg md:hidden flex flex-col gap-2 overflow-hidden"
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="absolute top-full left-6 right-6 mt-2 p-3 bg-paper/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl md:hidden"
           >
-            {links.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="px-4 py-3 text-sm font-medium text-ink/70 hover:text-ink hover:bg-ink/5 rounded-xl transition-all"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            <div className="flex flex-col gap-1">
+              {links.map((link, i) => (
+                <motion.div
+                  key={link.label}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <Link
+                    href={link.href}
+                    className="px-4 py-3 text-xs font-mono uppercase tracking-[0.15em] text-ink/70 hover:text-ink hover:bg-white/50 rounded-xl transition-all block"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ))}
+              <div className="border-t border-ink/10 mt-2 pt-2">
+                <Button
+                  size="sm"
+                  className="w-full h-10 rounded-xl bg-primary-500 text-white font-mono uppercase tracking-wider text-xs"
+                >
+                  Get Started
+                </Button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

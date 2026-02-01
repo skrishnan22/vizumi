@@ -1,65 +1,140 @@
 'use client';
 
+import { useRef } from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export function ProblemSolution() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
+
+  const leftY = useTransform(scrollYProgress, [0, 1], [100, -100]);
+
   const bullets = [
-    'Keep the thread with automatic sectioning',
-    'Learn faster with diagram-first explanations',
-    'Recall more by seeing how concepts connect',
+    { text: 'Keep the thread with automatic sectioning', color: 'text-primary-600' },
+    { text: 'Learn faster with diagram-first explanations', color: 'text-secondary-600' },
+    { text: 'Recall more by seeing how concepts connect', color: 'text-primary-600' },
   ];
-  const bulletColors = ['text-accent', 'text-highlight', 'text-accent'];
+
+  const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+  const pillListVariants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const pillItemVariants = {
+    hidden: { opacity: 0, x: 30 },
+    show: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.5,
+        ease: easeOut,
+      },
+    },
+  };
 
   return (
-    <section className="py-24 bg-paper relative overflow-hidden">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-          <div className="md:col-span-5">
-            <motion.h2
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.6 }}
-              className="text-5xl md:text-6xl font-display text-ink leading-none"
-            >
-              Reading is linear. <br />
-              <span className="text-highlight">Understanding isn’t.</span>
-            </motion.h2>
+    <section ref={sectionRef} className="py-32 bg-paper relative overflow-hidden">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-paper via-paper to-paper-warm" />
+
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
+          {/* Left Column: Sticky Headlines */}
+          <motion.div className="lg:col-span-5 lg:sticky lg:top-32" style={{ y: leftY }}>
+            <div className="space-y-2 overflow-visible">
+              <motion.h2
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="text-5xl md:text-6xl lg:text-7xl font-display font-semibold text-ink leading-[0.95]"
+              >
+                Reading is
+                <br />
+                linear.
+              </motion.h2>
+
+              <motion.h2
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold italic leading-[1.15] gradient-text-secondary pb-2"
+              >
+                Understanding
+                <br />
+                isn&apos;t.
+              </motion.h2>
+            </div>
+          </motion.div>
+
+          {/* Center Divider */}
+          <div className="hidden lg:flex lg:col-span-1 justify-center">
+            <div className="w-px h-full min-h-[400px] bg-gradient-to-b from-transparent via-primary-500/30 to-transparent" />
           </div>
 
-          <div className="md:col-span-1 hidden md:flex justify-center h-full">
-            <div className="w-px h-full bg-gradient-to-b from-transparent via-ink/10 to-transparent min-h-[200px]" />
-          </div>
-
-          <div className="md:col-span-6 space-y-8">
+          {/* Right Column: Content */}
+          <div className="lg:col-span-6 space-y-10">
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl text-ink-soft leading-relaxed"
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="text-xl md:text-2xl text-ink-soft leading-relaxed font-sans"
             >
               Most content hides the structure you actually need—flows, dependencies, tradeoffs.
               Vizumi reconstructs what you read into sections and visuals so you can see the shape
               of the ideas, not just the words.
             </motion.p>
 
-            <ul className="space-y-4">
+            {/* Benefit Pills */}
+            <motion.div
+              className="space-y-4"
+              variants={pillListVariants}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: '-50px' }}
+            >
               {bullets.map((bullet, i) => (
-                <motion.li
+                <motion.div
                   key={i}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                  className="flex items-start gap-3"
+                  variants={pillItemVariants}
+                  whileHover={{
+                    scale: 1.02,
+                    x: 8,
+                    transition: { type: 'spring', stiffness: 350, damping: 30 },
+                  }}
+                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/50 shadow-sm hover:shadow-md transition-shadow duration-300 cursor-default transform-gpu [will-change:transform]"
                 >
-                  <CheckCircle2 className={`w-6 h-6 ${bulletColors[i]} shrink-0 mt-0.5`} />
-                  <span className="text-lg text-ink-soft font-medium">{bullet}</span>
-                </motion.li>
+                  <div className={`flex-shrink-0 ${bullet.color}`}>
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <span className="text-lg text-ink font-medium font-sans">{bullet.text}</span>
+                </motion.div>
               ))}
-            </ul>
+            </motion.div>
+
+            {/* Quote */}
+            <motion.blockquote
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.6, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="relative pl-6 border-l-2 border-primary-500/30 italic text-lg text-ink-soft font-display"
+            >
+              The best way to understand complex ideas is to see how they connect.
+            </motion.blockquote>
           </div>
         </div>
       </div>
