@@ -1,12 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Lock, HardDrive, Sparkles } from 'lucide-react';
 
+interface Star {
+  id: number;
+  top: string;
+  left: string;
+  size: number;
+  rotation: number;
+  duration: number;
+  delay: number;
+}
+
 export function Hero() {
   const [mode, setMode] = useState<'blueprints' | 'canvas'>('canvas');
+  const [stars, setStars] = useState<Star[]>([]);
+
+  useEffect(() => {
+    setStars(
+      Array.from({ length: 6 }).map((_, i) => ({
+        id: i,
+        top: `${20 + Math.random() * 60}%`,
+        left: `${10 + Math.random() * 80}%`,
+        size: 12 + Math.random() * 12,
+        rotation: Math.random() * 45,
+        duration: 3 + Math.random() * 2,
+        delay: Math.random() * 5,
+      }))
+    );
+  }, []);
+
+  const handleModeSwitch = (newMode: 'blueprints' | 'canvas') => {
+    if (newMode !== mode) {
+      setMode(newMode);
+    }
+  };
+
   const preview =
     mode === 'blueprints'
       ? {
@@ -19,128 +51,320 @@ export function Hero() {
         };
 
   return (
-    <section className="relative min-h-[90dvh] flex items-center pt-32 pb-20 overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#161b2208_1px,transparent_1px),linear-gradient(to_bottom,#161b2208_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-      <div className="absolute top-0 right-0 -z-10 w-[600px] h-[600px] bg-accent/5 rounded-full blur-2xl opacity-50 translate-x-1/3 -translate-y-1/4" />
+    <section className="relative min-h-[95dvh] flex items-center pt-28 pb-16 overflow-hidden">
+      {/* === ENHANCED BACKGROUND LAYERS === */}
 
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
-          {/* Left Column: Content */}
-          <div className="space-y-8">
+      {/* Base gradient wash - slightly warmer and richer */}
+      <div className="absolute inset-0 bg-gradient-to-br from-paper via-primary-50/30 to-secondary-50/30" />
+
+      {/* Large ambient glow behind content */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] bg-gradient-radial from-primary-200/20 via-secondary-100/10 to-transparent blur-3xl pointer-events-none" />
+
+      {/* Primary Orb - Top Right (more prominent) */}
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.4, 0.6, 0.4],
+          rotate: [0, 20, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute -top-40 -right-20 w-[800px] h-[800px] bg-gradient-to-br from-primary-300/30 to-primary-500/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply"
+      />
+
+      {/* Secondary Orb - Bottom Left (more prominent) */}
+      <motion.div
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.3, 0.5, 0.3],
+          rotate: [0, -15, 0],
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        className="absolute -bottom-40 -left-20 w-[900px] h-[900px] bg-gradient-to-tr from-secondary-300/30 to-secondary-500/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply"
+      />
+
+      {/* Additional depth orb - Center Left */}
+      <div className="absolute top-1/3 -left-32 w-[600px] h-[600px] bg-primary-100/40 rounded-full blur-[100px] pointer-events-none" />
+
+      {/* Floating accent dots - slightly larger/more visible */}
+      <motion.div
+        animate={{ y: [0, -20, 0], x: [0, 10, 0], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-20 left-1/4 w-4 h-4 rounded-full bg-gradient-to-br from-primary-400 to-primary-300 blur-[4px]"
+      />
+      <motion.div
+        animate={{ y: [0, 15, 0], x: [0, -15, 0], opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        className="absolute top-40 right-1/3 w-3 h-3 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-300 blur-[3px]"
+      />
+      <motion.div
+        animate={{ y: [0, -25, 0], opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+        className="absolute bottom-40 left-1/3 w-5 h-5 rounded-full bg-primary-200/60 blur-[6px]"
+      />
+
+      {/* Refined Grid Pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.4] pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, var(--color-primary-200) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--color-primary-200) 1px, transparent 1px)
+          `,
+          backgroundSize: '4rem 4rem',
+          maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
+        }}
+      />
+
+      {/* Dotted Overlay for Texture */}
+      <div
+        className="absolute inset-0 opacity-[0.3] pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(var(--color-secondary-300) 1px, transparent 1px)`,
+          backgroundSize: '1.5rem 1.5rem',
+          maskImage: 'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
+        }}
+      />
+
+      {/* Twinkling Stars / Sparkles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {stars.map((star) => (
+          <motion.div
+            key={star.id}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: [0, 0.8, 0],
+              scale: [0.5, 1, 0.5],
+            }}
+            transition={{
+              duration: star.duration,
+              repeat: Infinity,
+              delay: star.delay,
+              ease: 'easeInOut',
+            }}
+            className="absolute"
+            style={{
+              top: star.top,
+              left: star.left,
+            }}
+          >
+            <Sparkles
+              className="text-primary-400/60"
+              style={{
+                width: star.size,
+                height: star.size,
+                transform: `rotate(${star.rotation}deg)`,
+              }}
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Noise texture for depth */}
+      <div className="absolute inset-0 opacity-[0.015] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI2EpIi8+PC9zdmc+')]" />
+
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* === LEFT COLUMN: Content (60%) === */}
+          <div className="lg:col-span-7 space-y-8">
+            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium"
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-primary-200/50 text-primary-700 text-xs font-mono uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300"
             >
-              <Sparkles className="size-3" />
+              <Sparkles className="size-3.5 text-primary-500" />
               <span>Blueprints + Canvas from any link</span>
             </motion.div>
 
+            {/* Headline */}
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-6xl md:text-7xl lg:text-8xl font-display font-medium leading-[0.9] text-ink text-balance"
+              transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-ink drop-shadow-sm"
             >
-              From URL <br />
-              <span className="text-ink/40">to</span>{' '}
-              <span className="text-accent">mental model.</span>
+              From URL <span className="text-ink/40 font-light">to</span>
+              <br />
+              <span className="italic relative inline-block">
+                mental model.
+                {/* Subtle underline decoration */}
+                <motion.svg
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 1, ease: 'easeOut' }}
+                  className="absolute -bottom-2 left-0 w-full h-[0.1em] text-primary-300/60 pointer-events-none"
+                  viewBox="0 0 100 10"
+                  preserveAspectRatio="none"
+                >
+                  <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="2" fill="none" />
+                </motion.svg>
+              </span>
             </motion.h1>
 
+            {/* Description */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg md:text-xl text-ink-soft max-w-lg leading-relaxed text-pretty"
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="text-lg md:text-xl text-ink-soft max-w-xl leading-relaxed font-sans"
             >
               Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with
               diagrams, plus a connected Canvas that shows how the ideas fit together.
             </motion.p>
 
+            {/* Input Field with Lens Switch */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="space-y-4"
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-4 max-w-xl"
             >
-              <div className="p-1.5 bg-white rounded-2xl shadow-sm border border-ink/10 flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 max-w-xl w-full">
-                <input
-                  type="text"
-                  placeholder="example.blog.com"
-                  aria-label="Demo URL input"
-                  className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-transparent focus:outline-none text-ink placeholder:text-ink-muted cursor-default"
-                  value="example.blog.com"
-                  readOnly
-                />
+              {/* Neumorphic Input Container */}
+              <div className="relative p-3 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* URL Input */}
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      placeholder="Paste any URL..."
+                      aria-label="Demo URL input"
+                      className="w-full px-5 py-4 rounded-xl bg-white/50 border border-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-ink placeholder:text-ink-muted font-sans text-sm shadow-inner transition-all hover:bg-white/80"
+                      defaultValue="example.blog.com"
+                      readOnly
+                    />
+                  </div>
 
-                <div className="flex gap-1 p-1 bg-mist rounded-xl self-center md:self-auto">
-                  <button
-                    onClick={() => setMode('blueprints')}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'blueprints' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
-                  >
-                    Blueprints
-                  </button>
-                  <button
-                    onClick={() => setMode('canvas')}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'canvas' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
-                  >
-                    Canvas
-                  </button>
+                  {/* Lens Switch Toggle */}
+                  <div className="relative flex items-center gap-1 p-1.5 bg-white/50 rounded-xl border border-white/40 shrink-0 shadow-inner">
+                    {/* Animated Background Pill */}
+                    <motion.div
+                      className="absolute inset-y-1.5 w-[calc(50%-4px)] bg-white rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-black/5"
+                      initial={false}
+                      animate={{
+                        x: mode === 'blueprints' ? 4 : 'calc(100% + 4px)',
+                      }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+
+                    <button
+                      onClick={() => handleModeSwitch('blueprints')}
+                      className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 ${
+                        mode === 'blueprints'
+                          ? 'text-primary-600 font-bold'
+                          : 'text-ink/50 hover:text-ink/80'
+                      }`}
+                    >
+                      Blueprints
+                    </button>
+                    <button
+                      onClick={() => handleModeSwitch('canvas')}
+                      className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 ${
+                        mode === 'canvas'
+                          ? 'text-secondary-700 font-bold'
+                          : 'text-ink/50 hover:text-ink/80'
+                      }`}
+                    >
+                      Canvas
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-ink-muted px-2">
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-accent" />
+              {/* Trust Badges */}
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-ink-muted px-2">
+                <span className="flex items-center gap-2">
+                  <span className="size-1.5 rounded-full bg-primary-500/80 shadow-[0_0_8px_rgba(198,93,59,0.4)]" />
                   No account required
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <HardDrive className="size-3 text-accent" />
+                <span className="flex items-center gap-2">
+                  <HardDrive className="size-3.5 text-primary-600" />
                   Saved locally
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Lock className="size-3 text-highlight" />
+                <span className="flex items-center gap-2">
+                  <Lock className="size-3.5 text-secondary-600" />
                   Keys stored locally
                 </span>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Column: Visual Preview */}
+          {/* === RIGHT COLUMN: Visual Preview (40%) === */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.4 }}
-            className="relative h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px] w-full flex items-center"
+            initial={{ opacity: 0, scale: 0.9, x: 20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:col-span-5 relative"
+            style={{ perspective: '1200px' }}
           >
-            <div className="relative w-full max-w-[640px] mx-auto">
-              <div className="absolute -inset-8 bg-accent/10 blur-2xl opacity-60" />
-              <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-[28px] bg-ink/5 border border-ink/10" />
-              <div className="relative aspect-[16/10] rounded-[28px] border border-ink/10 bg-white/80 shadow-2xl overflow-hidden">
+            {/* 3D Perspective Container */}
+            <div
+              className="relative"
+              style={{ transform: 'rotateY(-8deg) rotateX(2deg)', transformStyle: 'preserve-3d' }}
+            >
+              {/* Glow Effect - Stronger and more colorful */}
+              <div className="absolute -inset-10 bg-gradient-to-tr from-primary-400/30 to-secondary-300/30 blur-3xl opacity-80 rounded-[3rem] -z-10" />
+
+              {/* Shadow Layer - Deeper */}
+              <div className="absolute inset-0 translate-x-8 translate-y-8 rounded-[32px] bg-ink/5 border border-ink/5 blur-sm -z-10" />
+
+              {/* Main Preview Card */}
+              <div className="relative aspect-[4/3] rounded-[28px] border border-white/60 bg-white/80 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden backdrop-blur-md">
+                {/* Lens Rotation Animation */}
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={preview.src}
+                    key={mode}
                     className="absolute inset-0"
-                    initial={{ opacity: 0, y: 14, scale: 0.985 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -12, scale: 0.985 }}
-                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                    initial={{
+                      opacity: 0,
+                      rotateY: mode === 'blueprints' ? 90 : -90,
+                      scale: 0.95,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      rotateY: 0,
+                      scale: 1,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      rotateY: mode === 'blueprints' ? -90 : 90,
+                      scale: 0.95,
+                    }}
+                    transition={{
+                      duration: 0.4,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    style={{ transformStyle: 'preserve-3d' }}
                   >
                     <Image
                       src={preview.src}
                       alt={preview.alt}
                       fill
-                      sizes="(min-width: 1024px) 640px, 100vw"
+                      sizes="(min-width: 1024px) 500px, 100vw"
                       className="object-cover"
-                      priority={mode === 'canvas'}
+                      priority
                     />
                   </motion.div>
                 </AnimatePresence>
-              </div>
-              <div className="absolute -bottom-4 left-6 rounded-full border border-ink/10 bg-white/90 px-3 py-1 text-xs font-medium text-ink/70 shadow-sm">
-                {mode === 'blueprints' ? 'Blueprints view' : 'Canvas view'}
+
+                {/* View Label Badge */}
+                <div className="absolute bottom-4 left-4">
+                  <motion.div
+                    key={mode}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-white/50 text-xs font-mono uppercase tracking-wider text-ink/70 shadow-sm"
+                  >
+                    <span
+                      className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-secondary-500'}`}
+                    />
+                    {mode === 'blueprints' ? 'Blueprints View' : 'Canvas View'}
+                  </motion.div>
+                </div>
               </div>
             </div>
           </motion.div>
