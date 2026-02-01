@@ -5,54 +5,165 @@ import { GitBranch, Eye, Zap, Settings, Map } from 'lucide-react';
 
 export function WhatYouGet() {
   const features = [
-    { icon: GitBranch, title: 'Automatic structure', desc: 'Keeps context intact.' },
-    { icon: Eye, title: 'Visual explanations', desc: 'Make complex ideas click.' },
-    { icon: Map, title: 'Navigable map', desc: 'Not just a summary.' },
-    { icon: Settings, title: 'Model choice', desc: 'Speed/quality/cost via OpenRouter.' },
-    { icon: Zap, title: 'Zero setup', desc: 'Starter models available.' },
+    {
+      icon: GitBranch,
+      title: 'Automatic structure',
+      desc: 'Keeps context intact.',
+      color: 'text-primary-600',
+      bgColor: 'bg-primary-50',
+      position: { x: 0, y: 0 },
+    },
+    {
+      icon: Eye,
+      title: 'Visual explanations',
+      desc: 'Make complex ideas click.',
+      color: 'text-secondary-600',
+      bgColor: 'bg-secondary-50',
+      position: { x: 0, y: 10 },
+    },
+    {
+      icon: Map,
+      title: 'Navigable map',
+      desc: 'Not just a summary.',
+      color: 'text-primary-600',
+      bgColor: 'bg-primary-50',
+      position: { x: 0, y: -5 },
+    },
+    {
+      icon: Settings,
+      title: 'Model choice',
+      desc: 'Speed/quality/cost via OpenRouter.',
+      color: 'text-secondary-600',
+      bgColor: 'bg-secondary-50',
+      position: { x: 0, y: 15 },
+    },
+    {
+      icon: Zap,
+      title: 'Zero setup',
+      desc: 'Starter models available.',
+      color: 'text-primary-600',
+      bgColor: 'bg-primary-50',
+      position: { x: 0, y: -10 },
+    },
   ];
-  const iconColors = [
-    'text-accent',
-    'text-highlight',
-    'text-accent',
-    'text-highlight',
-    'text-accent',
+
+  const stats = [
+    { value: '0', unit: 's', label: 'Setup time' },
+    { value: '100', unit: '%', label: 'Private' },
+    { value: '∞', label: 'Possibilities' },
   ];
 
   return (
-    <section className="py-24 bg-paper">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="text-center mb-16">
+    <section className="py-32 bg-paper relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-r from-primary-400/5 to-secondary-400/5 rounded-full blur-3xl" />
+
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
+        {/* Section Header */}
+        <div className="text-center mb-20">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            className="text-4xl md:text-5xl font-display text-ink"
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold text-ink"
           >
-            Built for content you actually want to <span className="text-accent">remember.</span>
+            Built for content you
+            <br />
+            <span className="italic gradient-text">actually want to remember.</span>
           </motion.h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {features.map((feat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="p-6 bg-mist/40 rounded-2xl border border-ink/5 flex flex-col items-center text-center hover:bg-white hover:shadow-md transition-shadow transition-colors duration-300"
-            >
-              <div
-                className={`w-12 h-12 rounded-xl bg-white border border-ink/5 flex items-center justify-center mb-4 ${iconColors[i]}`}
+        {/* Constellation Grid - Arc Layout */}
+        <div className="relative max-w-5xl mx-auto">
+          {/* Connecting Lines SVG */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 1000 400"
+            preserveAspectRatio="none"
+          >
+            {/* Curved connecting lines */}
+            <motion.path
+              d="M100,200 Q300,100 500,150 Q700,200 900,180"
+              stroke="var(--color-primary-500)"
+              strokeWidth="1"
+              fill="none"
+              strokeDasharray="4 4"
+              initial={{ pathLength: 0, opacity: 0 }}
+              whileInView={{ pathLength: 1, opacity: 0.3 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, delay: 0.5 }}
+            />
+          </svg>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-4">
+            {features.map((feat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{
+                  duration: 0.6,
+                  delay: i * 0.1,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                whileHover={{
+                  scale: 1.05,
+                  y: -8,
+                  transition: { type: 'spring', stiffness: 300 },
+                }}
+                style={{
+                  transform: `translateY(${feat.position.y}px)`,
+                }}
+                className="group relative"
               >
-                <feat.icon className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-ink mb-1">{feat.title}</h3>
-              <p className="text-sm text-ink-muted">{feat.desc}</p>
-            </motion.div>
-          ))}
+                {/* Spotlight Effect on Hover */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-radial from-primary-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
+
+                <div className="p-6 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm hover:shadow-lg hover:shadow-primary-900/5 transition-all duration-300 h-full">
+                  {/* Icon */}
+                  <motion.div
+                    whileHover={{ rotate: 5 }}
+                    className={`w-14 h-14 rounded-xl ${feat.bgColor} border border-white/50 flex items-center justify-center mb-4 shadow-sm`}
+                  >
+                    <feat.icon className={`w-7 h-7 ${feat.color}`} />
+                  </motion.div>
+
+                  {/* Content */}
+                  <h3 className="font-display font-semibold text-lg text-ink mb-1">{feat.title}</h3>
+                  <p className="text-sm text-slate-500 font-sans">{feat.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
+
+        {/* Bottom Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="flex flex-wrap justify-center gap-x-16 gap-y-10 mt-20 pt-12 border-t border-slate-200/50"
+        >
+          {stats.map((stat, i) => (
+            <div key={i} className="text-center">
+              <div className="text-4xl md:text-5xl font-display font-semibold text-ink mb-2 leading-none tracking-tight">
+                <span className="tabular-nums">{stat.value}</span>
+                {stat.unit ? (
+                  <span className="ml-0.5 text-xl md:text-2xl font-mono font-medium text-ink/70 lowercase tracking-normal">
+                    {stat.unit}
+                  </span>
+                ) : null}
+              </div>
+              <div className="text-sm text-slate-500 font-mono uppercase tracking-wider">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

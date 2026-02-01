@@ -6,117 +6,194 @@ import { FileText, Network } from 'lucide-react';
 
 export function TwoViews() {
   return (
-    <section id="blueprints" className="py-24 bg-mist/50 relative">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="text-center mb-20">
+    <section id="blueprints" className="py-32 bg-paper-warm relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(#2C2C2C/5_1px,transparent_1px)] [background-size:24px_24px] opacity-50" />
+
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
+        {/* Section Header */}
+        <div className="text-center mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            className="text-4xl md:text-5xl font-display text-ink mb-4"
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold text-ink mb-4"
           >
-            Two ways to learn the <span className="text-accent">same source.</span>
+            Two ways to learn
+            <br />
+            <span className="italic gradient-text">the same source.</span>
           </motion.h2>
+
+          {/* Animated Connector Lines SVG */}
+          <motion.svg
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="w-full max-w-md mx-auto h-8 mt-4"
+            viewBox="0 0 200 30"
+          >
+            <motion.path
+              d="M100,0 L100,30"
+              stroke="var(--color-primary-500)"
+              strokeWidth="1"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.3 }}
+            />
+            <motion.path
+              d="M100,15 L40,15"
+              stroke="var(--color-primary-500)"
+              strokeWidth="1"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            />
+            <motion.path
+              d="M100,15 L160,15"
+              stroke="var(--color-primary-500)"
+              strokeWidth="1"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            />
+          </motion.svg>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Blueprints Card */}
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Blueprints Card - Technical Aesthetic */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="group relative bg-paper rounded-3xl border border-ink/5 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+            id="blueprints"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ scale: 1.01 }}
+            className="group relative bg-white rounded-[2rem] border border-slate-200/50 overflow-hidden shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-500"
           >
-            <div className="absolute top-0 right-0 p-32 bg-accent/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+            {/* Dot Grid Background */}
+            <div className="absolute inset-0 bg-[radial-gradient(#2C2C2C/10_1px,transparent_1px)] [background-size:20px_20px] opacity-30" />
 
-            <div className="p-8 md:p-12 relative z-10">
-              <div className="w-12 h-12 rounded-xl bg-paper border border-ink/10 flex items-center justify-center mb-6 shadow-sm">
-                <FileText className="w-6 h-6 text-ink" />
+            {/* Hover Glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+            <div className="p-8 md:p-10 relative z-10">
+              {/* Header */}
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-14 h-14 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shadow-sm">
+                  <FileText className="w-7 h-7 text-slate-700" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-display font-semibold text-ink mb-1">Blueprints</h3>
+                  <p className="text-sm font-mono uppercase tracking-wider text-slate-500">
+                    Deep Dive Notes
+                  </p>
+                </div>
               </div>
 
-              <h3 className="text-3xl font-display text-ink mb-3">Blueprints</h3>
-              <p className="text-lg font-medium text-ink-soft mb-6">
-                Diagram-backed section notes for focused learning.
+              <p className="text-lg text-ink-soft mb-8 font-sans leading-relaxed">
+                Diagram-backed section notes for focused learning. Each card presents a
+                section&apos;s key points, definitions, and takeaways in a clean, scannable format.
               </p>
 
-              <ul className="space-y-3 mb-12">
-                <li className="flex items-start gap-2 text-ink-muted text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 shrink-0" />
-                  One clean card per section: key points, definitions, and takeaways
-                </li>
-                <li className="flex items-start gap-2 text-ink-muted text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-highlight mt-2 shrink-0" />
-                  Diagrams when they clarify (rendered via D2 → SVG)
-                </li>
-                <li className="flex items-start gap-2 text-ink-muted text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 shrink-0" />
-                  Great for review, study, and turning reading into explainable notes
-                </li>
+              {/* Feature List */}
+              <ul className="space-y-3 mb-8">
+                {[
+                  'One clean card per section: key points, definitions, and takeaways',
+                  'Diagrams when they clarify (rendered via D2 → SVG)',
+                  'Great for review, study, and turning reading into explainable notes',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-slate-600 text-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-2 shrink-0" />
+                    {item}
+                  </li>
+                ))}
               </ul>
 
-              {/* Blueprint preview image */}
-              <div className="relative w-full aspect-[4/3] rounded-xl border border-ink/10 shadow-sm overflow-hidden">
+              {/* Preview Image */}
+              <div className="relative w-full aspect-[16/10] rounded-2xl border border-slate-200/50 shadow-sm overflow-hidden bg-slate-50">
                 <Image
                   src="/blueprint-original.png"
                   alt="Blueprint preview showing section cards with diagrams"
                   fill
-                  sizes="(min-width: 1024px) 540px, (min-width: 768px) 45vw, 90vw"
+                  sizes="(min-width: 1024px) 560px, (min-width: 768px) 50vw, 90vw"
                   className="object-cover"
                 />
               </div>
             </div>
           </motion.div>
 
-          {/* Canvas Card */}
-          <div id="canvas" className="scroll-mt-24">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="group relative bg-accent/10 rounded-3xl border border-accent/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-            >
-              <div className="absolute top-0 left-0 p-32 bg-accent/10 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+          {/* Canvas Card - Organic Aesthetic */}
+          <motion.div
+            id="canvas"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ scale: 1.01 }}
+            className="group relative rounded-[2rem] border border-primary-200/50 overflow-hidden shadow-lg shadow-primary-900/5 hover:shadow-xl hover:shadow-primary-900/10 transition-all duration-500"
+          >
+            {/* Gradient Mesh Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-secondary-50" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-200/20 via-transparent to-secondary-200/20" />
 
-              <div className="p-8 md:p-12 relative z-10">
-                <div className="w-12 h-12 rounded-xl bg-paper border border-ink/10 flex items-center justify-center mb-6 shadow-sm">
-                  <Network className="w-6 h-6 text-ink" />
+            {/* Hover Glow */}
+            <div className="absolute top-0 left-0 w-64 h-64 bg-secondary-400/10 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+            <div className="p-8 md:p-10 relative z-10">
+              {/* Header */}
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-14 h-14 rounded-xl bg-white border border-primary-200 flex items-center justify-center shadow-sm">
+                  <Network className="w-7 h-7 text-primary-600" />
                 </div>
-
-                <h3 className="text-3xl font-display text-ink mb-3">Canvas</h3>
-                <p className="text-lg font-medium text-ink-soft mb-6">
-                  A connected map for big-picture clarity.
-                </p>
-
-                <ul className="space-y-3 mb-12">
-                  <li className="flex items-start gap-2 text-ink-muted text-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 shrink-0" />
-                    Zoom out to orient, zoom in to learn
-                  </li>
-                  <li className="flex items-start gap-2 text-ink-muted text-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-highlight mt-2 shrink-0" />
-                    Connections show relationships, flow, and dependency
-                  </li>
-                  <li className="flex items-start gap-2 text-ink-muted text-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 shrink-0" />
-                    Best for systems topics where 'how it fits' matters most
-                  </li>
-                </ul>
-
-                {/* Canvas preview image */}
-                <div className="relative w-full aspect-[4/3] rounded-xl border border-ink/10 shadow-sm overflow-hidden">
-                  <Image
-                    src="/canvas-original.png"
-                    alt="Canvas preview showing connected concept map"
-                    fill
-                    sizes="(min-width: 1024px) 540px, (min-width: 768px) 45vw, 90vw"
-                    className="object-cover"
-                  />
+                <div>
+                  <h3 className="text-3xl font-display font-semibold text-ink mb-1">Canvas</h3>
+                  <p className="text-sm font-mono uppercase tracking-wider text-primary-600/70">
+                    Knowledge Graph
+                  </p>
                 </div>
               </div>
-            </motion.div>
-          </div>
+
+              <p className="text-lg text-ink-soft mb-8 font-sans leading-relaxed">
+                A connected map for big-picture clarity. Zoom out to orient, zoom in to learn.
+                Connections show relationships, flow, and dependencies between concepts.
+              </p>
+
+              {/* Feature List */}
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Zoom out to orient, zoom in to learn',
+                  'Connections show relationships, flow, and dependency',
+                  'Best for systems topics where how it fits matters most',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-slate-600 text-sm">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full mt-2 shrink-0 ${i === 1 ? 'bg-secondary-500' : 'bg-primary-500'}`}
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Preview Image */}
+              <div className="relative w-full aspect-[16/10] rounded-2xl border border-primary-200/50 shadow-sm overflow-hidden bg-white">
+                <Image
+                  src="/canvas-original.png"
+                  alt="Canvas preview showing connected concept map"
+                  fill
+                  sizes="(min-width: 1024px) 560px, (min-width: 768px) 50vw, 90vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
