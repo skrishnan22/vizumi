@@ -10,9 +10,15 @@ import { Footer } from '@/components/landing/Footer';
 export default function Home() {
   return (
     <>
-      <main className="min-h-dvh bg-paper selection:bg-accent/20 selection:text-ink overflow-x-hidden">
-        {/* Noise Texture Overlay */}
-        <div className="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply z-50 bg-[url('/noise.svg')]" />
+      <main className="min-h-dvh bg-paper selection:bg-primary-500/20 selection:text-ink overflow-x-hidden">
+        {/* Enhanced Noise Texture Overlay */}
+        <div
+          className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.06] mix-blend-multiply"
+          style={{
+            backgroundImage: `url('/noise.svg')`,
+            backgroundRepeat: 'repeat',
+          }}
+        />
 
         <Nav />
         <Hero />

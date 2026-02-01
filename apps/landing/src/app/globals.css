@@ -1,25 +1,83 @@
 @import 'tailwindcss';
 
-@theme {
-  --color-paper: #f6f1ea;
-  --color-ink: #161b22;
-  --color-accent: #1c8e9a;
-  --color-highlight: #f59e0b;
-  --color-mist: #f2f5f7;
+:root {
+  /* Primary Color Scale - Terracotta */
+  --color-primary-50: #fef3f0;
+  --color-primary-100: #fde8e3;
+  --color-primary-200: #fbd2c7;
+  --color-primary-300: #f7b5a3;
+  --color-primary-400: #f08e75;
+  --color-primary-500: #c65d3b;
+  --color-primary-600: #a84d30;
+  --color-primary-700: #8c4028;
+  --color-primary-800: #743624;
+  --color-primary-900: #603022;
 
+  /* Secondary Color Scale - Sage */
+  --color-secondary-50: #f4f8f5;
+  --color-secondary-100: #e3efe6;
+  --color-secondary-200: #c7decf;
+  --color-secondary-300: #9fc4ac;
+  --color-secondary-400: #7a9e7e;
+  --color-secondary-500: #5a7d5e;
+  --color-secondary-600: #456348;
+  --color-secondary-700: #3a4f3d;
+  --color-secondary-800: #314034;
+  --color-secondary-900: #29362c;
+
+  /* Background Colors - Warm & Creamy */
+  --color-paper: #faf8f5;
+  --color-paper-warm: #f5f2ed;
+  --color-dark: #2c2c2c;
+  --color-mist: #f0ede8;
+
+  /* Text Colors */
+  --color-ink: #2c2c2c;
+  --color-ink-soft: #5a5a5a;
+  --color-ink-muted: #8a8a8a;
+
+  /* Semantic Aliases */
+  --color-accent: var(--color-primary-500);
+  --color-highlight: var(--color-secondary-500);
+  --color-primary: var(--color-primary-500);
+  --color-secondary: var(--color-secondary-500);
+
+  /* Glass Effect */
+  --color-glass: rgba(255, 255, 255, 0.7);
+  --color-glass-border: rgba(255, 255, 255, 0.2);
+
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+  --font-sans: 'Satoshi', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Tiempos Headline', 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Monaco', monospace;
+
+  /* ============================================
+     RADIUS
+     ============================================ */
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
-
-  --font-sans: var(--font-dm-sans, ui-sans-serif, system-ui, sans-serif);
-  --font-display: var(--font-fraunces, Georgia, serif);
+  --radius-3xl: 2rem;
+}
+/* ============================================
+   BASE STYLES
+   ============================================ */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ============================================
+   HEADING STYLES
+   ============================================ */
 h1,
 h2,
 h3,
@@ -27,4 +85,337 @@ h4,
 h5,
 h6 {
   font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ============================================
+   THEME-AWARE UTILITY CLASSES
+   These reference the semantic color variables
+   ============================================ */
+
+/* Background Colors */
+.bg-paper {
+  background-color: var(--color-paper);
+}
+
+.bg-paper-warm {
+  background-color: var(--color-paper-warm);
+}
+
+.bg-dark {
+  background-color: var(--color-dark);
+}
+
+.bg-mist {
+  background-color: var(--color-mist);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-primary-50 {
+  background-color: var(--color-primary-50);
+}
+.bg-primary-100 {
+  background-color: var(--color-primary-100);
+}
+.bg-primary-200 {
+  background-color: var(--color-primary-200);
+}
+.bg-primary-300 {
+  background-color: var(--color-primary-300);
+}
+.bg-primary-400 {
+  background-color: var(--color-primary-400);
+}
+.bg-primary-500 {
+  background-color: var(--color-primary-500);
+}
+.bg-primary-600 {
+  background-color: var(--color-primary-600);
+}
+.bg-primary-700 {
+  background-color: var(--color-primary-700);
+}
+.bg-primary-800 {
+  background-color: var(--color-primary-800);
+}
+.bg-primary-900 {
+  background-color: var(--color-primary-900);
+}
+
+.bg-secondary-50 {
+  background-color: var(--color-secondary-50);
+}
+.bg-secondary-100 {
+  background-color: var(--color-secondary-100);
+}
+.bg-secondary-200 {
+  background-color: var(--color-secondary-200);
+}
+.bg-secondary-300 {
+  background-color: var(--color-secondary-300);
+}
+.bg-secondary-400 {
+  background-color: var(--color-secondary-400);
+}
+.bg-secondary-500 {
+  background-color: var(--color-secondary-500);
+}
+.bg-secondary-600 {
+  background-color: var(--color-secondary-600);
+}
+.bg-secondary-700 {
+  background-color: var(--color-secondary-700);
+}
+.bg-secondary-800 {
+  background-color: var(--color-secondary-800);
+}
+.bg-secondary-900 {
+  background-color: var(--color-secondary-900);
+}
+
+/* Text Colors */
+.text-ink {
+  color: var(--color-ink);
+}
+
+.text-ink-soft {
+  color: var(--color-ink-soft);
+}
+
+.text-ink-muted {
+  color: var(--color-ink-muted);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-primary-50 {
+  color: var(--color-primary-50);
+}
+.text-primary-100 {
+  color: var(--color-primary-100);
+}
+.text-primary-200 {
+  color: var(--color-primary-200);
+}
+.text-primary-300 {
+  color: var(--color-primary-300);
+}
+.text-primary-400 {
+  color: var(--color-primary-400);
+}
+.text-primary-500 {
+  color: var(--color-primary-500);
+}
+.text-primary-600 {
+  color: var(--color-primary-600);
+}
+.text-primary-700 {
+  color: var(--color-primary-700);
+}
+.text-primary-800 {
+  color: var(--color-primary-800);
+}
+.text-primary-900 {
+  color: var(--color-primary-900);
+}
+
+.text-secondary-400 {
+  color: var(--color-secondary-400);
+}
+.text-secondary-500 {
+  color: var(--color-secondary-500);
+}
+.text-secondary-600 {
+  color: var(--color-secondary-600);
+}
+.text-secondary-700 {
+  color: var(--color-secondary-700);
+}
+.text-secondary-800 {
+  color: var(--color-secondary-800);
+}
+.text-secondary-900 {
+  color: var(--color-secondary-900);
+}
+
+/* Border Colors */
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.border-primary-100 {
+  border-color: var(--color-primary-100);
+}
+.border-primary-200 {
+  border-color: var(--color-primary-200);
+}
+.border-primary-300 {
+  border-color: var(--color-primary-300);
+}
+.border-primary-400 {
+  border-color: var(--color-primary-400);
+}
+.border-primary-500 {
+  border-color: var(--color-primary-500);
+}
+.border-primary-600 {
+  border-color: var(--color-primary-600);
+}
+
+.border-secondary-100 {
+  border-color: var(--color-secondary-100);
+}
+.border-secondary-200 {
+  border-color: var(--color-secondary-200);
+}
+.border-secondary-300 {
+  border-color: var(--color-secondary-300);
+}
+.border-secondary-400 {
+  border-color: var(--color-secondary-400);
+}
+.border-secondary-500 {
+  border-color: var(--color-secondary-500);
+}
+
+/* Ring Colors */
+.ring-primary-200 {
+  --tw-ring-color: var(--color-primary-200);
+}
+
+.ring-primary-500 {
+  --tw-ring-color: var(--color-primary-500);
+}
+
+.focus\:ring-primary-200:focus {
+  --tw-ring-color: var(--color-primary-200);
+}
+
+.focus\:ring-primary-500:focus {
+  --tw-ring-color: var(--color-primary-500);
+}
+
+/* ============================================
+   GRADIENT UTILITIES
+   ============================================ */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-600) 0%,
+    var(--color-primary-500) 50%,
+    var(--color-primary-400) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-secondary {
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary-600) 0%,
+    var(--color-secondary-500) 50%,
+    var(--color-secondary-400) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-to-r-from-primary-to-secondary {
+  background: linear-gradient(
+    to right,
+    var(--color-primary-400) 0%,
+    var(--color-secondary-400) 100%
+  );
+}
+
+/* ============================================
+   GLASS MORPHISM
+   ============================================ */
+.glass {
+  background: var(--color-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-dark {
+  background: rgba(44, 44, 44, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   SHADOWS
+   ============================================ */
+.neumorphic {
+  box-shadow:
+    8px 8px 16px rgba(198, 93, 59, 0.08),
+    -8px -8px 16px rgba(255, 255, 255, 0.8);
+}
+
+.shadow-primary {
+  box-shadow: 0 20px 40px -15px rgba(198, 93, 59, 0.15);
+}
+
+.shadow-secondary {
+  box-shadow: 0 20px 40px -15px rgba(122, 158, 126, 0.15);
+}
+
+/* ============================================
+   SELECTION
+   ============================================ */
+::selection {
+  background-color: rgba(198, 93, 59, 0.2);
+  color: var(--color-ink);
+}
+
+/* ============================================
+   NOISE OVERLAY
+   ============================================ */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+}
+
+/* ============================================
+   DECORATIVE ELEMENTS
+   ============================================ */
+.bg-glow-primary {
+  background: radial-gradient(circle, rgba(198, 93, 59, 0.15) 0%, transparent 70%);
+}
+
+.bg-glow-secondary {
+  background: radial-gradient(circle, rgba(122, 158, 126, 0.15) 0%, transparent 70%);
 }
