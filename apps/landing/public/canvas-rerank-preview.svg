@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Layered reranking sketch">
+  <rect width="320" height="180" rx="10" fill="#f7f7f6"/>
+
+  <rect x="30" y="18" width="260" height="38" fill="#f7d8db" stroke="#1f1f1f" stroke-width="2"/>
+  <rect x="42" y="28" width="76" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <rect x="126" y="28" width="68" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <rect x="202" y="28" width="76" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <text x="160" y="14" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="10" fill="#202020">Retrieve Layer</text>
+
+  <line x1="160" y1="56" x2="160" y2="76" stroke="#1f1f1f" stroke-width="1.8"/>
+  <polygon points="160,80 156,73 164,73" fill="#1f1f1f"/>
+
+  <rect x="30" y="84" width="260" height="38" fill="#f7d8db" stroke="#1f1f1f" stroke-width="2"/>
+  <rect x="42" y="94" width="110" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <rect x="160" y="94" width="118" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <text x="160" y="80" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="10" fill="#202020">Rerank Layer</text>
+
+  <line x1="160" y1="122" x2="160" y2="142" stroke="#1f1f1f" stroke-width="1.8"/>
+  <polygon points="160,146 156,139 164,139" fill="#1f1f1f"/>
+
+  <rect x="30" y="150" width="260" height="22" fill="#f7d8db" stroke="#1f1f1f" stroke-width="2"/>
+  <text x="160" y="147" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="10" fill="#202020">Prompt Layer</text>
+</svg>

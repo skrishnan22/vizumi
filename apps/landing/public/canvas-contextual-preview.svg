@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Layered contextual retrieval sketch">
+  <rect width="320" height="180" rx="10" fill="#f7f7f6"/>
+
+  <rect x="26" y="16" width="268" height="38" fill="#f7d8db" stroke="#1f1f1f" stroke-width="2"/>
+  <rect x="38" y="26" width="56" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <rect x="108" y="26" width="102" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <rect x="224" y="26" width="58" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <text x="160" y="13" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="10" fill="#202020">Outline Layer</text>
+
+  <line x1="160" y1="54" x2="160" y2="74" stroke="#1f1f1f" stroke-width="1.8"/>
+  <polygon points="160,78 156,71 164,71" fill="#1f1f1f"/>
+
+  <rect x="26" y="82" width="268" height="38" fill="#f7d8db" stroke="#1f1f1f" stroke-width="2"/>
+  <rect x="38" y="92" width="56" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <rect x="108" y="92" width="102" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <rect x="224" y="92" width="58" height="18" fill="#f3ead9" stroke="#1f1f1f" stroke-width="1.5"/>
+  <text x="160" y="79" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="10" fill="#202020">Ideas Layer</text>
+
+  <line x1="160" y1="120" x2="160" y2="140" stroke="#1f1f1f" stroke-width="1.8"/>
+  <polygon points="160,144 156,137 164,137" fill="#1f1f1f"/>
+
+  <rect x="26" y="148" width="268" height="24" fill="#f7d8db" stroke="#1f1f1f" stroke-width="2"/>
+  <text x="160" y="145" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="10" fill="#202020">Text Layer</text>
+</svg>

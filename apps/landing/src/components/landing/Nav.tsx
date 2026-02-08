@@ -37,8 +37,8 @@ export function Nav() {
         className={cn(
           'flex items-center justify-between rounded-full transition-[background-color,border-color,box-shadow,padding,margin-top,max-width] duration-500 ease-out',
           scrolled
-            ? 'bg-paper/90 md:bg-paper/80 border border-white/40 shadow-xl shadow-primary-900/10 px-3 py-2 max-w-3xl w-full mx-auto mt-3 md:backdrop-blur-xl'
-            : 'bg-transparent px-6 py-4 max-w-6xl w-full'
+            ? 'bg-paper/95 md:bg-paper/90 border border-primary-100/70 shadow-lg shadow-primary-900/10 px-3 py-2 max-w-3xl w-full mx-auto mt-3'
+            : 'bg-paper/97 md:bg-paper/82 border border-primary-100/60 shadow-md shadow-primary-900/5 px-5 py-3 max-w-6xl w-full'
         )}
       >
         {/* Logo */}
@@ -63,8 +63,8 @@ export function Nav() {
               href={link.href}
               className={cn(
                 'px-4 py-2 text-xs font-mono font-medium uppercase tracking-[0.15em] transition-all duration-300 rounded-full',
-                'text-ink/60 hover:text-ink hover:bg-white/50',
-                scrolled ? 'text-ink/70' : 'text-ink/60'
+                'text-ink/70 hover:text-ink hover:bg-white/70',
+                scrolled ? 'text-ink/80' : 'text-ink/70'
               )}
             >
               {link.label}

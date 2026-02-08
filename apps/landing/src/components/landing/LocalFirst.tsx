@@ -41,15 +41,15 @@ export function LocalFirst() {
     <section id="local-first" className="py-32 bg-dark text-white relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/50 via-dark to-dark" />
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[150px] translate-x-1/4 -translate-y-1/4" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary-500/5 rounded-full blur-[120px] -translate-x-1/4 translate-y-1/4" />
+      <div className="absolute top-0 right-0 hidden md:block w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[150px] translate-x-1/4 -translate-y-1/4" />
+      <div className="absolute bottom-0 left-0 hidden md:block w-[400px] h-[400px] bg-secondary-500/5 rounded-full blur-[120px] -translate-x-1/4 translate-y-1/4" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Column: Content */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
@@ -75,11 +75,11 @@ export function LocalFirst() {
               {features.map((item, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true, margin: '-50px' }}
                   transition={{
-                    duration: 0.5,
+                    duration: 0.4,
                     delay: 0.2 + i * 0.1,
                     ease: [0.22, 1, 0.36, 1],
                   }}
@@ -110,8 +110,8 @@ export function LocalFirst() {
 
           {/* Right Column: Visual */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, x: 30 }}
-            whileInView={{ opacity: 1, scale: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="relative"
@@ -131,7 +131,7 @@ export function LocalFirst() {
               />
 
               {/* Main Card */}
-              <div className="relative rounded-3xl border border-white/10 bg-slate-900/80 overflow-hidden shadow-2xl shadow-black/50 backdrop-blur-sm">
+              <div className="relative rounded-3xl border border-white/10 bg-slate-900/80 overflow-hidden shadow-2xl shadow-black/50 md:backdrop-blur-sm">
                 {/* Glow from within */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-secondary-500/5" />
 
@@ -147,11 +147,12 @@ export function LocalFirst() {
 
                 {/* Privacy Badge */}
                 <div className="absolute bottom-6 left-6 right-6">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 backdrop-blur-md border border-primary-500/20 rounded-full">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 md:backdrop-blur-md border border-primary-500/20 rounded-full">
+                    <span className="size-2 rounded-full bg-primary-400 md:hidden" />
                     <motion.span
                       animate={reduceMotion ? undefined : { scale: [1, 1.15, 1] }}
                       transition={reduceMotion ? undefined : { duration: 2, repeat: Infinity }}
-                      className="size-2 rounded-full bg-primary-400"
+                      className="hidden md:block size-2 rounded-full bg-primary-400"
                     />
                     <span className="text-sm font-mono uppercase tracking-wider text-primary-300">
                       End-to-End Private

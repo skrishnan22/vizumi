@@ -15,6 +15,188 @@ interface Star {
   delay: number;
 }
 
+type HeroPreviewProps = {
+  reduceMotion: boolean;
+};
+
+const heroEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+const blueprintPreviewBlocks = [
+  {
+    title: 'Traditional RAG Process',
+    body: 'Chunk, embed, rank, and fuse evidence for retrieval.',
+    tags: ['Chunk Text', 'Embeddings', 'BM25'],
+    headerClass: 'bg-teal-600 text-white',
+    bodyClass: 'bg-teal-50/80 border-teal-200',
+    connector: 'uses',
+  },
+  {
+    title: 'Context Conundrum',
+    body: 'Isolated chunks lose context and reduce answer accuracy.',
+    tags: ['Missing Context', 'Retrieval Drift'],
+    headerClass: 'bg-violet-600 text-white',
+    bodyClass: 'bg-violet-50/80 border-violet-200',
+    connector: 'limited by',
+  },
+  {
+    title: 'Contextual Retrieval',
+    body: 'Adds compact context before indexing and reranking.',
+    tags: ['Contextual BM25', 'Re-ranking'],
+    headerClass: 'bg-slate-900 text-white',
+    bodyClass: 'bg-slate-50 border-slate-200',
+  },
+];
+
+const canvasPreviewCards = [
+  {
+    id: 'top',
+    title: 'Knowledge Access Challenge',
+    blurb: 'RAG loses meaning without chunk-level grounding.',
+    tone: 'bg-amber-50 border-amber-200',
+    position: { top: '22%', left: '50%' },
+    size: 'w-[52%]',
+  },
+  {
+    id: 'left',
+    title: 'Contextual Retrieval Method',
+    blurb: 'Embeddings + BM25 improve relevance.',
+    tone: 'bg-sky-50 border-sky-200',
+    position: { top: '72%', left: '30%' },
+    size: 'w-[40%]',
+    previewSrc: '/canvas-contextual-preview.svg',
+    previewAlt: 'Contextual retrieval layered preview',
+  },
+  {
+    id: 'right',
+    title: 'Reranking for Accuracy',
+    blurb: 'Filter to top chunks after reranking.',
+    tone: 'bg-amber-50 border-amber-200',
+    position: { top: '72%', left: '72%' },
+    size: 'w-[40%]',
+    previewSrc: '/canvas-rerank-preview.svg',
+    previewAlt: 'Reranking layered preview',
+  },
+];
+
+const canvasPreviewEdges = [
+  { d: 'M50 28 C43 42, 36 52, 30 66', delay: 0.14 },
+  { d: 'M50 28 C58 42, 65 52, 72 66', delay: 0.2 },
+];
+
+function BlueprintHeroPreview({ reduceMotion }: HeroPreviewProps) {
+  return (
+    <div className="h-full rounded-2xl border border-primary-100 bg-[#f8f7f4] p-2.5 md:p-3 overflow-hidden">
+      <div className="space-y-2">
+        {blueprintPreviewBlocks.map((block, index) => (
+          <motion.div
+            key={block.title}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.44,
+              delay: reduceMotion ? 0 : 0.08 + index * 0.2,
+              ease: heroEase,
+            }}
+          >
+            {index > 0 && (
+              <motion.div
+                initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: reduceMotion ? 0 : 0.02 + index * 0.2, duration: 0.24 }}
+                className="flex flex-col items-center py-0.5"
+              >
+                <span className="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[9px] font-mono uppercase tracking-wider text-slate-500">
+                  {blueprintPreviewBlocks[index - 1].connector}
+                </span>
+                <div className="mt-1 h-2.5 w-px bg-slate-300" />
+                <span className="text-slate-400 text-[11px] -mt-0.5">↓</span>
+              </motion.div>
+            )}
+
+            <div className={`rounded-xl border overflow-hidden ${block.bodyClass}`}>
+              <div className={`px-2.5 py-1.5 text-[10px] font-semibold ${block.headerClass}`}>
+                {block.title}
+              </div>
+              <div className="p-2.5 space-y-2">
+                <p className="text-[10px] text-slate-700 leading-relaxed">{block.body}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {block.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-[8px] font-mono uppercase tracking-wide text-slate-600"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CanvasHeroPreview({ reduceMotion }: HeroPreviewProps) {
+  return (
+    <div className="h-full rounded-2xl border border-slate-200 bg-[radial-gradient(rgba(28,26,23,0.14)_1px,transparent_1px)] [background-size:16px_16px] overflow-hidden relative">
+      <svg
+        className="absolute inset-0 w-full h-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        {canvasPreviewEdges.map((edge) => (
+          <motion.path
+            key={edge.d}
+            d={edge.d}
+            stroke="rgba(71,85,105,0.7)"
+            strokeWidth="0.35"
+            fill="none"
+            strokeLinecap="round"
+            initial={{ pathLength: reduceMotion ? 1 : 0, opacity: 0.7 }}
+            animate={{ pathLength: 1, opacity: 0.7 }}
+            transition={{ duration: 0.45, delay: reduceMotion ? 0 : edge.delay, ease: heroEase }}
+          />
+        ))}
+      </svg>
+
+      {canvasPreviewCards.map((card, index) => (
+        <motion.div
+          key={card.id}
+          initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 16, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{
+            duration: 0.4,
+            delay: reduceMotion ? 0 : 0.28 + index * 0.18,
+            ease: heroEase,
+          }}
+          className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl border shadow-sm ${card.tone} ${card.size}`}
+          style={{ top: card.position.top, left: card.position.left }}
+        >
+          <div className="px-2.5 py-2 border-b border-slate-300/60">
+            <h4 className="text-[10px] font-semibold text-slate-800 leading-tight">{card.title}</h4>
+          </div>
+          <div className="px-2.5 py-2">
+            <p className="text-[10px] text-slate-600 leading-relaxed line-clamp-2">{card.blurb}</p>
+            {card.previewSrc ? (
+              <div className="mt-1.5 relative h-12 md:h-14 rounded-md border border-slate-300/60 bg-white overflow-hidden">
+                <Image
+                  src={card.previewSrc}
+                  alt={card.previewAlt ?? ''}
+                  fill
+                  sizes="(min-width: 1024px) 220px, 180px"
+                  className="object-contain"
+                />
+              </div>
+            ) : null}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export function Hero() {
   const [mode, setMode] = useState<'blueprints' | 'canvas'>('canvas');
   const reduceMotion = useReducedMotion();
@@ -32,17 +214,6 @@ export function Hero() {
       setMode(newMode);
     }
   };
-
-  const preview =
-    mode === 'blueprints'
-      ? {
-          src: '/blueprint-original.png',
-          alt: 'Blueprints preview showing section cards and diagrams',
-        }
-      : {
-          src: '/canvas-original.png',
-          alt: 'Canvas preview showing a connected map of concepts',
-        };
 
   return (
     <section className="relative min-h-[95dvh] flex items-center pt-28 pb-16 overflow-hidden">
@@ -187,7 +358,7 @@ export function Hero() {
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* === LEFT COLUMN: Content (60%) === */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-6 space-y-8">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -258,13 +429,13 @@ export function Hero() {
                   </div>
 
                   {/* Lens Switch Toggle */}
-                  <div className="relative flex items-center gap-1 p-1.5 bg-white/50 rounded-xl border border-white/40 shrink-0 shadow-inner">
+                  <div className="relative grid grid-cols-2 p-1 bg-white/50 rounded-xl border border-white/40 shrink-0 shadow-inner overflow-hidden">
                     {/* Animated Background Pill */}
                     <motion.div
-                      className="absolute inset-y-1.5 w-[calc(50%-4px)] bg-white rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-black/5"
+                      className="absolute left-1 top-1 bottom-1 w-[calc(50%-0.25rem)] bg-white rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-black/5"
                       initial={false}
                       animate={{
-                        x: mode === 'blueprints' ? 4 : 'calc(100% + 4px)',
+                        x: mode === 'blueprints' ? 0 : '100%',
                       }}
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
@@ -277,7 +448,7 @@ export function Hero() {
                           : 'text-ink/50 hover:text-ink/80'
                       }`}
                     >
-                      Blueprints
+                      Canvas
                     </button>
                     <button
                       onClick={() => handleModeSwitch('canvas')}
@@ -287,7 +458,7 @@ export function Hero() {
                           : 'text-ink/50 hover:text-ink/80'
                       }`}
                     >
-                      Canvas
+                      Blueprints
                     </button>
                   </div>
                 </div>
@@ -313,74 +484,43 @@ export function Hero() {
 
           {/* === RIGHT COLUMN: Visual Preview (40%) === */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, x: 20 }}
+            initial={{ opacity: 0, scale: 0.96, x: 20 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 relative"
-            style={{ perspective: '1200px' }}
+            className="lg:col-span-6 relative"
           >
-            {/* 3D Perspective Container */}
-            <div
-              className="relative"
-              style={{ transform: 'rotateY(-8deg) rotateX(2deg)', transformStyle: 'preserve-3d' }}
-            >
-              {/* Glow Effect - Stronger and more colorful */}
-              <div className="absolute -inset-10 bg-gradient-to-tr from-primary-400/30 to-secondary-300/30 blur-3xl opacity-80 rounded-[3rem] -z-10" />
+            <div className="relative">
+              <div className="absolute -inset-6 bg-gradient-to-tr from-primary-400/18 to-secondary-300/18 blur-3xl opacity-70 rounded-[2.4rem] -z-10" />
 
-              {/* Shadow Layer - Deeper */}
-              <div className="absolute inset-0 translate-x-8 translate-y-8 rounded-[32px] bg-ink/5 border border-ink/5 blur-sm -z-10" />
-
-              {/* Main Preview Card */}
-              <div className="relative aspect-[4/3] rounded-[28px] border border-white/60 bg-white/80 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden backdrop-blur-md">
-                {/* Lens Rotation Animation */}
+              <div className="relative aspect-[5/4] lg:aspect-[4/3] rounded-[28px] border border-white/65 bg-white/88 shadow-[0_26px_56px_-18px_rgba(0,0,0,0.12)] overflow-hidden backdrop-blur-sm">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={mode}
-                    className="absolute inset-0"
-                    initial={{
-                      opacity: 0,
-                      rotateY: mode === 'blueprints' ? 90 : -90,
-                      scale: 0.95,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      rotateY: 0,
-                      scale: 1,
-                    }}
-                    exit={{
-                      opacity: 0,
-                      rotateY: mode === 'blueprints' ? -90 : 90,
-                      scale: 0.95,
-                    }}
-                    transition={{
-                      duration: 0.4,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
-                    style={{ transformStyle: 'preserve-3d' }}
+                    className="absolute inset-x-4 top-4 bottom-14"
+                    initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <Image
-                      src={preview.src}
-                      alt={preview.alt}
-                      fill
-                      sizes="(min-width: 1024px) 500px, 100vw"
-                      className="object-cover"
-                      priority
-                    />
+                    {mode === 'blueprints' ? (
+                      <BlueprintHeroPreview reduceMotion={!!reduceMotion} />
+                    ) : (
+                      <CanvasHeroPreview reduceMotion={!!reduceMotion} />
+                    )}
                   </motion.div>
                 </AnimatePresence>
 
-                {/* View Label Badge */}
                 <div className="absolute bottom-4 left-4">
                   <motion.div
                     key={mode}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-white/50 text-xs font-mono uppercase tracking-wider text-ink/70 shadow-sm"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 border border-white/60 text-xs font-mono uppercase tracking-wider text-ink/70 shadow-sm"
                   >
                     <span
                       className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-secondary-500'}`}
                     />
-                    {mode === 'blueprints' ? 'Blueprints View' : 'Canvas View'}
+                    {mode === 'blueprints' ? 'Canvas View' : 'Blueprints View'}
                   </motion.div>
                 </div>
               </div>
