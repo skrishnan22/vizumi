@@ -2,10 +2,14 @@
 
 import { useRef } from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 export function ProblemSolution() {
   const sectionRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
+  const isMobileMotionDevice = useIsMobileMotionDevice();
+  const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
 
   const bullets = [
     { text: 'Keep the thread with automatic sectioning', color: 'text-primary-600' },
@@ -19,19 +23,19 @@ export function ProblemSolution() {
     hidden: {},
     show: {
       transition: {
-        staggerChildren: 0.12,
-        delayChildren: 0.1,
+        staggerChildren: simplifyMotion ? 0.05 : 0.12,
+        delayChildren: simplifyMotion ? 0.02 : 0.1,
       },
     },
   };
 
   const pillItemVariants = {
-    hidden: { opacity: 0, x: 30 },
+    hidden: simplifyMotion ? { opacity: 0 } : { opacity: 0, x: 30 },
     show: {
       opacity: 1,
-      x: 0,
+      x: simplifyMotion ? undefined : 0,
       transition: {
-        duration: 0.5,
+        duration: simplifyMotion ? 0.28 : 0.5,
         ease: easeOut,
       },
     },
@@ -48,10 +52,10 @@ export function ProblemSolution() {
           <motion.div className="lg:col-span-5 lg:sticky lg:top-32">
             <div className="space-y-2 overflow-visible">
               <motion.h2
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, x: -30 }}
+                whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: simplifyMotion ? 0.32 : 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="text-5xl md:text-6xl lg:text-7xl font-display font-semibold text-ink leading-[0.95]"
               >
                 Reading is
@@ -60,10 +64,14 @@ export function ProblemSolution() {
               </motion.h2>
 
               <motion.h2
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, x: -30 }}
+                whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: simplifyMotion ? 0.32 : 0.7,
+                  delay: simplifyMotion ? 0.04 : 0.1,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold italic leading-[1.15] gradient-text-secondary pb-2"
               >
                 Understanding
@@ -81,10 +89,14 @@ export function ProblemSolution() {
           {/* Right Column: Content */}
           <div className="lg:col-span-6 space-y-10">
             <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
+              whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: simplifyMotion ? 0.3 : 0.6,
+                delay: simplifyMotion ? 0.1 : 0.2,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               className="text-xl md:text-2xl text-ink-soft leading-relaxed font-sans"
             >
               Most content hides the structure you actually need—flows, dependencies, tradeoffs.
@@ -104,12 +116,16 @@ export function ProblemSolution() {
                 <motion.div
                   key={i}
                   variants={pillItemVariants}
-                  whileHover={{
-                    scale: 1.02,
-                    x: 8,
-                    transition: { type: 'spring', stiffness: 350, damping: 30 },
-                  }}
-                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/50 shadow-sm hover:shadow-md transition-shadow duration-300 cursor-default transform-gpu [will-change:transform]"
+                  whileHover={
+                    simplifyMotion
+                      ? undefined
+                      : {
+                          scale: 1.02,
+                          x: 8,
+                          transition: { type: 'spring', stiffness: 350, damping: 30 },
+                        }
+                  }
+                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white/60 md:backdrop-blur-sm border border-white/50 shadow-sm hover:shadow-md transition-shadow duration-300 cursor-default"
                 >
                   <div className={`flex-shrink-0 ${bullet.color}`}>
                     <CheckCircle2 className="w-6 h-6" />
@@ -121,10 +137,14 @@ export function ProblemSolution() {
 
             {/* Quote */}
             <motion.blockquote
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+              whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.6, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: simplifyMotion ? 0.3 : 0.6,
+                delay: simplifyMotion ? 0.2 : 0.6,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               className="relative pl-6 border-l-2 border-primary-500/30 italic text-lg text-ink-soft font-display"
             >
               The best way to understand complex ideas is to see how they connect.

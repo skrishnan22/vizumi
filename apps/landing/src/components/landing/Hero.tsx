@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Lock, HardDrive, Sparkles } from 'lucide-react';
+import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 interface Star {
   id: number;
@@ -200,6 +201,9 @@ function CanvasHeroPreview({ reduceMotion }: HeroPreviewProps) {
 export function Hero() {
   const [mode, setMode] = useState<'blueprints' | 'canvas'>('canvas');
   const reduceMotion = useReducedMotion();
+  const isMobileMotionDevice = useIsMobileMotionDevice();
+  const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
+  const showDesktopAmbient = !simplifyMotion;
   const stars: Star[] = [
     { id: 0, top: '22%', left: '18%', size: 14, rotation: 10, duration: 3.8, delay: 0.3 },
     { id: 1, top: '34%', left: '76%', size: 18, rotation: 28, duration: 4.4, delay: 1.1 },
@@ -222,74 +226,58 @@ export function Hero() {
       {/* Base gradient wash - slightly warmer and richer */}
       <div className="absolute inset-0 bg-gradient-to-br from-paper via-primary-50/30 to-secondary-50/30" />
 
-      {/* Large ambient glow behind content */}
-      <div className="absolute top-1/2 left-1/2 hidden md:block -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[760px] bg-gradient-radial from-primary-200/15 via-secondary-100/10 to-transparent blur-3xl pointer-events-none" />
+      {showDesktopAmbient ? (
+        <>
+          {/* Large ambient glow behind content */}
+          <div className="absolute top-1/2 left-1/2 hidden md:block -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[760px] bg-gradient-radial from-primary-200/15 via-secondary-100/10 to-transparent blur-3xl pointer-events-none" />
 
-      {/* Primary Orb - Top Right (more prominent) */}
-      <motion.div
-        animate={
-          reduceMotion
-            ? undefined
-            : {
-                scale: [1, 1.06, 1],
-                opacity: [0.32, 0.48, 0.32],
-                rotate: [0, 12, 0],
-              }
-        }
-        transition={
-          reduceMotion ? undefined : { duration: 18, repeat: Infinity, ease: 'easeInOut' }
-        }
-        className="absolute -top-28 -right-14 hidden md:block w-[560px] h-[560px] bg-gradient-to-br from-primary-300/25 to-primary-500/10 rounded-full blur-[90px] pointer-events-none"
-      />
+          {/* Primary Orb - Top Right (more prominent) */}
+          <motion.div
+            animate={{
+              scale: [1, 1.06, 1],
+              opacity: [0.32, 0.48, 0.32],
+              rotate: [0, 12, 0],
+            }}
+            transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-28 -right-14 hidden md:block w-[560px] h-[560px] bg-gradient-to-br from-primary-300/25 to-primary-500/10 rounded-full blur-[90px] pointer-events-none"
+          />
 
-      {/* Secondary Orb - Bottom Left (more prominent) */}
-      <motion.div
-        animate={
-          reduceMotion
-            ? undefined
-            : {
-                scale: [1, 1.08, 1],
-                opacity: [0.28, 0.42, 0.28],
-                rotate: [0, -10, 0],
-              }
-        }
-        transition={
-          reduceMotion ? undefined : { duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 2 }
-        }
-        className="absolute -bottom-32 -left-16 hidden md:block w-[620px] h-[620px] bg-gradient-to-tr from-secondary-300/25 to-secondary-500/10 rounded-full blur-[90px] pointer-events-none"
-      />
+          {/* Secondary Orb - Bottom Left (more prominent) */}
+          <motion.div
+            animate={{
+              scale: [1, 1.08, 1],
+              opacity: [0.28, 0.42, 0.28],
+              rotate: [0, -10, 0],
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            className="absolute -bottom-32 -left-16 hidden md:block w-[620px] h-[620px] bg-gradient-to-tr from-secondary-300/25 to-secondary-500/10 rounded-full blur-[90px] pointer-events-none"
+          />
 
-      {/* Additional depth orb - Center Left */}
-      <div className="absolute top-1/3 -left-24 hidden lg:block w-[480px] h-[480px] bg-primary-100/30 rounded-full blur-[72px] pointer-events-none" />
+          {/* Additional depth orb - Center Left */}
+          <div className="absolute top-1/3 -left-24 hidden lg:block w-[480px] h-[480px] bg-primary-100/30 rounded-full blur-[72px] pointer-events-none" />
 
-      {/* Floating accent dots - slightly larger/more visible */}
-      <motion.div
-        animate={
-          reduceMotion ? undefined : { y: [0, -12, 0], x: [0, 8, 0], opacity: [0.4, 0.65, 0.4] }
-        }
-        transition={reduceMotion ? undefined : { duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-20 left-1/4 hidden md:block w-3 h-3 rounded-full bg-gradient-to-br from-primary-400 to-primary-300 blur-[3px]"
-      />
-      <motion.div
-        animate={
-          reduceMotion ? undefined : { y: [0, 10, 0], x: [0, -10, 0], opacity: [0.35, 0.55, 0.35] }
-        }
-        transition={
-          reduceMotion ? undefined : { duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1 }
-        }
-        className="absolute top-40 right-1/3 hidden md:block w-2.5 h-2.5 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-300 blur-[2px]"
-      />
-      <motion.div
-        animate={reduceMotion ? undefined : { y: [0, -15, 0], opacity: [0.3, 0.45, 0.3] }}
-        transition={
-          reduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 3 }
-        }
-        className="absolute bottom-40 left-1/3 hidden md:block w-4 h-4 rounded-full bg-primary-200/50 blur-[4px]"
-      />
+          {/* Floating accent dots - slightly larger/more visible */}
+          <motion.div
+            animate={{ y: [0, -12, 0], x: [0, 8, 0], opacity: [0.4, 0.65, 0.4] }}
+            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-20 left-1/4 hidden md:block w-3 h-3 rounded-full bg-gradient-to-br from-primary-400 to-primary-300 blur-[3px]"
+          />
+          <motion.div
+            animate={{ y: [0, 10, 0], x: [0, -10, 0], opacity: [0.35, 0.55, 0.35] }}
+            transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            className="absolute top-40 right-1/3 hidden md:block w-2.5 h-2.5 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-300 blur-[2px]"
+          />
+          <motion.div
+            animate={{ y: [0, -15, 0], opacity: [0.3, 0.45, 0.3] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+            className="absolute bottom-40 left-1/3 hidden md:block w-4 h-4 rounded-full bg-primary-200/50 blur-[4px]"
+          />
+        </>
+      ) : null}
 
       {/* Refined Grid Pattern */}
       <div
-        className="absolute inset-0 opacity-[0.4] pointer-events-none"
+        className="absolute inset-0 opacity-[0.4] pointer-events-none hidden md:block"
         style={{
           backgroundImage: `
             linear-gradient(to right, var(--color-primary-200) 1px, transparent 1px),
@@ -303,57 +291,59 @@ export function Hero() {
       />
 
       {/* Dotted Overlay for Texture */}
-      <div
-        className="absolute inset-0 opacity-[0.18] pointer-events-none hidden md:block"
-        style={{
-          backgroundImage: `radial-gradient(var(--color-secondary-300) 1px, transparent 1px)`,
-          backgroundSize: '1.5rem 1.5rem',
-          maskImage: 'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
-        }}
-      />
+      {showDesktopAmbient ? (
+        <div
+          className="absolute inset-0 opacity-[0.18] pointer-events-none hidden md:block"
+          style={{
+            backgroundImage: `radial-gradient(var(--color-secondary-300) 1px, transparent 1px)`,
+            backgroundSize: '1.5rem 1.5rem',
+            maskImage: 'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
+          }}
+        />
+      ) : null}
 
       {/* Twinkling Stars / Sparkles */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden md:block">
-        {stars.map((star) => (
-          <motion.div
-            key={star.id}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={
-              reduceMotion
-                ? undefined
-                : {
-                    opacity: [0, 0.8, 0],
-                    scale: [0.5, 1, 0.5],
-                  }
-            }
-            transition={{
-              duration: star.duration,
-              repeat: Infinity,
-              delay: star.delay,
-              ease: 'easeInOut',
-            }}
-            className="absolute"
-            style={{
-              top: star.top,
-              left: star.left,
-            }}
-          >
-            <Sparkles
-              className="text-primary-400/60"
-              style={{
-                width: star.size,
-                height: star.size,
-                transform: `rotate(${star.rotation}deg)`,
+      {showDesktopAmbient ? (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden hidden md:block">
+          {stars.map((star) => (
+            <motion.div
+              key={star.id}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: [0, 0.8, 0],
+                scale: [0.5, 1, 0.5],
               }}
-            />
-          </motion.div>
-        ))}
-      </div>
+              transition={{
+                duration: star.duration,
+                repeat: Infinity,
+                delay: star.delay,
+                ease: 'easeInOut',
+              }}
+              className="absolute"
+              style={{
+                top: star.top,
+                left: star.left,
+              }}
+            >
+              <Sparkles
+                className="text-primary-400/60"
+                style={{
+                  width: star.size,
+                  height: star.size,
+                  transform: `rotate(${star.rotation}deg)`,
+                }}
+              />
+            </motion.div>
+          ))}
+        </div>
+      ) : null}
 
       {/* Noise texture for depth */}
-      <div className="absolute inset-0 opacity-[0.015] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI2EpIi8+PC9zdmc+')]" />
+      {showDesktopAmbient ? (
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none hidden md:block bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI2EpIi8+PC9zdmc+')]" />
+      ) : null}
 
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -361,10 +351,10 @@ export function Hero() {
           <div className="lg:col-span-6 space-y-6 sm:space-y-8">
             {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-primary-200/50 text-primary-700 text-xs font-mono uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300"
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/85 md:bg-white/60 md:backdrop-blur-md border border-primary-200/50 text-primary-700 text-xs font-mono uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300"
             >
               <Sparkles className="size-3.5 text-primary-500" />
               <span>Blueprints + Canvas from any link</span>
@@ -372,9 +362,13 @@ export function Hero() {
 
             {/* Headline */}
             <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
+              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{
+                duration: simplifyMotion ? 0.35 : 0.7,
+                delay: simplifyMotion ? 0.05 : 0.1,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-ink drop-shadow-sm"
             >
               From URL <span className="text-ink/40 font-light">to</span>
@@ -383,9 +377,13 @@ export function Hero() {
                 mental model.
                 {/* Subtle underline decoration */}
                 <motion.svg
-                  initial={{ pathLength: 0, opacity: 0 }}
+                  initial={
+                    simplifyMotion ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }
+                  }
                   animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ delay: 0.8, duration: 1, ease: 'easeOut' }}
+                  transition={
+                    simplifyMotion ? { duration: 0 } : { delay: 0.8, duration: 1, ease: 'easeOut' }
+                  }
                   className="absolute -bottom-2 left-0 w-full h-[0.1em] text-primary-300/60 pointer-events-none"
                   viewBox="0 0 100 10"
                   preserveAspectRatio="none"
@@ -397,9 +395,13 @@ export function Hero() {
 
             {/* Description */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{
+                duration: simplifyMotion ? 0.3 : 0.6,
+                delay: simplifyMotion ? 0.1 : 0.2,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               className="text-lg md:text-xl text-ink-soft max-w-xl leading-relaxed font-sans"
             >
               Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with
@@ -408,13 +410,17 @@ export function Hero() {
 
             {/* Input Field with Lens Switch */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{
+                duration: simplifyMotion ? 0.3 : 0.6,
+                delay: simplifyMotion ? 0.15 : 0.3,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               className="space-y-4 max-w-xl"
             >
               {/* Neumorphic Input Container */}
-              <div className="relative p-3 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50">
+              <div className="relative p-3 bg-white/75 md:bg-white/60 md:backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50">
                 <div className="flex flex-col sm:flex-row gap-3">
                   {/* URL Input */}
                   <div className="flex-1 relative">
@@ -496,28 +502,36 @@ export function Hero() {
 
           {/* === RIGHT COLUMN: Visual Preview (40%) === */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, x: 20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, x: 20 }}
+            animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
+            transition={{
+              duration: simplifyMotion ? 0.35 : 0.8,
+              delay: simplifyMotion ? 0.2 : 0.4,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="lg:col-span-6 relative mt-1 sm:mt-2 lg:mt-0"
           >
             <div className="relative">
               <div className="absolute -inset-4 sm:-inset-6 bg-gradient-to-tr from-primary-400/18 to-secondary-300/18 blur-3xl opacity-70 rounded-[2.2rem] sm:rounded-[2.4rem] -z-10" />
 
-              <div className="relative aspect-[9/11] sm:aspect-[5/4] lg:aspect-[4/3] rounded-[24px] sm:rounded-[28px] border border-white/65 bg-white/88 shadow-[0_26px_56px_-18px_rgba(0,0,0,0.12)] overflow-hidden backdrop-blur-sm">
-                <AnimatePresence mode="wait">
+              <div className="relative aspect-[9/11] sm:aspect-[5/4] lg:aspect-[4/3] rounded-[24px] sm:rounded-[28px] border border-white/65 bg-white/88 shadow-[0_26px_56px_-18px_rgba(0,0,0,0.12)] overflow-hidden md:backdrop-blur-sm">
+                <AnimatePresence initial={false} mode={simplifyMotion ? 'sync' : 'wait'}>
                   <motion.div
                     key={mode}
                     className="absolute inset-x-3 top-3 bottom-12 sm:inset-x-4 sm:top-4 sm:bottom-14"
-                    initial={{ opacity: 0, y: 14, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.98 }}
+                    animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+                    exit={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.98 }}
+                    transition={
+                      simplifyMotion
+                        ? { duration: 0.18, ease: 'easeOut' }
+                        : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
+                    }
                   >
                     {mode === 'blueprints' ? (
-                      <BlueprintHeroPreview reduceMotion={!!reduceMotion} />
+                      <BlueprintHeroPreview reduceMotion={simplifyMotion} />
                     ) : (
-                      <CanvasHeroPreview reduceMotion={!!reduceMotion} />
+                      <CanvasHeroPreview reduceMotion={simplifyMotion} />
                     )}
                   </motion.div>
                 </AnimatePresence>
@@ -525,8 +539,9 @@ export function Hero() {
                 <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4">
                   <motion.div
                     key={mode}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+                    animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                    transition={{ duration: simplifyMotion ? 0.2 : 0.3, ease: 'easeOut' }}
                     className="inline-flex items-center gap-2 px-2.5 py-1.5 sm:px-3 rounded-full bg-white/95 border border-white/60 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-ink/70 shadow-sm"
                   >
                     <span

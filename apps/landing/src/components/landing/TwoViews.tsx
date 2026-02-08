@@ -1,23 +1,28 @@
 'use client';
 
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { FileText, Network } from 'lucide-react';
+import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 export function TwoViews() {
+  const reduceMotion = useReducedMotion();
+  const isMobileMotionDevice = useIsMobileMotionDevice();
+  const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
+
   return (
     <section id="blueprints" className="py-32 bg-paper-warm relative overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#2C2C2C/5_1px,transparent_1px)] [background-size:24px_24px] opacity-50" />
+      <div className="absolute inset-0 hidden md:block bg-[radial-gradient(#2C2C2C/5_1px,transparent_1px)] [background-size:24px_24px] opacity-50" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
         {/* Section Header */}
         <div className="text-center mb-16">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+            whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold text-ink mb-4"
           >
             Two ways to learn
@@ -27,7 +32,7 @@ export function TwoViews() {
 
           {/* Animated Connector Lines SVG */}
           <motion.svg
-            initial={{ opacity: 0 }}
+            initial={simplifyMotion ? { opacity: 1 } : { opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             className="w-full max-w-md mx-auto h-8 mt-4"
@@ -38,30 +43,30 @@ export function TwoViews() {
               stroke="var(--color-primary-500)"
               strokeWidth="1"
               fill="none"
-              initial={{ pathLength: 0 }}
+              initial={{ pathLength: simplifyMotion ? 1 : 0 }}
               whileInView={{ pathLength: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.3 }}
+              transition={simplifyMotion ? { duration: 0 } : { duration: 1, delay: 0.3 }}
             />
             <motion.path
               d="M100,15 L40,15"
               stroke="var(--color-primary-500)"
               strokeWidth="1"
               fill="none"
-              initial={{ pathLength: 0 }}
+              initial={{ pathLength: simplifyMotion ? 1 : 0 }}
               whileInView={{ pathLength: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.6 }}
+              transition={simplifyMotion ? { duration: 0 } : { duration: 0.8, delay: 0.6 }}
             />
             <motion.path
               d="M100,15 L160,15"
               stroke="var(--color-primary-500)"
               strokeWidth="1"
               fill="none"
-              initial={{ pathLength: 0 }}
+              initial={{ pathLength: simplifyMotion ? 1 : 0 }}
               whileInView={{ pathLength: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.6 }}
+              transition={simplifyMotion ? { duration: 0 } : { duration: 0.8, delay: 0.6 }}
             />
           </motion.svg>
         </div>
@@ -74,7 +79,7 @@ export function TwoViews() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="group relative bg-white rounded-[2rem] border border-slate-200/50 overflow-hidden shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-shadow duration-500"
           >
             {/* Dot Grid Background */}
@@ -135,7 +140,11 @@ export function TwoViews() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: simplifyMotion ? 0.3 : 0.6,
+              delay: simplifyMotion ? 0.03 : 0.1,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="group relative rounded-[2rem] border border-primary-200/50 overflow-hidden shadow-lg shadow-primary-900/5 hover:shadow-xl hover:shadow-primary-900/10 transition-shadow duration-500"
           >
             {/* Gradient Mesh Background */}

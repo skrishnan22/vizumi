@@ -5,14 +5,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
+import {
+  motion,
+  useScroll,
+  useMotionValueEvent,
+  AnimatePresence,
+  useReducedMotion,
+} from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeHash, setActiveHash] = useState('');
   const { scrollY } = useScroll();
+  const reduceMotion = useReducedMotion();
+  const isMobileMotionDevice = useIsMobileMotionDevice();
+  const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
 
   useEffect(() => {
     const updateActiveHash = () => {
@@ -42,14 +52,14 @@ export function Nav() {
   return (
     <motion.nav
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-6 py-4"
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      initial={simplifyMotion ? { opacity: 0 } : { y: -100, opacity: 0 }}
+      animate={simplifyMotion ? { opacity: 1 } : { y: 0, opacity: 1 }}
+      transition={{ duration: simplifyMotion ? 0.25 : 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Floating Island Container */}
       <div
         className={cn(
-          'flex items-center justify-between rounded-full transition-[background-color,border-color,box-shadow,padding,margin-top,max-width] duration-500 ease-out',
+          'flex items-center justify-between rounded-full transition-[background-color,border-color,box-shadow,opacity,transform] duration-300 ease-out',
           scrolled
             ? 'bg-paper/95 md:bg-paper/90 border border-primary-100/70 shadow-lg shadow-primary-900/10 px-3 py-2 max-w-3xl w-full mx-auto mt-3'
             : 'bg-paper/97 md:bg-paper/82 border border-primary-100/60 shadow-md shadow-primary-900/5 px-5 py-3 max-w-6xl w-full'
@@ -57,7 +67,10 @@ export function Nav() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+          <motion.div
+            whileHover={simplifyMotion ? undefined : { scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
             <Image
               src="/logo.jpg"
               alt="Vizumi"
@@ -129,10 +142,10 @@ export function Nav() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.95 }}
+            animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: simplifyMotion ? 0.15 : 0.2, ease: 'easeOut' }}
             id="mobile-nav-menu"
             className="absolute top-full left-6 right-6 mt-2 p-3 bg-paper/95 rounded-2xl border border-white/20 shadow-xl md:hidden"
           >
@@ -143,9 +156,9 @@ export function Nav() {
                 return (
                   <motion.div
                     key={link.label}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
+                    animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
+                    transition={{ delay: simplifyMotion ? i * 0.02 : i * 0.05 }}
                   >
                     <Link
                       href={link.href}

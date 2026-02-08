@@ -1,9 +1,14 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { GitBranch, Eye, Zap, Settings, Map } from 'lucide-react';
+import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 export function WhatYouGet() {
+  const reduceMotion = useReducedMotion();
+  const isMobileMotionDevice = useIsMobileMotionDevice();
+  const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
+
   const features = [
     {
       icon: GitBranch,
@@ -56,16 +61,16 @@ export function WhatYouGet() {
   return (
     <section className="py-32 bg-paper relative overflow-hidden">
       {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-r from-primary-400/5 to-secondary-400/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 hidden md:block -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-r from-primary-400/5 to-secondary-400/5 rounded-full blur-3xl" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
         {/* Section Header */}
         <div className="text-center mb-20">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+            whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold text-ink"
           >
             Built for content you
@@ -89,10 +94,12 @@ export function WhatYouGet() {
               strokeWidth="1"
               fill="none"
               strokeDasharray="4 4"
-              initial={{ pathLength: 0, opacity: 0 }}
+              initial={
+                simplifyMotion ? { pathLength: 1, opacity: 0.2 } : { pathLength: 0, opacity: 0 }
+              }
               whileInView={{ pathLength: 1, opacity: 0.3 }}
               viewport={{ once: true }}
-              transition={{ duration: 1.5, delay: 0.5 }}
+              transition={simplifyMotion ? { duration: 0 } : { duration: 1.5, delay: 0.5 }}
             />
           </svg>
 
@@ -101,31 +108,35 @@ export function WhatYouGet() {
             {features.map((feat, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
+                whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{
-                  duration: 0.6,
-                  delay: i * 0.1,
+                  duration: simplifyMotion ? 0.3 : 0.6,
+                  delay: simplifyMotion ? i * 0.04 : i * 0.1,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                whileHover={{
-                  scale: 1.05,
-                  y: -8,
-                  transition: { type: 'spring', stiffness: 300 },
-                }}
+                whileHover={
+                  simplifyMotion
+                    ? undefined
+                    : {
+                        scale: 1.05,
+                        y: -8,
+                        transition: { type: 'spring', stiffness: 300 },
+                      }
+                }
                 style={{
-                  transform: `translateY(${feat.position.y}px)`,
+                  transform: `translateY(${simplifyMotion ? 0 : feat.position.y}px)`,
                 }}
                 className="group relative"
               >
                 {/* Spotlight Effect on Hover */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-radial from-primary-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
 
-                <div className="p-6 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm hover:shadow-lg hover:shadow-primary-900/5 transition-all duration-300 h-full">
+                <div className="p-6 bg-white/70 md:backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm hover:shadow-lg hover:shadow-primary-900/5 transition-all duration-300 h-full">
                   {/* Icon */}
                   <motion.div
-                    whileHover={{ rotate: 5 }}
+                    whileHover={simplifyMotion ? undefined : { rotate: 5 }}
                     className={`w-14 h-14 rounded-xl ${feat.bgColor} border border-white/50 flex items-center justify-center mb-4 shadow-sm`}
                   >
                     <feat.icon className={`w-7 h-7 ${feat.color}`} />
@@ -142,10 +153,10 @@ export function WhatYouGet() {
 
         {/* Bottom Stats */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+          whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
+          transition={{ duration: simplifyMotion ? 0.3 : 0.6, delay: simplifyMotion ? 0.2 : 0.5 }}
           className="flex flex-wrap justify-center gap-x-16 gap-y-10 mt-20 pt-12 border-t border-slate-200/50"
         >
           {stats.map((stat, i) => (
