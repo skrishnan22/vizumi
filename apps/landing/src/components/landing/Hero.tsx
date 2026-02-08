@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Lock, HardDrive, Sparkles } from 'lucide-react';
 
 interface Star {
@@ -17,21 +17,15 @@ interface Star {
 
 export function Hero() {
   const [mode, setMode] = useState<'blueprints' | 'canvas'>('canvas');
-  const [stars, setStars] = useState<Star[]>([]);
-
-  useEffect(() => {
-    setStars(
-      Array.from({ length: 6 }).map((_, i) => ({
-        id: i,
-        top: `${20 + Math.random() * 60}%`,
-        left: `${10 + Math.random() * 80}%`,
-        size: 12 + Math.random() * 12,
-        rotation: Math.random() * 45,
-        duration: 3 + Math.random() * 2,
-        delay: Math.random() * 5,
-      }))
-    );
-  }, []);
+  const reduceMotion = useReducedMotion();
+  const stars: Star[] = [
+    { id: 0, top: '22%', left: '18%', size: 14, rotation: 10, duration: 3.8, delay: 0.3 },
+    { id: 1, top: '34%', left: '76%', size: 18, rotation: 28, duration: 4.4, delay: 1.1 },
+    { id: 2, top: '55%', left: '24%', size: 12, rotation: 5, duration: 3.6, delay: 1.8 },
+    { id: 3, top: '64%', left: '62%', size: 16, rotation: 34, duration: 4.1, delay: 2.4 },
+    { id: 4, top: '72%', left: '40%', size: 13, rotation: 18, duration: 4.8, delay: 3.2 },
+    { id: 5, top: '44%', left: '50%', size: 15, rotation: 42, duration: 3.9, delay: 0.9 },
+  ];
 
   const handleModeSwitch = (newMode: 'blueprints' | 'canvas') => {
     if (newMode !== mode) {
@@ -58,48 +52,68 @@ export function Hero() {
       <div className="absolute inset-0 bg-gradient-to-br from-paper via-primary-50/30 to-secondary-50/30" />
 
       {/* Large ambient glow behind content */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] bg-gradient-radial from-primary-200/20 via-secondary-100/10 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 hidden md:block -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[760px] bg-gradient-radial from-primary-200/15 via-secondary-100/10 to-transparent blur-3xl pointer-events-none" />
 
       {/* Primary Orb - Top Right (more prominent) */}
       <motion.div
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.4, 0.6, 0.4],
-          rotate: [0, 20, 0],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute -top-40 -right-20 w-[800px] h-[800px] bg-gradient-to-br from-primary-300/30 to-primary-500/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply"
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                scale: [1, 1.06, 1],
+                opacity: [0.32, 0.48, 0.32],
+                rotate: [0, 12, 0],
+              }
+        }
+        transition={
+          reduceMotion ? undefined : { duration: 18, repeat: Infinity, ease: 'easeInOut' }
+        }
+        className="absolute -top-28 -right-14 hidden md:block w-[560px] h-[560px] bg-gradient-to-br from-primary-300/25 to-primary-500/10 rounded-full blur-[90px] pointer-events-none"
       />
 
       {/* Secondary Orb - Bottom Left (more prominent) */}
       <motion.div
-        animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.3, 0.5, 0.3],
-          rotate: [0, -15, 0],
-        }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        className="absolute -bottom-40 -left-20 w-[900px] h-[900px] bg-gradient-to-tr from-secondary-300/30 to-secondary-500/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply"
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                scale: [1, 1.08, 1],
+                opacity: [0.28, 0.42, 0.28],
+                rotate: [0, -10, 0],
+              }
+        }
+        transition={
+          reduceMotion ? undefined : { duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 2 }
+        }
+        className="absolute -bottom-32 -left-16 hidden md:block w-[620px] h-[620px] bg-gradient-to-tr from-secondary-300/25 to-secondary-500/10 rounded-full blur-[90px] pointer-events-none"
       />
 
       {/* Additional depth orb - Center Left */}
-      <div className="absolute top-1/3 -left-32 w-[600px] h-[600px] bg-primary-100/40 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/3 -left-24 hidden lg:block w-[480px] h-[480px] bg-primary-100/30 rounded-full blur-[72px] pointer-events-none" />
 
       {/* Floating accent dots - slightly larger/more visible */}
       <motion.div
-        animate={{ y: [0, -20, 0], x: [0, 10, 0], opacity: [0.5, 0.8, 0.5] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-20 left-1/4 w-4 h-4 rounded-full bg-gradient-to-br from-primary-400 to-primary-300 blur-[4px]"
+        animate={
+          reduceMotion ? undefined : { y: [0, -12, 0], x: [0, 8, 0], opacity: [0.4, 0.65, 0.4] }
+        }
+        transition={reduceMotion ? undefined : { duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-20 left-1/4 hidden md:block w-3 h-3 rounded-full bg-gradient-to-br from-primary-400 to-primary-300 blur-[3px]"
       />
       <motion.div
-        animate={{ y: [0, 15, 0], x: [0, -15, 0], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute top-40 right-1/3 w-3 h-3 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-300 blur-[3px]"
+        animate={
+          reduceMotion ? undefined : { y: [0, 10, 0], x: [0, -10, 0], opacity: [0.35, 0.55, 0.35] }
+        }
+        transition={
+          reduceMotion ? undefined : { duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1 }
+        }
+        className="absolute top-40 right-1/3 hidden md:block w-2.5 h-2.5 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-300 blur-[2px]"
       />
       <motion.div
-        animate={{ y: [0, -25, 0], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-        className="absolute bottom-40 left-1/3 w-5 h-5 rounded-full bg-primary-200/60 blur-[6px]"
+        animate={reduceMotion ? undefined : { y: [0, -15, 0], opacity: [0.3, 0.45, 0.3] }}
+        transition={
+          reduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 3 }
+        }
+        className="absolute bottom-40 left-1/3 hidden md:block w-4 h-4 rounded-full bg-primary-200/50 blur-[4px]"
       />
 
       {/* Refined Grid Pattern */}
@@ -119,7 +133,7 @@ export function Hero() {
 
       {/* Dotted Overlay for Texture */}
       <div
-        className="absolute inset-0 opacity-[0.3] pointer-events-none"
+        className="absolute inset-0 opacity-[0.18] pointer-events-none hidden md:block"
         style={{
           backgroundImage: `radial-gradient(var(--color-secondary-300) 1px, transparent 1px)`,
           backgroundSize: '1.5rem 1.5rem',
@@ -130,15 +144,19 @@ export function Hero() {
       />
 
       {/* Twinkling Stars / Sparkles */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden md:block">
         {stars.map((star) => (
           <motion.div
             key={star.id}
             initial={{ opacity: 0, scale: 0 }}
-            animate={{
-              opacity: [0, 0.8, 0],
-              scale: [0.5, 1, 0.5],
-            }}
+            animate={
+              reduceMotion
+                ? undefined
+                : {
+                    opacity: [0, 0.8, 0],
+                    scale: [0.5, 1, 0.5],
+                  }
+            }
             transition={{
               duration: star.duration,
               repeat: Infinity,

@@ -1,18 +1,9 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Link, Split, FileJson, Map } from 'lucide-react';
 
 export function HowItWorks() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start end', 'end start'],
-  });
-
-  const pathLength = useTransform(scrollYProgress, [0, 0.5], [0, 1]);
-
   const steps = [
     {
       icon: Link,
@@ -45,11 +36,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section
-      id="how-it-works"
-      className="py-32 bg-paper relative overflow-hidden"
-      ref={containerRef}
-    >
+    <section id="how-it-works" className="py-32 bg-paper relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400/5 rounded-full blur-3xl" />
 
@@ -70,7 +57,7 @@ export function HowItWorks() {
           {/* Connecting Line - Desktop */}
           <div className="hidden lg:block absolute top-12 left-0 w-full h-0.5">
             <svg className="w-full h-8" preserveAspectRatio="none">
-              <motion.line
+              <line
                 x1="12.5%"
                 y1="50%"
                 x2="87.5%"
@@ -78,7 +65,7 @@ export function HowItWorks() {
                 stroke="var(--color-primary-500)"
                 strokeWidth="2"
                 strokeLinecap="round"
-                style={{ pathLength }}
+                opacity="0.35"
               />
             </svg>
           </div>
@@ -109,14 +96,10 @@ export function HowItWorks() {
                 >
                   <step.icon className={`w-8 h-8 lg:w-10 lg:h-10 ${step.iconColor}`} />
 
-                  {/* Orbiting Dots Animation */}
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                    className="absolute inset-0"
-                  >
+                  {/* Decorative Dot */}
+                  <div className="absolute inset-0">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-1.5 h-1.5 rounded-full bg-current opacity-30" />
-                  </motion.div>
+                  </div>
                 </motion.div>
 
                 {/* Content */}

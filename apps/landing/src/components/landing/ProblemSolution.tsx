@@ -2,16 +2,10 @@
 
 import { useRef } from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export function ProblemSolution() {
   const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start'],
-  });
-
-  const leftY = useTransform(scrollYProgress, [0, 1], [100, -100]);
 
   const bullets = [
     { text: 'Keep the thread with automatic sectioning', color: 'text-primary-600' },
@@ -51,7 +45,7 @@ export function ProblemSolution() {
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
           {/* Left Column: Sticky Headlines */}
-          <motion.div className="lg:col-span-5 lg:sticky lg:top-32" style={{ y: leftY }}>
+          <motion.div className="lg:col-span-5 lg:sticky lg:top-32">
             <div className="space-y-2 overflow-visible">
               <motion.h2
                 initial={{ opacity: 0, x: -30 }}

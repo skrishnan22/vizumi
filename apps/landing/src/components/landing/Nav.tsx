@@ -14,7 +14,8 @@ export function Nav() {
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
-    setScrolled(latest > 50);
+    const nextScrolled = latest > 50;
+    setScrolled((prev) => (prev === nextScrolled ? prev : nextScrolled));
   });
 
   const links = [
@@ -34,9 +35,9 @@ export function Nav() {
       {/* Floating Island Container */}
       <div
         className={cn(
-          'flex items-center justify-between rounded-full transition-all duration-500 ease-out',
+          'flex items-center justify-between rounded-full transition-[background-color,border-color,box-shadow,padding,margin-top,max-width] duration-500 ease-out',
           scrolled
-            ? 'bg-paper/80 backdrop-blur-xl border border-white/40 shadow-xl shadow-primary-900/10 px-3 py-2 max-w-3xl w-full mx-auto mt-3'
+            ? 'bg-paper/90 md:bg-paper/80 border border-white/40 shadow-xl shadow-primary-900/10 px-3 py-2 max-w-3xl w-full mx-auto mt-3 md:backdrop-blur-xl'
             : 'bg-transparent px-6 py-4 max-w-6xl w-full'
         )}
       >
@@ -104,7 +105,7 @@ export function Nav() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="absolute top-full left-6 right-6 mt-2 p-3 bg-paper/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl md:hidden"
+            className="absolute top-full left-6 right-6 mt-2 p-3 bg-paper/95 rounded-2xl border border-white/20 shadow-xl md:hidden"
           >
             <div className="flex flex-col gap-1">
               {links.map((link, i) => (

@@ -13,7 +13,7 @@ export default function Home() {
       <main className="min-h-dvh bg-paper selection:bg-primary-500/20 selection:text-ink overflow-x-hidden">
         {/* Enhanced Noise Texture Overlay */}
         <div
-          className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.06] mix-blend-multiply"
+          className="fixed inset-0 pointer-events-none z-[9999] hidden md:block opacity-[0.04]"
           style={{
             backgroundImage: `url('/noise.svg')`,
             backgroundRepeat: 'repeat',

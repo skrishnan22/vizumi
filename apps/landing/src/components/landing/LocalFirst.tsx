@@ -1,10 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Lock, Database, Key, Server, Shield } from 'lucide-react';
 
 export function LocalFirst() {
+  const reduceMotion = useReducedMotion();
   const features = [
     {
       icon: Database,
@@ -148,8 +149,8 @@ export function LocalFirst() {
                 <div className="absolute bottom-6 left-6 right-6">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 backdrop-blur-md border border-primary-500/20 rounded-full">
                     <motion.span
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
+                      animate={reduceMotion ? undefined : { scale: [1, 1.15, 1] }}
+                      transition={reduceMotion ? undefined : { duration: 2, repeat: Infinity }}
                       className="size-2 rounded-full bg-primary-400"
                     />
                     <span className="text-sm font-mono uppercase tracking-wider text-primary-300">
@@ -162,17 +163,23 @@ export function LocalFirst() {
 
             {/* Floating Decorative Elements */}
             <motion.div
-              animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -top-8 -right-8 w-20 h-20 rounded-2xl bg-slate-800/50 backdrop-blur-sm border border-white/10 flex items-center justify-center"
+              animate={reduceMotion ? undefined : { y: [0, -12, 0], rotate: [0, 4, 0] }}
+              transition={
+                reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: 'easeInOut' }
+              }
+              className="absolute -top-8 -right-8 hidden lg:flex w-20 h-20 rounded-2xl bg-slate-800/50 backdrop-blur-sm border border-white/10 items-center justify-center"
             >
               <Lock className="size-8 text-primary-400" />
             </motion.div>
 
             <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-              className="absolute -bottom-6 -left-6 w-16 h-16 rounded-xl bg-slate-800/50 backdrop-blur-sm border border-white/10 flex items-center justify-center"
+              animate={reduceMotion ? undefined : { y: [0, 8, 0] }}
+              transition={
+                reduceMotion
+                  ? undefined
+                  : { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }
+              }
+              className="absolute -bottom-6 -left-6 hidden lg:flex w-16 h-16 rounded-xl bg-slate-800/50 backdrop-blur-sm border border-white/10 items-center justify-center"
             >
               <Database className="size-6 text-secondary-400" />
             </motion.div>
