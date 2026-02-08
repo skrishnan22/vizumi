@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleRouteError } from './error-handler';
 import { APICallError } from 'ai';
-
+import { logger } from '@/lib/logger';
 
 vi.mock('@/lib/logger', () => ({
   logger: {
@@ -250,8 +250,7 @@ describe('error-handler', () => {
   });
 
   describe('logging', () => {
-    it('should log error with correct parameters', async () => {
-      const { logger } = await import('@/lib/logger');
+    it('should log error with correct parameters', () => {
       const error = new APICallError({
         message: 'Test error',
         statusCode: 500,
@@ -267,16 +266,12 @@ describe('error-handler', () => {
       );
     });
 
-    it('should log standard error', async () => {
-      const { logger } = await import('@/lib/logger');
+    it('should log standard error', () => {
       const error = new Error('Standard error');
 
       handleRouteError(error);
 
-      expect(logger.error).toHaveBeenCalledWith(
-        { code: 'ERROR', status: 500 },
-        'Route error'
-      );
+      expect(logger.error).toHaveBeenCalledWith({ code: 'ERROR', status: 500 }, 'Route error');
     });
   });
 

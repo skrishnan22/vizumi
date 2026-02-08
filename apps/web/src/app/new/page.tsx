@@ -6,6 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { toast } from 'sonner';
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { clientLogger } from '@/lib/client-logger';
+import { trackClientError } from '@/lib/posthog';
 
 export default function NewNotePage() {
   // Generate docId once on mount
@@ -24,6 +25,10 @@ export default function NewNotePage() {
       )}
       onError={(error, errorInfo) => {
         clientLogger.error('NoteGenerator error:', error, errorInfo);
+        trackClientError(error, {
+          source: 'new_note_error_boundary',
+          component_stack: errorInfo.componentStack ?? null,
+        });
         toast.error('Something went wrong. Please try again.');
       }}
     >

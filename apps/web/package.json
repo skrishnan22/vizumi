@@ -37,6 +37,7 @@
     "next": "^16.0.7",
     "p-limit": "^7.2.0",
     "pino": "^10.1.0",
+    "posthog-js": "^1.342.1",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "react-error-boundary": "^6.0.0",

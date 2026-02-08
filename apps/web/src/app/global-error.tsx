@@ -1,13 +1,21 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { trackClientError } from '@/lib/posthog';
 
 type GlobalErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function GlobalError({ error: _error, reset }: GlobalErrorProps) {
+export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  useEffect(() => {
+    trackClientError(error, {
+      source: 'global_error_route',
+    });
+  }, [error]);
+
   return (
     <html>
       <body>

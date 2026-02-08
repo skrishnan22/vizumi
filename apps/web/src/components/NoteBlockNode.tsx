@@ -6,9 +6,9 @@ import { NodeResizer, Handle, Position, NodeToolbar, type NodeProps } from 'reac
 import styles from './NoteBoard.module.css';
 import { DiagramRenderer } from './DiagramRenderer';
 import { DiagramModal } from './DiagramModal';
+import { NoteEditor } from './NoteEditor';
 import type { NoteNodeData } from '@/lib/graph/noteUtils';
 import { Edit3, ChevronRight } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { useNoteStore } from '@/store/noteStore';
 import {
   getModeIcon,
@@ -17,11 +17,6 @@ import {
   getDeepDiveColors,
 } from '@/lib/deepDiveHelpers';
 import { useDeepDive } from '@/hooks/useDeepDive';
-
-const NoteEditor = dynamic(() => import('./NoteEditor').then((mod) => mod.NoteEditor), {
-  ssr: false,
-  loading: () => <div className={`${styles.editorLoading} nodrag nopan`}>Preparing editor…</div>,
-});
 
 /**
  * NoteBlockNode component - Wrapped in memo for performance.

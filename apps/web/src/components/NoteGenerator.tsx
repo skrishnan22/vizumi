@@ -28,6 +28,14 @@ import { getNoteByUrl } from '@/lib/db/actions';
 import type { DocKind } from '@/lib/db/noteMetadata';
 import { useGenerationStore } from '@/store/generationStore';
 import { validateUrl } from '@/lib/validation';
+import {
+  trackClientError,
+  trackGenerationDuplicate,
+  trackGenerationFailed,
+  trackGenerationStarted,
+  trackGenerationSucceeded,
+  type GenerationAttempt,
+} from '@/lib/posthog';
 
 type NoteGeneratorProps = {
   docId: string;
@@ -110,6 +118,7 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
 
   const syncedBlockIdsRef = useRef<Set<string>>(new Set());
   const layoutRunRef = useRef(0);
+  const generationAttemptRef = useRef<GenerationAttempt | null>(null);
 
   const noteBlocks = useMemo(() => {
     return (noteResponse.object?.blocks || [])
@@ -274,11 +283,43 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
   useEffect(() => {
     if (!activeError) return;
 
+    const attempt = generationAttemptRef.current;
+    if (attempt) {
+      trackGenerationFailed(attempt, activeError, {
+        failure_stage: 'response',
+      });
+      generationAttemptRef.current = null;
+    }
+
+    trackClientError(activeError, {
+      source: 'note_generator_response',
+      generation_mode: mode,
+      doc_id: docId,
+      model: effectiveModel,
+    });
+
     showApiErrorToast(activeError, { showRetryHint: true });
     cleanupDocGeneration(docId);
     setGenerationStage(null);
     router.push('/');
-  }, [activeError, docId, router]);
+  }, [activeError, docId, effectiveModel, mode, router]);
+
+  useEffect(() => {
+    const attempt = generationAttemptRef.current;
+    if (!attempt || activeIsLoading) {
+      return;
+    }
+
+    const isSuccess = attempt.mode === 'note' ? noteBlocks.length > 0 : canvasCards.length > 0;
+    if (!isSuccess) {
+      return;
+    }
+
+    trackGenerationSucceeded(attempt, {
+      title: title || null,
+    });
+    generationAttemptRef.current = null;
+  }, [activeIsLoading, canvasCards.length, noteBlocks.length, title]);
 
   const handleGenerate = async () => {
     if (generationStage) return;
@@ -294,6 +335,13 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
     // Check for duplicate before showing loading state
     const existing = await getNoteByUrl(validatedUrl, mode);
     if (existing) {
+      trackGenerationDuplicate({
+        mode,
+        model: effectiveModel,
+        url: validatedUrl,
+        existingDocId: existing.noteId,
+      });
+
       const label = mode === 'canvas' ? 'Canvas' : 'Blueprint';
       toast.info(`A ${label.toLowerCase()} already exists for this URL`, {
         description: existing.title || `View the existing ${label.toLowerCase()}`,
@@ -313,6 +361,18 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
 
     setGenerationStage('fetching');
 
+    const currentAttempt: GenerationAttempt = {
+      docId,
+      mode,
+      model: effectiveModel,
+      url: validatedUrl,
+      startedAt: Date.now(),
+      source: cameFromHome ? 'home' : 'new-page',
+    };
+
+    generationAttemptRef.current = currentAttempt;
+    trackGenerationStarted(currentAttempt);
+
     try {
       const result = await prepareDocGeneration({
         docId,
@@ -323,6 +383,13 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
 
       // Should not happen since we check above, but handle for type safety
       if (result.kind === 'duplicate') {
+        trackGenerationDuplicate({
+          mode,
+          model: effectiveModel,
+          url: validatedUrl,
+          existingDocId: result.existing.noteId,
+        });
+        generationAttemptRef.current = null;
         router.push('/');
         return;
       }
@@ -342,6 +409,21 @@ export function NoteGenerator({ docId }: NoteGeneratorProps) {
         canvasResponse.submit(payload);
       }
     } catch (error) {
+      const attempt = generationAttemptRef.current;
+      if (attempt) {
+        trackGenerationFailed(attempt, error, {
+          failure_stage: 'handle_generate',
+        });
+        generationAttemptRef.current = null;
+      }
+
+      trackClientError(error, {
+        source: 'note_generator_handle_generate',
+        generation_mode: mode,
+        doc_id: docId,
+        model: effectiveModel,
+      });
+
       logger.error('Error in handleGenerate:', error);
       toast.error('Failed to generate the document.');
       cleanupDocGeneration(docId);
