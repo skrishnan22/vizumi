@@ -67,8 +67,8 @@ export function WhatYouGet() {
         {/* Section Header */}
         <div className="text-center mb-20">
           <motion.h2
-            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
-            whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
+            whileInView={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold text-ink"
@@ -108,8 +108,8 @@ export function WhatYouGet() {
             {features.map((feat, i) => (
               <motion.div
                 key={i}
-                initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
-                whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 30 }}
+                whileInView={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{
                   duration: simplifyMotion ? 0.3 : 0.6,
@@ -153,8 +153,8 @@ export function WhatYouGet() {
 
         {/* Bottom Stats */}
         <motion.div
-          initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
-          whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
+          whileInView={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: simplifyMotion ? 0.3 : 0.6, delay: simplifyMotion ? 0.2 : 0.5 }}
           className="flex flex-wrap justify-center gap-x-16 gap-y-10 mt-20 pt-12 border-t border-slate-200/50"

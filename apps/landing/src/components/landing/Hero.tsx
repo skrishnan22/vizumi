@@ -351,8 +351,8 @@ export function Hero() {
           <div className="lg:col-span-6 space-y-6 sm:space-y-8">
             {/* Badge */}
             <motion.div
-              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
-              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
+              animate={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
               transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/85 md:bg-white/60 md:backdrop-blur-md border border-primary-200/50 text-primary-700 text-xs font-mono uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300"
             >
@@ -362,8 +362,8 @@ export function Hero() {
 
             {/* Headline */}
             <motion.h1
-              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
-              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 30 }}
+              animate={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
               transition={{
                 duration: simplifyMotion ? 0.35 : 0.7,
                 delay: simplifyMotion ? 0.05 : 0.1,
@@ -395,8 +395,8 @@ export function Hero() {
 
             {/* Description */}
             <motion.p
-              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
-              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
+              animate={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
               transition={{
                 duration: simplifyMotion ? 0.3 : 0.6,
                 delay: simplifyMotion ? 0.1 : 0.2,
@@ -410,8 +410,8 @@ export function Hero() {
 
             {/* Input Field with Lens Switch */}
             <motion.div
-              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
-              animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
+              animate={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
               transition={{
                 duration: simplifyMotion ? 0.3 : 0.6,
                 delay: simplifyMotion ? 0.15 : 0.3,
@@ -502,8 +502,12 @@ export function Hero() {
 
           {/* === RIGHT COLUMN: Visual Preview (40%) === */}
           <motion.div
-            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, x: 20 }}
-            animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
+            initial={
+              simplifyMotion ? { opacity: 0, scale: 1, x: 0 } : { opacity: 0, scale: 0.96, x: 20 }
+            }
+            animate={
+              simplifyMotion ? { opacity: 1, scale: 1, x: 0 } : { opacity: 1, scale: 1, x: 0 }
+            }
             transition={{
               duration: simplifyMotion ? 0.35 : 0.8,
               delay: simplifyMotion ? 0.2 : 0.4,
@@ -519,9 +523,21 @@ export function Hero() {
                   <motion.div
                     key={mode}
                     className="absolute inset-x-3 top-3 bottom-12 sm:inset-x-4 sm:top-4 sm:bottom-14"
-                    initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.98 }}
-                    animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-                    exit={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.98 }}
+                    initial={
+                      simplifyMotion
+                        ? { opacity: 0, y: 0, scale: 1 }
+                        : { opacity: 0, y: 14, scale: 0.98 }
+                    }
+                    animate={
+                      simplifyMotion
+                        ? { opacity: 1, y: 0, scale: 1 }
+                        : { opacity: 1, y: 0, scale: 1 }
+                    }
+                    exit={
+                      simplifyMotion
+                        ? { opacity: 0, y: 0, scale: 1 }
+                        : { opacity: 0, y: -8, scale: 0.98 }
+                    }
                     transition={
                       simplifyMotion
                         ? { duration: 0.18, ease: 'easeOut' }
@@ -539,8 +555,8 @@ export function Hero() {
                 <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4">
                   <motion.div
                     key={mode}
-                    initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
-                    animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                    initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 10 }}
+                    animate={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
                     transition={{ duration: simplifyMotion ? 0.2 : 0.3, ease: 'easeOut' }}
                     className="inline-flex items-center gap-2 px-2.5 py-1.5 sm:px-3 rounded-full bg-white/95 border border-white/60 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-ink/70 shadow-sm"
                   >

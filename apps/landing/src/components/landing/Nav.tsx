@@ -52,8 +52,8 @@ export function Nav() {
   return (
     <motion.nav
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-6 py-4"
-      initial={simplifyMotion ? { opacity: 0 } : { y: -100, opacity: 0 }}
-      animate={simplifyMotion ? { opacity: 1 } : { y: 0, opacity: 1 }}
+      initial={simplifyMotion ? { y: 0, opacity: 0 } : { y: -100, opacity: 0 }}
+      animate={simplifyMotion ? { y: 0, opacity: 1 } : { y: 0, opacity: 1 }}
       transition={{ duration: simplifyMotion ? 0.25 : 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Floating Island Container */}
@@ -142,9 +142,15 @@ export function Nav() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.95 }}
-            animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-            exit={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.95 }}
+            initial={
+              simplifyMotion ? { opacity: 0, y: 0, scale: 1 } : { opacity: 0, y: -10, scale: 0.95 }
+            }
+            animate={
+              simplifyMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, scale: 1 }
+            }
+            exit={
+              simplifyMotion ? { opacity: 0, y: 0, scale: 1 } : { opacity: 0, y: -10, scale: 0.95 }
+            }
             transition={{ duration: simplifyMotion ? 0.15 : 0.2, ease: 'easeOut' }}
             id="mobile-nav-menu"
             className="absolute top-full left-6 right-6 mt-2 p-3 bg-paper/95 rounded-2xl border border-white/20 shadow-xl md:hidden"
@@ -156,8 +162,8 @@ export function Nav() {
                 return (
                   <motion.div
                     key={link.label}
-                    initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
-                    animate={simplifyMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
+                    initial={simplifyMotion ? { opacity: 0, x: 0 } : { opacity: 0, x: -10 }}
+                    animate={simplifyMotion ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
                     transition={{ delay: simplifyMotion ? i * 0.02 : i * 0.05 }}
                   >
                     <Link

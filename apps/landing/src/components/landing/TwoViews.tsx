@@ -19,8 +19,8 @@ export function TwoViews() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <motion.h2
-            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
-            whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
+            whileInView={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold text-ink mb-4"
