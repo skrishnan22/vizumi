@@ -1,9 +1,14 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Link, Split, FileJson, Map } from 'lucide-react';
+import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 export function HowItWorks() {
+  const reduceMotion = useReducedMotion();
+  const isMobileMotionDevice = useIsMobileMotionDevice();
+  const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
+
   const steps = [
     {
       icon: Link,
@@ -38,15 +43,15 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-32 bg-paper relative overflow-hidden">
       {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 hidden md:block -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400/5 rounded-full blur-3xl" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
         {/* Section Header */}
         <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+          whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: simplifyMotion ? 0.35 : 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold text-ink text-center mb-20"
         >
           How <span className="italic gradient-text">it works</span>
@@ -78,19 +83,19 @@ export function HowItWorks() {
             {steps.map((step, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
+                whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{
-                  duration: 0.6,
-                  delay: i * 0.15,
+                  duration: simplifyMotion ? 0.3 : 0.6,
+                  delay: simplifyMotion ? i * 0.06 : i * 0.15,
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 className="relative flex flex-col lg:items-center lg:text-center"
               >
                 {/* Icon Node */}
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileHover={simplifyMotion ? undefined : { scale: 1.1, rotate: 5 }}
                   transition={{ type: 'spring', stiffness: 300 }}
                   className={`relative z-10 w-20 h-20 lg:w-24 lg:h-24 rounded-2xl ${step.color} border border-white/50 flex items-center justify-center mb-6 shadow-lg shadow-slate-900/5`}
                 >
@@ -119,10 +124,10 @@ export function HowItWorks() {
 
         {/* Bottom CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+          whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: simplifyMotion ? 0.35 : 0.6, delay: simplifyMotion ? 0.2 : 0.6 }}
           className="text-center mt-20"
         >
           <p className="text-lg text-ink-soft font-sans">

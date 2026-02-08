@@ -3,9 +3,12 @@
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Lock, Database, Key, Server, Shield } from 'lucide-react';
+import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 export function LocalFirst() {
   const reduceMotion = useReducedMotion();
+  const isMobileMotionDevice = useIsMobileMotionDevice();
+  const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
   const features = [
     {
       icon: Database,
@@ -48,10 +51,10 @@ export function LocalFirst() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Column: Content */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+            whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: simplifyMotion ? 0.4 : 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Section Label */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-mono uppercase tracking-wider mb-6">
@@ -79,8 +82,8 @@ export function LocalFirst() {
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true, margin: '-50px' }}
                   transition={{
-                    duration: 0.4,
-                    delay: 0.2 + i * 0.1,
+                    duration: simplifyMotion ? 0.25 : 0.4,
+                    delay: simplifyMotion ? 0.08 + i * 0.05 : 0.2 + i * 0.1,
                     ease: [0.22, 1, 0.36, 1],
                   }}
                   className="flex gap-4 group"
@@ -110,10 +113,14 @@ export function LocalFirst() {
 
           {/* Right Column: Visual */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+            whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: simplifyMotion ? 0.4 : 0.7,
+              delay: simplifyMotion ? 0.1 : 0.2,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="relative"
           >
             {/* 3D Stacked Card Effect */}
@@ -150,8 +157,8 @@ export function LocalFirst() {
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 md:backdrop-blur-md border border-primary-500/20 rounded-full">
                     <span className="size-2 rounded-full bg-primary-400 md:hidden" />
                     <motion.span
-                      animate={reduceMotion ? undefined : { scale: [1, 1.15, 1] }}
-                      transition={reduceMotion ? undefined : { duration: 2, repeat: Infinity }}
+                      animate={simplifyMotion ? undefined : { scale: [1, 1.15, 1] }}
+                      transition={simplifyMotion ? undefined : { duration: 2, repeat: Infinity }}
                       className="hidden md:block size-2 rounded-full bg-primary-400"
                     />
                     <span className="text-sm font-mono uppercase tracking-wider text-primary-300">
@@ -164,9 +171,9 @@ export function LocalFirst() {
 
             {/* Floating Decorative Elements */}
             <motion.div
-              animate={reduceMotion ? undefined : { y: [0, -12, 0], rotate: [0, 4, 0] }}
+              animate={simplifyMotion ? undefined : { y: [0, -12, 0], rotate: [0, 4, 0] }}
               transition={
-                reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: 'easeInOut' }
+                simplifyMotion ? undefined : { duration: 6, repeat: Infinity, ease: 'easeInOut' }
               }
               className="absolute -top-8 -right-8 hidden lg:flex w-20 h-20 rounded-2xl bg-slate-800/50 backdrop-blur-sm border border-white/10 items-center justify-center"
             >
@@ -174,9 +181,9 @@ export function LocalFirst() {
             </motion.div>
 
             <motion.div
-              animate={reduceMotion ? undefined : { y: [0, 8, 0] }}
+              animate={simplifyMotion ? undefined : { y: [0, 8, 0] }}
               transition={
-                reduceMotion
+                simplifyMotion
                   ? undefined
                   : { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }
               }

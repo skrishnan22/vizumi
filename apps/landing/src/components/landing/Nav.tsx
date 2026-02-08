@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,21 @@ import { Menu, X } from 'lucide-react';
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState('');
   const { scrollY } = useScroll();
+
+  useEffect(() => {
+    const updateActiveHash = () => {
+      setActiveHash(window.location.hash);
+    };
+
+    updateActiveHash();
+    window.addEventListener('hashchange', updateActiveHash);
+
+    return () => {
+      window.removeEventListener('hashchange', updateActiveHash);
+    };
+  }, []);
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     const nextScrolled = latest > 50;
@@ -57,19 +71,26 @@ export function Nav() {
 
         {/* Desktop Navigation - Monospace, All Caps */}
         <div className="hidden md:flex items-center gap-1">
-          {links.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className={cn(
-                'px-4 py-2 text-xs font-mono font-medium uppercase tracking-[0.15em] transition-all duration-300 rounded-full',
-                'text-ink/70 hover:text-ink hover:bg-white/70',
-                scrolled ? 'text-ink/80' : 'text-ink/70'
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const isActive = activeHash === link.href;
+
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                onClick={() => setActiveHash(link.href)}
+                className={cn(
+                  'px-4 py-2 text-xs font-mono font-medium uppercase tracking-[0.15em] transition-all duration-300 rounded-full border',
+                  isActive
+                    ? 'text-primary-700 bg-primary-100/90 border-primary-200 shadow-sm shadow-primary-700/10'
+                    : 'border-transparent text-ink/70 hover:text-ink hover:bg-white/70',
+                  !isActive && scrolled ? 'text-ink/80' : ''
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
 
         {/* CTA Button */}
@@ -88,9 +109,16 @@ export function Nav() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="md:hidden ml-2 p-2 rounded-full text-ink/70 hover:text-ink hover:bg-white/50 transition-all"
+            className={cn(
+              'md:hidden ml-2 p-2 rounded-full transition-all border',
+              mobileMenuOpen
+                ? 'bg-primary-100 text-primary-700 border-primary-200 shadow-sm shadow-primary-700/15'
+                : 'text-ink/70 border-transparent hover:text-ink hover:bg-white/50'
+            )}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav-menu"
           >
             {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
@@ -105,25 +133,38 @@ export function Nav() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
+            id="mobile-nav-menu"
             className="absolute top-full left-6 right-6 mt-2 p-3 bg-paper/95 rounded-2xl border border-white/20 shadow-xl md:hidden"
           >
             <div className="flex flex-col gap-1">
-              {links.map((link, i) => (
-                <motion.div
-                  key={link.label}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <Link
-                    href={link.href}
-                    className="px-4 py-3 text-xs font-mono uppercase tracking-[0.15em] text-ink/70 hover:text-ink hover:bg-white/50 rounded-xl transition-all block"
-                    onClick={() => setMobileMenuOpen(false)}
+              {links.map((link, i) => {
+                const isActive = activeHash === link.href;
+
+                return (
+                  <motion.div
+                    key={link.label}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
                   >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        'px-4 py-3 text-xs font-mono uppercase tracking-[0.15em] rounded-xl transition-all block border',
+                        isActive
+                          ? 'text-primary-700 bg-primary-100/85 border-primary-200'
+                          : 'text-ink/70 border-transparent hover:text-ink hover:bg-white/50'
+                      )}
+                      onClick={() => {
+                        setActiveHash(link.href);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
               <div className="border-t border-ink/10 mt-2 pt-2">
                 <Button
                   size="sm"

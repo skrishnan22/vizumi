@@ -216,7 +216,7 @@ export function Hero() {
   };
 
   return (
-    <section className="relative min-h-[95dvh] flex items-center pt-28 pb-16 overflow-hidden">
+    <section className="relative flex items-start md:items-center pt-32 md:pt-28 pb-12 md:pb-16 md:min-h-[95dvh] overflow-hidden">
       {/* === ENHANCED BACKGROUND LAYERS === */}
 
       {/* Base gradient wash - slightly warmer and richer */}
@@ -355,10 +355,10 @@ export function Hero() {
       {/* Noise texture for depth */}
       <div className="absolute inset-0 opacity-[0.015] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI2EpIi8+PC9zdmc+')]" />
 
-      <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div className="container mx-auto px-4 sm:px-6 max-w-7xl relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           {/* === LEFT COLUMN: Content (60%) === */}
-          <div className="lg:col-span-6 space-y-8">
+          <div className="lg:col-span-6 space-y-6 sm:space-y-8">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -429,35 +429,47 @@ export function Hero() {
                   </div>
 
                   {/* Lens Switch Toggle */}
-                  <div className="relative grid grid-cols-2 p-1 bg-white/50 rounded-xl border border-white/40 shrink-0 shadow-inner overflow-hidden">
+                  <div className="relative grid grid-cols-2 p-1.5 bg-white/70 rounded-xl border border-white/70 shrink-0 shadow-inner overflow-hidden">
                     {/* Animated Background Pill */}
                     <motion.div
-                      className="absolute left-1 top-1 bottom-1 w-[calc(50%-0.25rem)] bg-white rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-black/5"
+                      className={`absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-0.375rem)] rounded-lg border shadow-[0_10px_20px_rgba(15,23,42,0.14)] ${
+                        mode === 'blueprints'
+                          ? 'bg-primary-100 border-primary-300/70'
+                          : 'bg-secondary-100 border-secondary-300/70'
+                      }`}
                       initial={false}
                       animate={{
                         x: mode === 'blueprints' ? 0 : '100%',
                       }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      transition={{ type: 'spring', stiffness: 360, damping: 32 }}
                     />
 
                     <button
                       onClick={() => handleModeSwitch('blueprints')}
-                      className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 ${
+                      aria-pressed={mode === 'blueprints'}
+                      className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 flex items-center justify-center gap-1.5 ${
                         mode === 'blueprints'
-                          ? 'text-primary-600 font-bold'
-                          : 'text-ink/50 hover:text-ink/80'
+                          ? 'text-primary-700 font-bold'
+                          : 'text-ink/55 hover:text-ink/80'
                       }`}
                     >
+                      <span
+                        className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-primary-400/50'}`}
+                      />
                       Canvas
                     </button>
                     <button
                       onClick={() => handleModeSwitch('canvas')}
-                      className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 ${
+                      aria-pressed={mode === 'canvas'}
+                      className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 flex items-center justify-center gap-1.5 ${
                         mode === 'canvas'
                           ? 'text-secondary-700 font-bold'
-                          : 'text-ink/50 hover:text-ink/80'
+                          : 'text-ink/55 hover:text-ink/80'
                       }`}
                     >
+                      <span
+                        className={`size-1.5 rounded-full ${mode === 'canvas' ? 'bg-secondary-500' : 'bg-secondary-400/50'}`}
+                      />
                       Blueprints
                     </button>
                   </div>
@@ -487,16 +499,16 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.96, x: 20 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-6 relative"
+            className="lg:col-span-6 relative mt-1 sm:mt-2 lg:mt-0"
           >
             <div className="relative">
-              <div className="absolute -inset-6 bg-gradient-to-tr from-primary-400/18 to-secondary-300/18 blur-3xl opacity-70 rounded-[2.4rem] -z-10" />
+              <div className="absolute -inset-4 sm:-inset-6 bg-gradient-to-tr from-primary-400/18 to-secondary-300/18 blur-3xl opacity-70 rounded-[2.2rem] sm:rounded-[2.4rem] -z-10" />
 
-              <div className="relative aspect-[5/4] lg:aspect-[4/3] rounded-[28px] border border-white/65 bg-white/88 shadow-[0_26px_56px_-18px_rgba(0,0,0,0.12)] overflow-hidden backdrop-blur-sm">
+              <div className="relative aspect-[9/11] sm:aspect-[5/4] lg:aspect-[4/3] rounded-[24px] sm:rounded-[28px] border border-white/65 bg-white/88 shadow-[0_26px_56px_-18px_rgba(0,0,0,0.12)] overflow-hidden backdrop-blur-sm">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={mode}
-                    className="absolute inset-x-4 top-4 bottom-14"
+                    className="absolute inset-x-3 top-3 bottom-12 sm:inset-x-4 sm:top-4 sm:bottom-14"
                     initial={{ opacity: 0, y: 14, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -510,12 +522,12 @@ export function Hero() {
                   </motion.div>
                 </AnimatePresence>
 
-                <div className="absolute bottom-4 left-4">
+                <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4">
                   <motion.div
                     key={mode}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 border border-white/60 text-xs font-mono uppercase tracking-wider text-ink/70 shadow-sm"
+                    className="inline-flex items-center gap-2 px-2.5 py-1.5 sm:px-3 rounded-full bg-white/95 border border-white/60 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-ink/70 shadow-sm"
                   >
                     <span
                       className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-secondary-500'}`}
