@@ -59,7 +59,11 @@ export function Nav() {
       {/* Floating Island Container */}
       <div
         className={cn(
-          'flex items-center justify-between rounded-full transition-[background-color,border-color,box-shadow,opacity,transform] duration-300 ease-out',
+          'flex items-center justify-between rounded-full duration-300 ease-out',
+          // Mobile: only transition opacity and background (avoid expensive box-shadow)
+          'transition-[background-color,opacity]',
+          // Desktop: full transitions including box-shadow
+          'md:transition-[background-color,border-color,box-shadow,opacity,transform]',
           scrolled
             ? 'bg-paper/95 md:bg-paper/90 border border-primary-100/70 shadow-lg shadow-primary-900/10 px-3 py-2 max-w-3xl w-full mx-auto mt-3'
             : 'bg-paper/97 md:bg-paper/82 border border-primary-100/60 shadow-md shadow-primary-900/5 px-5 py-3 max-w-6xl w-full'

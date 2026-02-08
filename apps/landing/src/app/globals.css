@@ -63,8 +63,11 @@
 /* ============================================
    BASE STYLES
    ============================================ */
-html {
-  scroll-behavior: smooth;
+/* Only apply smooth scroll on desktop to avoid conflicts with JS scroll animations on mobile */
+@media (min-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {

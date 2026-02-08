@@ -29,11 +29,12 @@ export function ProblemSolution() {
     },
   };
 
+  // On mobile, only animate opacity (no transforms) for better performance
   const pillItemVariants = {
-    hidden: simplifyMotion ? { opacity: 0, x: 0 } : { opacity: 0, x: 30 },
+    hidden: simplifyMotion ? { opacity: 0 } : { opacity: 0, x: 30 },
     show: {
       opacity: 1,
-      x: 0,
+      ...(simplifyMotion ? {} : { x: 0 }),
       transition: {
         duration: simplifyMotion ? 0.28 : 0.5,
         ease: easeOut,
@@ -52,8 +53,8 @@ export function ProblemSolution() {
           <motion.div className="lg:col-span-5 lg:sticky lg:top-32">
             <div className="space-y-2 overflow-visible">
               <motion.h2
-                initial={simplifyMotion ? { opacity: 0, x: 0 } : { opacity: 0, x: -30 }}
-                whileInView={simplifyMotion ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
+                initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, x: -30 }}
+                whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
                 transition={{ duration: simplifyMotion ? 0.32 : 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="text-5xl md:text-6xl lg:text-7xl font-display font-semibold text-ink leading-[0.95]"
@@ -64,8 +65,8 @@ export function ProblemSolution() {
               </motion.h2>
 
               <motion.h2
-                initial={simplifyMotion ? { opacity: 0, x: 0 } : { opacity: 0, x: -30 }}
-                whileInView={simplifyMotion ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
+                initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, x: -30 }}
+                whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
                 transition={{
                   duration: simplifyMotion ? 0.32 : 0.7,
@@ -89,8 +90,8 @@ export function ProblemSolution() {
           {/* Right Column: Content */}
           <div className="lg:col-span-6 space-y-10">
             <motion.p
-              initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 30 }}
-              whileInView={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
+              whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{
                 duration: simplifyMotion ? 0.3 : 0.6,
@@ -137,8 +138,8 @@ export function ProblemSolution() {
 
             {/* Quote */}
             <motion.blockquote
-              initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
-              whileInView={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+              initial={simplifyMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+              whileInView={simplifyMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{
                 duration: simplifyMotion ? 0.3 : 0.6,
