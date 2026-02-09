@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
 import ogImage from './og-image.png';
 
@@ -65,7 +66,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-paper text-ink font-sans">{children}</body>
+      <body className="antialiased bg-paper text-ink font-sans">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
