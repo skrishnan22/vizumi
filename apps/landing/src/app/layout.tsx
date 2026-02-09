@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import ogImage from './og-image.png';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vizumi.app'),
@@ -17,9 +18,9 @@ export const metadata: Metadata = {
       'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
     images: [
       {
-        url: '/opengraph-image.png',
-        width: 1200,
-        height: 630,
+        url: ogImage.src,
+        width: ogImage.width,
+        height: ogImage.height,
         alt: 'Vizumi - From URL to mental model',
       },
     ],
@@ -31,9 +32,9 @@ export const metadata: Metadata = {
       'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
     images: [
       {
-        url: '/twitter-image.png',
-        width: 1200,
-        height: 630,
+        url: ogImage.src,
+        width: ogImage.width,
+        height: ogImage.height,
         alt: 'Vizumi - From URL to mental model',
       },
     ],
