@@ -6,9 +6,9 @@ export const metadata: Metadata = {
   description:
     'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
   icons: {
-    icon: '/logo-1.png',
-    shortcut: '/logo-1.png',
-    apple: '/logo-1.png',
+    icon: '/apple-touch-icon.png',
+    shortcut: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png',
   },
   openGraph: {
     title: 'Vizumi - From URL to mental model',
