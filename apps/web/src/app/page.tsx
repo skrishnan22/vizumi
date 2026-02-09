@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { DocsList } from '@/components/DocsList';
 import { HeroAnimation } from '@/components/HeroAnimation';
 import { HeroInput } from '@/components/HeroInput';
@@ -12,7 +13,17 @@ export default function Home() {
 
       <div className="max-w-7xl mx-auto px-6 py-20">
         {/* Top Navigation */}
-        <div className="flex justify-end mb-8">
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/" className="inline-flex items-center" aria-label="Vizumi home">
+            <Image
+              src="/logo-1.png"
+              alt="Vizumi"
+              width={960}
+              height={960}
+              className="h-12 w-auto"
+            />
+          </Link>
+
           <Link
             href="/settings"
             className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"

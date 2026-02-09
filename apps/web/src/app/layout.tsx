@@ -13,6 +13,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: 'AI Visual Note Generator',
   description: 'Turn dense articles into hand-drawn style study boards.',
+  icons: {
+    icon: '/logo-1.png',
+    shortcut: '/logo-1.png',
+    apple: '/logo-1.png',
+  },
 };
 
 export default function RootLayout({

@@ -31,13 +31,6 @@ export function LocalFirst() {
       color: 'text-primary-400',
       bgColor: 'bg-primary-500/10',
     },
-    {
-      icon: Server,
-      title: 'Proxy-only backend',
-      desc: "Requests pass through our server to reach models; we don't persist URLs, markdown, or outputs",
-      color: 'text-secondary-400',
-      bgColor: 'bg-secondary-500/10',
-    },
   ];
 
   return (
@@ -69,8 +62,7 @@ export function LocalFirst() {
             </h2>
 
             <p className="text-xl text-slate-400 leading-relaxed mb-10 font-sans max-w-lg">
-              Vizumi doesn&apos;t need accounts or a database. Your library stays on this device.
-              Your data never leaves your control.
+              Your library stays on this device. Your data never leaves your control.
             </p>
 
             {/* Feature List */}

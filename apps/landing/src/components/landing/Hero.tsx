@@ -220,7 +220,7 @@ export function Hero() {
   };
 
   return (
-    <section className="relative flex items-start md:items-center pt-32 md:pt-28 pb-12 md:pb-16 md:min-h-[95dvh] overflow-hidden">
+    <section className="relative flex items-start md:items-center pt-10 md:pt-12 pb-12 md:pb-16 md:min-h-[95dvh] overflow-hidden">
       {/* === ENHANCED BACKGROUND LAYERS === */}
 
       {/* Base gradient wash - slightly warmer and richer */}

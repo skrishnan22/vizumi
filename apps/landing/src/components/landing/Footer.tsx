@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Heart } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -21,12 +20,12 @@ export function Footer() {
         >
           <Link href="/" className="flex items-center justify-center md:justify-start">
             <Image
-              src="/logo.jpg"
+              src="/logo-1.png"
               alt="Vizumi"
-              width={567}
-              height={440}
-              sizes="32px"
-              className="h-8 w-auto brightness-0 invert"
+              width={960}
+              height={960}
+              sizes="56px"
+              className="h-14 w-auto"
             />
           </Link>
 
