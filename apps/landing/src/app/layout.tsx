@@ -3,7 +3,7 @@ import './globals.css';
 import ogImage from './og-image.png';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://vizumi.app'),
+  metadataBase: new URL('https://www.vizumi.app'),
   title: 'Vizumi - From URL to mental model',
   description:
     'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
