@@ -11,12 +11,40 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'AI Visual Note Generator',
-  description: 'Turn dense articles into hand-drawn style study boards.',
+  title: 'Vizumi - From URL to mental model',
+  description:
+    'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
   icons: {
     icon: '/logo-1.png',
     shortcut: '/logo-1.png',
     apple: '/logo-1.png',
+  },
+  openGraph: {
+    title: 'Vizumi - From URL to mental model',
+    description:
+      'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Vizumi - From URL to mental model',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Vizumi - From URL to mental model',
+    description:
+      'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
+    images: [
+      {
+        url: '/twitter-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Vizumi - From URL to mental model',
+      },
+    ],
   },
 };
 

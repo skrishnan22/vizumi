@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -88,12 +87,12 @@ export function Nav() {
 
           {/* Actions Island */}
           <div className="flex items-center gap-3">
-            <Button
-              size="sm"
-              className="h-10 rounded-full bg-primary-500 px-6 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-[0_4px_14px_-2px_rgba(198,93,59,0.3)] transition-all hover:bg-primary-600 hover:shadow-[0_6px_20px_-2px_rgba(198,93,59,0.4)] hover:-translate-y-0.5 md:h-11 md:px-7"
+            <Link
+              href="https://notes.vizumi.app"
+              className="inline-flex items-center justify-center h-10 rounded-full bg-primary-500 px-6 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-[0_4px_14px_-2px_rgba(198,93,59,0.3)] transition-all hover:bg-primary-600 hover:shadow-[0_6px_20px_-2px_rgba(198,93,59,0.4)] hover:-translate-y-0.5 md:h-11 md:px-7"
             >
               Get Started
-            </Button>
+            </Link>
 
             {/* Mobile Menu Toggle */}
             <button
@@ -160,12 +159,12 @@ export function Nav() {
                 })}
 
                 <div className="mt-1 border-t border-primary-100/30 pt-2">
-                  <Button
-                    size="sm"
-                    className="h-10 w-full rounded-xl bg-primary-500 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-md shadow-primary-500/20"
+                  <Link
+                    href="https://notes.vizumi.app"
+                    className="inline-flex items-center justify-center h-10 w-full rounded-xl bg-primary-500 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-md shadow-primary-500/20"
                   >
                     Get Started
-                  </Button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
