@@ -20,6 +20,7 @@ export default function Home() {
               alt="Vizumi"
               width={960}
               height={960}
+              loading="eager"
               className="h-16 w-auto md:h-24"
             />
           </Link>

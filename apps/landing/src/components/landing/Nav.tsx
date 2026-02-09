@@ -56,6 +56,7 @@ export function Nav() {
                 alt="Vizumi"
                 width={960}
                 height={960}
+                loading="eager"
                 sizes="(min-width: 768px) 150px, 128px"
                 className="pointer-events-none absolute left-3 top-1/2 h-14 w-auto -translate-y-1/2 md:left-3.5 md:h-[68px]"
               />

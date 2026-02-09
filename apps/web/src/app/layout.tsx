@@ -11,6 +11,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://notes.vizumi.app'),
   title: 'Vizumi - From URL to mental model',
   description:
     'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
