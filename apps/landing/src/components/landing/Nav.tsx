@@ -32,7 +32,6 @@ export function Nav() {
     { label: 'Blueprints', href: '#blueprints' },
     { label: 'Canvas', href: '#canvas' },
     { label: 'How it works', href: '#how-it-works' },
-    { label: 'Local-first', href: '#local-first' },
   ];
 
   return (

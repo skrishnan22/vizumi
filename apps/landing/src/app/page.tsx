@@ -3,7 +3,6 @@ import { Hero } from '@/components/landing/Hero';
 import { ProblemSolution } from '@/components/landing/ProblemSolution';
 import { TwoViews } from '@/components/landing/TwoViews';
 import { HowItWorks } from '@/components/landing/HowItWorks';
-import { LocalFirst } from '@/components/landing/LocalFirst';
 import { WhatYouGet } from '@/components/landing/WhatYouGet';
 import { Footer } from '@/components/landing/Footer';
 
@@ -25,7 +24,6 @@ export default function Home() {
         <ProblemSolution />
         <TwoViews />
         <HowItWorks />
-        <LocalFirst />
         <WhatYouGet />
         <Footer />
       </main>
