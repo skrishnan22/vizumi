@@ -29,7 +29,6 @@ export type ModelInfo = {
 };
 
 export const FREE_MODELS: ModelInfo[] = [
-  { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast' },
   { id: 'openai/gpt-oss-20b', label: 'GPT OSS 20b' },
   { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash' },
   {
@@ -39,6 +38,7 @@ export const FREE_MODELS: ModelInfo[] = [
 ];
 
 export const PAID_MODELS: ModelInfo[] = [
+  { id: 'x-ai/grok-4-fast', label: 'Grok 4 Fast' },
   { id: 'google/gemini-3-flash-preview', label: 'Gemini 3 Flash' },
   { id: 'minimax/minimax-m2', label: 'MiniMax M2' },
   { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
