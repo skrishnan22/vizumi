@@ -90,7 +90,9 @@ describe('proxy', () => {
     });
 
     it('should reject request without model header when default is paid', async () => {
-      const request = createMockRequest('/api/note', {});
+      const request = createMockRequest('/api/note', {
+        [HEADERS.MODEL]: 'openai/gpt-4',
+      });
       const response = proxy(request);
 
       expect(response).toBeInstanceOf(Response);
@@ -126,7 +128,7 @@ describe('proxy', () => {
 
   describe('Error message details', () => {
     it('should include model name in error message', async () => {
-      const modelName = 'x-ai/grok-4-fast';
+      const modelName = 'openai/gpt-4';
       const request = createMockRequest('/api/note', {
         [HEADERS.MODEL]: modelName,
       });
