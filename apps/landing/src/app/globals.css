@@ -35,6 +35,7 @@
   --color-ink: #2c2c2c;
   --color-ink-soft: #5a5a5a;
   --color-ink-muted: #8a8a8a;
+  --color-blue: #2563eb;
 
   /* Semantic Aliases */
   --color-accent: var(--color-primary-500);
@@ -207,6 +208,10 @@ h6 {
 
 .text-ink-muted {
   color: var(--color-ink-muted);
+}
+
+.text-blue {
+  color: var(--color-blue);
 }
 
 .text-primary {
