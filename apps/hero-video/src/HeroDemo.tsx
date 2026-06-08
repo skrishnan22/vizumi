@@ -84,7 +84,7 @@ const TypewriterTagline: React.FC<{ text: string; delay?: number }> = ({ text, d
         fontSize: 32,
         fontWeight: 500,
         fontFamily: outfitFont,
-        color: COLORS.textMuted,
+        color: '#4a5e2e',
         opacity: containerOpacity,
         marginTop: 24,
       }}
