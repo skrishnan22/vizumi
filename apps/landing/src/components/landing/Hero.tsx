@@ -369,9 +369,9 @@ export function Hero() {
                 delay: simplifyMotion ? 0.05 : 0.1,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-ink drop-shadow-sm"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-secondary-500 drop-shadow-sm"
             >
-              From URL <span className="text-ink/40 font-light">to</span>
+              From URL <span className="text-secondary-300 font-light">to</span>
               <br />
               <span className="italic relative inline-block">
                 mental model.
