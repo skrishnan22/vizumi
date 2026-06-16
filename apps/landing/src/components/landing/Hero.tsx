@@ -6,16 +6,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Lock, HardDrive, Sparkles } from 'lucide-react';
 import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
-interface Star {
-  id: number;
-  top: string;
-  left: string;
-  size: number;
-  rotation: number;
-  duration: number;
-  delay: number;
-}
-
 type HeroPreviewProps = {
   reduceMotion: boolean;
 };
@@ -204,14 +194,6 @@ export function Hero() {
   const isMobileMotionDevice = useIsMobileMotionDevice();
   const simplifyMotion = Boolean(reduceMotion) || isMobileMotionDevice;
   const showDesktopAmbient = !simplifyMotion;
-  const stars: Star[] = [
-    { id: 0, top: '22%', left: '18%', size: 14, rotation: 10, duration: 3.8, delay: 0.3 },
-    { id: 1, top: '34%', left: '76%', size: 18, rotation: 28, duration: 4.4, delay: 1.1 },
-    { id: 2, top: '55%', left: '24%', size: 12, rotation: 5, duration: 3.6, delay: 1.8 },
-    { id: 3, top: '64%', left: '62%', size: 16, rotation: 34, duration: 4.1, delay: 2.4 },
-    { id: 4, top: '72%', left: '40%', size: 13, rotation: 18, duration: 4.8, delay: 3.2 },
-    { id: 5, top: '44%', left: '50%', size: 15, rotation: 42, duration: 3.9, delay: 0.9 },
-  ];
 
   const handleModeSwitch = (newMode: 'blueprints' | 'canvas') => {
     if (newMode !== mode) {
@@ -221,135 +203,36 @@ export function Hero() {
 
   return (
     <section className="relative flex items-start md:items-center pt-10 md:pt-12 pb-12 md:pb-16 md:min-h-[95dvh] overflow-hidden">
-      {/* === ENHANCED BACKGROUND LAYERS === */}
-
-      {/* Base gradient wash - slightly warmer and richer */}
+      {/* Clean Warm Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-paper via-primary-50/30 to-secondary-50/30" />
 
-      {showDesktopAmbient ? (
-        <>
-          {/* Large ambient glow behind content */}
-          <div className="absolute top-1/2 left-1/2 hidden md:block -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[760px] bg-gradient-radial from-primary-200/15 via-secondary-100/10 to-transparent blur-3xl pointer-events-none" />
-
-          {/* Primary Orb - Top Right (more prominent) */}
-          <motion.div
-            animate={{
-              scale: [1, 1.06, 1],
-              opacity: [0.32, 0.48, 0.32],
-              rotate: [0, 12, 0],
-            }}
-            transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -top-28 -right-14 hidden md:block w-[560px] h-[560px] bg-gradient-to-br from-primary-300/25 to-primary-500/10 rounded-full blur-[90px] pointer-events-none"
-          />
-
-          {/* Secondary Orb - Bottom Left (more prominent) */}
-          <motion.div
-            animate={{
-              scale: [1, 1.08, 1],
-              opacity: [0.28, 0.42, 0.28],
-              rotate: [0, -10, 0],
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-            className="absolute -bottom-32 -left-16 hidden md:block w-[620px] h-[620px] bg-gradient-to-tr from-secondary-300/25 to-secondary-500/10 rounded-full blur-[90px] pointer-events-none"
-          />
-
-          {/* Additional depth orb - Center Left */}
-          <div className="absolute top-1/3 -left-24 hidden lg:block w-[480px] h-[480px] bg-primary-100/30 rounded-full blur-[72px] pointer-events-none" />
-
-          {/* Floating accent dots - slightly larger/more visible */}
-          <motion.div
-            animate={{ y: [0, -12, 0], x: [0, 8, 0], opacity: [0.4, 0.65, 0.4] }}
-            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-20 left-1/4 hidden md:block w-3 h-3 rounded-full bg-gradient-to-br from-primary-400 to-primary-300 blur-[3px]"
-          />
-          <motion.div
-            animate={{ y: [0, 10, 0], x: [0, -10, 0], opacity: [0.35, 0.55, 0.35] }}
-            transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-            className="absolute top-40 right-1/3 hidden md:block w-2.5 h-2.5 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-300 blur-[2px]"
-          />
-          <motion.div
-            animate={{ y: [0, -15, 0], opacity: [0.3, 0.45, 0.3] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-            className="absolute bottom-40 left-1/3 hidden md:block w-4 h-4 rounded-full bg-primary-200/50 blur-[4px]"
-          />
-        </>
-      ) : null}
-
-      {/* Refined Grid Pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.4] pointer-events-none hidden md:block"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, var(--color-primary-200) 1px, transparent 1px),
-            linear-gradient(to bottom, var(--color-primary-200) 1px, transparent 1px)
-          `,
-          backgroundSize: '4rem 4rem',
-          maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
-        }}
-      />
-
-      {/* Dotted Overlay for Texture */}
-      {showDesktopAmbient ? (
+      {/* Subtle Bento Grid Background — CSS only, no animations */}
+      {showDesktopAmbient && (
         <div
-          className="absolute inset-0 opacity-[0.18] pointer-events-none hidden md:block"
+          className="absolute inset-0 opacity-[0.35] pointer-events-none hidden md:block"
           style={{
-            backgroundImage: `radial-gradient(var(--color-secondary-300) 1px, transparent 1px)`,
-            backgroundSize: '1.5rem 1.5rem',
-            maskImage: 'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
+            backgroundImage: `
+              linear-gradient(to right, var(--color-primary-200) 1px, transparent 1px),
+              linear-gradient(to bottom, var(--color-primary-200) 1px, transparent 1px)
+            `,
+            backgroundSize: '4rem 4rem',
+            maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
             WebkitMaskImage:
-              'radial-gradient(ellipse 80% 50% at 50% 50%, #000 40%, transparent 100%)',
+              'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
           }}
         />
-      ) : null}
+      )}
 
-      {/* Twinkling Stars / Sparkles */}
-      {showDesktopAmbient ? (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden hidden md:block">
-          {stars.map((star) => (
-            <motion.div
-              key={star.id}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                opacity: [0, 0.8, 0],
-                scale: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: star.duration,
-                repeat: Infinity,
-                delay: star.delay,
-                ease: 'easeInOut',
-              }}
-              className="absolute"
-              style={{
-                top: star.top,
-                left: star.left,
-              }}
-            >
-              <Sparkles
-                className="text-primary-400/60"
-                style={{
-                  width: star.size,
-                  height: star.size,
-                  transform: `rotate(${star.rotation}deg)`,
-                }}
-              />
-            </motion.div>
-          ))}
-        </div>
-      ) : null}
-
-      {/* Noise texture for depth */}
-      {showDesktopAmbient ? (
-        <div className="absolute inset-0 opacity-[0.015] pointer-events-none hidden md:block bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI2EpIi8+PC9zdmc+')]" />
-      ) : null}
+      {/* Soft Ambient Glow */}
+      {showDesktopAmbient && (
+        <div className="absolute top-1/2 left-1/2 hidden md:block -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-gradient-radial from-primary-200/20 via-secondary-100/10 to-transparent blur-3xl pointer-events-none" />
+      )}
 
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           {/* === LEFT COLUMN: Content (60%) === */}
           <div className="lg:col-span-6 space-y-6 sm:space-y-8">
-            {/* Badge */}
+            {/* Bento Badge */}
             <motion.div
               initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
               animate={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
@@ -375,7 +258,6 @@ export function Hero() {
               <br />
               <span className="italic relative inline-block">
                 mental model.
-                {/* Subtle underline decoration */}
                 <motion.svg
                   initial={
                     simplifyMotion ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }
@@ -408,7 +290,7 @@ export function Hero() {
               diagrams, plus a connected Canvas that shows how the ideas fit together.
             </motion.p>
 
-            {/* Input Field with Lens Switch */}
+            {/* Input Field with Bento Pill Switch */}
             <motion.div
               initial={simplifyMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
               animate={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
@@ -419,7 +301,7 @@ export function Hero() {
               }}
               className="space-y-4 max-w-xl"
             >
-              {/* Neumorphic Input Container */}
+              {/* Bento Input Container */}
               <div className="relative p-3 bg-white/75 md:bg-white/60 md:backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50">
                 <div className="flex flex-col sm:flex-row gap-3">
                   {/* URL Input */}
@@ -434,7 +316,7 @@ export function Hero() {
                     />
                   </div>
 
-                  {/* Lens Switch Toggle */}
+                  {/* Bento Pill Toggle */}
                   <div className="relative grid grid-cols-2 p-1.5 bg-white/70 rounded-xl border border-white/70 shrink-0 shadow-inner overflow-hidden">
                     {/* Animated Background Pill */}
                     <motion.div
@@ -500,7 +382,7 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* === RIGHT COLUMN: Visual Preview (40%) === */}
+          {/* === RIGHT COLUMN: Bento Preview Card (40%) === */}
           <motion.div
             initial={
               simplifyMotion ? { opacity: 0, scale: 1, x: 0 } : { opacity: 0, scale: 0.96, x: 20 }
@@ -516,8 +398,10 @@ export function Hero() {
             className="lg:col-span-6 relative mt-1 sm:mt-2 lg:mt-0"
           >
             <div className="relative">
-              <div className="absolute -inset-4 sm:-inset-6 bg-gradient-to-tr from-primary-400/18 to-secondary-300/18 blur-3xl opacity-70 rounded-[2.2rem] sm:rounded-[2.4rem] -z-10" />
+              {/* Bento Glow Behind */}
+              <div className="absolute -inset-4 sm:-inset-6 bg-gradient-to-tr from-primary-400/12 to-secondary-300/12 blur-3xl opacity-70 rounded-[2.2rem] sm:rounded-[2.4rem] -z-10" />
 
+              {/* Bento Preview Card */}
               <div className="relative aspect-[9/11] sm:aspect-[5/4] lg:aspect-[4/3] rounded-[24px] sm:rounded-[28px] border border-white/65 bg-white/88 shadow-[0_26px_56px_-18px_rgba(0,0,0,0.12)] overflow-hidden md:backdrop-blur-sm">
                 <AnimatePresence initial={false} mode={simplifyMotion ? 'sync' : 'wait'}>
                   <motion.div

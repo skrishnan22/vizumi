@@ -1,7 +1,29 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/react';
+import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import ogImage from './og-image.png';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['400', '500'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.vizumi.app'),
@@ -49,24 +71,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        {/* Fontshare CDN - Zodiak (Display Font) */}
-        <link
-          href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,600,700&display=swap"
-          rel="stylesheet"
-        />
-        {/* Fontshare CDN - Satoshi (Sans Font) */}
-        <link
-          href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap"
-          rel="stylesheet"
-        />
-        {/* Google Fonts - JetBrains Mono (Mono Font) */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="antialiased bg-paper text-ink font-sans">
+      <body
+        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-paper text-ink font-sans`}
+      >
         {children}
         <Analytics />
       </body>

@@ -78,7 +78,7 @@ export function LocalFirst() {
                     delay: simplifyMotion ? 0.08 + i * 0.05 : 0.2 + i * 0.1,
                     ease: [0.22, 1, 0.36, 1],
                   }}
-                  className="flex gap-4 group"
+                  className="flex gap-4 group bento-card bento-card-sm bg-slate-800/50 border-white/10 p-4"
                 >
                   {/* Icon Box */}
                   <div

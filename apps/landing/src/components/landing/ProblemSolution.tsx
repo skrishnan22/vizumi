@@ -98,7 +98,7 @@ export function ProblemSolution() {
                 delay: simplifyMotion ? 0.1 : 0.2,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="text-xl md:text-2xl text-ink-soft leading-relaxed font-sans"
+              className="text-xl md:text-2xl text-ink-soft leading-relaxed font-sans bento-card p-6 md:p-8"
             >
               Most content hides the structure you actually need—flows, dependencies, tradeoffs.
               Vizumi reconstructs what you read into sections and visuals so you can see the shape
@@ -126,7 +126,7 @@ export function ProblemSolution() {
                           transition: { type: 'spring', stiffness: 350, damping: 30 },
                         }
                   }
-                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white/60 md:backdrop-blur-sm border border-white/50 shadow-sm hover:shadow-md transition-shadow duration-300 cursor-default"
+                  className="group flex items-center gap-4 p-4 bento-card bento-card-sm cursor-default"
                 >
                   <div className={`flex-shrink-0 ${bullet.color}`}>
                     <CheckCircle2 className="w-6 h-6" />
@@ -146,7 +146,7 @@ export function ProblemSolution() {
                 delay: simplifyMotion ? 0.2 : 0.6,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="relative pl-6 border-l-2 border-primary-500/30 italic text-lg text-ink-soft font-display"
+              className="relative pl-6 border-l-2 border-primary-500/30 italic text-lg text-ink-soft font-display bento-card bento-bg-amber p-6"
             >
               The best way to understand complex ideas is to see how they connect.
             </motion.blockquote>

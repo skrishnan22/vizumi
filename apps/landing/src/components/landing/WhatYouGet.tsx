@@ -16,6 +16,7 @@ export function WhatYouGet() {
       desc: 'Keeps context intact.',
       color: 'text-primary-600',
       bgColor: 'bg-primary-50',
+      bentoBg: 'bento-bg-coral',
       position: { x: 0, y: 0 },
     },
     {
@@ -24,6 +25,7 @@ export function WhatYouGet() {
       desc: 'Make complex ideas click.',
       color: 'text-secondary-600',
       bgColor: 'bg-secondary-50',
+      bentoBg: 'bento-bg-mint',
       position: { x: 0, y: 10 },
     },
     {
@@ -32,6 +34,7 @@ export function WhatYouGet() {
       desc: 'Not just a summary.',
       color: 'text-primary-600',
       bgColor: 'bg-primary-50',
+      bentoBg: 'bento-bg-sky',
       position: { x: 0, y: -5 },
     },
     {
@@ -40,6 +43,7 @@ export function WhatYouGet() {
       desc: 'Speed/quality/cost via OpenRouter.',
       color: 'text-secondary-600',
       bgColor: 'bg-secondary-50',
+      bentoBg: 'bento-bg-violet',
       position: { x: 0, y: 15 },
     },
     {
@@ -48,6 +52,7 @@ export function WhatYouGet() {
       desc: 'Starter models available.',
       color: 'text-primary-600',
       bgColor: 'bg-primary-50',
+      bentoBg: 'bento-bg-amber',
       position: { x: 0, y: -10 },
     },
   ];
@@ -133,7 +138,7 @@ export function WhatYouGet() {
                 {/* Spotlight Effect on Hover */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-radial from-primary-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
 
-                <div className="p-6 bg-white/70 md:backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm hover:shadow-lg hover:shadow-primary-900/5 transition-all duration-300 h-full">
+                <div className={`p-6 bento-card h-full ${feat.bentoBg}`}>
                   {/* Icon */}
                   <motion.div
                     whileHover={simplifyMotion ? undefined : { rotate: 5 }}
@@ -157,10 +162,10 @@ export function WhatYouGet() {
           whileInView={simplifyMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: simplifyMotion ? 0.3 : 0.6, delay: simplifyMotion ? 0.2 : 0.5 }}
-          className="flex flex-wrap justify-center gap-x-16 gap-y-10 mt-20 pt-12 border-t border-slate-200/50"
+          className="flex flex-wrap justify-center gap-x-12 gap-y-10 mt-20 pt-12"
         >
           {stats.map((stat, i) => (
-            <div key={i} className="text-center">
+            <div key={i} className="text-center bento-card p-6 lg:p-8 min-w-[140px]">
               <div className="text-4xl md:text-5xl font-display font-semibold text-ink mb-2 leading-none tracking-tight">
                 <span className="tabular-nums">{stat.value}</span>
                 {stat.unit ? (

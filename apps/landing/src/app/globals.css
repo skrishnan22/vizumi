@@ -1,7 +1,9 @@
 @import 'tailwindcss';
 
 :root {
-  /* Primary Color Scale - Terracotta */
+  /* ============================================
+     PRIMARY COLOR SCALE — Warm Coral
+     ============================================ */
   --color-primary-50: #fef3f0;
   --color-primary-100: #fde8e3;
   --color-primary-200: #fbd2c7;
@@ -13,7 +15,9 @@
   --color-primary-800: #743624;
   --color-primary-900: #603022;
 
-  /* Secondary Color Scale - Sage */
+  /* ============================================
+     SECONDARY COLOR SCALE — Sage
+     ============================================ */
   --color-secondary-50: #f4f8f5;
   --color-secondary-100: #e3efe6;
   --color-secondary-200: #c7decf;
@@ -25,33 +29,58 @@
   --color-secondary-800: #314034;
   --color-secondary-900: #29362c;
 
-  /* Background Colors - Warm & Creamy */
+  /* ============================================
+     BACKGROUND & TEXT COLORS
+     ============================================ */
   --color-paper: #faf8f5;
   --color-paper-warm: #f5f2ed;
   --color-dark: #2c2c2c;
   --color-mist: #f0ede8;
-
-  /* Text Colors */
   --color-ink: #2c2c2c;
   --color-ink-soft: #5a5a5a;
   --color-ink-muted: #8a8a8a;
 
-  /* Semantic Aliases */
+  /* ============================================
+     BENTO CARD ACCENT COLORS
+     ============================================ */
+  --color-card-white: #ffffff;
+  --color-card-coral: #fef3f0;
+  --color-card-teal: #f0f9f6;
+  --color-card-amber: #fff8ee;
+  --color-card-sky: #f0f8ff;
+  --color-card-violet: #f5f0ff;
+  --color-card-sand: #f8f5f0;
+  --color-card-mint: #f0f9f4;
+  --color-card-rose: #fff1f2;
+  --color-card-lime: #f4fbea;
+  --color-card-slate: #f1f5f9;
+  --color-card-warm: #fefcf8;
+
+  /* ============================================
+     BENTO TEXT ACCENTS
+     ============================================ */
+  --color-bento-coral: #e85d4a;
+  --color-bento-teal: #2a9d8f;
+  --color-bento-amber: #f4a261;
+  --color-bento-sky: #4a90d9;
+  --color-bento-violet: #9b5de5;
+  --color-bento-rose: #e74c6c;
+  --color-bento-lime: #7cb342;
+  --color-bento-slate: #64748b;
+
+  /* ============================================
+     SEMANTIC ALIASES
+     ============================================ */
   --color-accent: var(--color-primary-500);
   --color-highlight: var(--color-secondary-500);
   --color-primary: var(--color-primary-500);
   --color-secondary: var(--color-secondary-500);
 
-  /* Glass Effect */
+  /* ============================================
+     GLASS & EFFECTS
+     ============================================ */
   --color-glass: rgba(255, 255, 255, 0.7);
   --color-glass-border: rgba(255, 255, 255, 0.2);
-
-  /* ============================================
-     TYPOGRAPHY
-     ============================================ */
-  --font-sans: 'Satoshi', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: 'Tiempos Headline', 'Georgia', 'Times New Roman', serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Monaco', monospace;
 
   /* ============================================
      RADIUS
@@ -60,10 +89,10 @@
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
 }
+
 /* ============================================
    BASE STYLES
    ============================================ */
-/* Only apply smooth scroll on desktop to avoid conflicts with JS scroll animations on mobile */
 @media (min-width: 768px) {
   html {
     scroll-behavior: smooth;
@@ -73,7 +102,6 @@
 body {
   background-color: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -87,7 +115,6 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -97,20 +124,19 @@ h6 {
    UTILITY CLASSES
    ============================================ */
 .font-sans {
-  font-family: var(--font-sans);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 .font-display {
-  font-family: var(--font-display);
+  font-family: var(--font-display), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 .font-mono {
-  font-family: var(--font-mono);
+  font-family: var(--font-mono), ui-monospace, 'SF Mono', 'Monaco', monospace;
 }
 
 /* ============================================
    THEME-AWARE UTILITY CLASSES
-   These reference the semantic color variables
    ============================================ */
 
 /* Background Colors */
@@ -134,67 +160,27 @@ h6 {
   background-color: var(--color-primary);
 }
 
-.bg-primary-50 {
-  background-color: var(--color-primary-50);
-}
-.bg-primary-100 {
-  background-color: var(--color-primary-100);
-}
-.bg-primary-200 {
-  background-color: var(--color-primary-200);
-}
-.bg-primary-300 {
-  background-color: var(--color-primary-300);
-}
-.bg-primary-400 {
-  background-color: var(--color-primary-400);
-}
-.bg-primary-500 {
-  background-color: var(--color-primary-500);
-}
-.bg-primary-600 {
-  background-color: var(--color-primary-600);
-}
-.bg-primary-700 {
-  background-color: var(--color-primary-700);
-}
-.bg-primary-800 {
-  background-color: var(--color-primary-800);
-}
-.bg-primary-900 {
-  background-color: var(--color-primary-900);
-}
+.bg-primary-50 { background-color: var(--color-primary-50); }
+.bg-primary-100 { background-color: var(--color-primary-100); }
+.bg-primary-200 { background-color: var(--color-primary-200); }
+.bg-primary-300 { background-color: var(--color-primary-300); }
+.bg-primary-400 { background-color: var(--color-primary-400); }
+.bg-primary-500 { background-color: var(--color-primary-500); }
+.bg-primary-600 { background-color: var(--color-primary-600); }
+.bg-primary-700 { background-color: var(--color-primary-700); }
+.bg-primary-800 { background-color: var(--color-primary-800); }
+.bg-primary-900 { background-color: var(--color-primary-900); }
 
-.bg-secondary-50 {
-  background-color: var(--color-secondary-50);
-}
-.bg-secondary-100 {
-  background-color: var(--color-secondary-100);
-}
-.bg-secondary-200 {
-  background-color: var(--color-secondary-200);
-}
-.bg-secondary-300 {
-  background-color: var(--color-secondary-300);
-}
-.bg-secondary-400 {
-  background-color: var(--color-secondary-400);
-}
-.bg-secondary-500 {
-  background-color: var(--color-secondary-500);
-}
-.bg-secondary-600 {
-  background-color: var(--color-secondary-600);
-}
-.bg-secondary-700 {
-  background-color: var(--color-secondary-700);
-}
-.bg-secondary-800 {
-  background-color: var(--color-secondary-800);
-}
-.bg-secondary-900 {
-  background-color: var(--color-secondary-900);
-}
+.bg-secondary-50 { background-color: var(--color-secondary-50); }
+.bg-secondary-100 { background-color: var(--color-secondary-100); }
+.bg-secondary-200 { background-color: var(--color-secondary-200); }
+.bg-secondary-300 { background-color: var(--color-secondary-300); }
+.bg-secondary-400 { background-color: var(--color-secondary-400); }
+.bg-secondary-500 { background-color: var(--color-secondary-500); }
+.bg-secondary-600 { background-color: var(--color-secondary-600); }
+.bg-secondary-700 { background-color: var(--color-secondary-700); }
+.bg-secondary-800 { background-color: var(--color-secondary-800); }
+.bg-secondary-900 { background-color: var(--color-secondary-900); }
 
 /* Text Colors */
 .text-ink {
@@ -213,95 +199,41 @@ h6 {
   color: var(--color-primary);
 }
 
-.text-primary-50 {
-  color: var(--color-primary-50);
-}
-.text-primary-100 {
-  color: var(--color-primary-100);
-}
-.text-primary-200 {
-  color: var(--color-primary-200);
-}
-.text-primary-300 {
-  color: var(--color-primary-300);
-}
-.text-primary-400 {
-  color: var(--color-primary-400);
-}
-.text-primary-500 {
-  color: var(--color-primary-500);
-}
-.text-primary-600 {
-  color: var(--color-primary-600);
-}
-.text-primary-700 {
-  color: var(--color-primary-700);
-}
-.text-primary-800 {
-  color: var(--color-primary-800);
-}
-.text-primary-900 {
-  color: var(--color-primary-900);
-}
+.text-primary-50 { color: var(--color-primary-50); }
+.text-primary-100 { color: var(--color-primary-100); }
+.text-primary-200 { color: var(--color-primary-200); }
+.text-primary-300 { color: var(--color-primary-300); }
+.text-primary-400 { color: var(--color-primary-400); }
+.text-primary-500 { color: var(--color-primary-500); }
+.text-primary-600 { color: var(--color-primary-600); }
+.text-primary-700 { color: var(--color-primary-700); }
+.text-primary-800 { color: var(--color-primary-800); }
+.text-primary-900 { color: var(--color-primary-900); }
 
-.text-secondary-400 {
-  color: var(--color-secondary-400);
-}
-.text-secondary-500 {
-  color: var(--color-secondary-500);
-}
-.text-secondary-600 {
-  color: var(--color-secondary-600);
-}
-.text-secondary-700 {
-  color: var(--color-secondary-700);
-}
-.text-secondary-800 {
-  color: var(--color-secondary-800);
-}
-.text-secondary-900 {
-  color: var(--color-secondary-900);
-}
+.text-secondary-400 { color: var(--color-secondary-400); }
+.text-secondary-500 { color: var(--color-secondary-500); }
+.text-secondary-600 { color: var(--color-secondary-600); }
+.text-secondary-700 { color: var(--color-secondary-700); }
+.text-secondary-800 { color: var(--color-secondary-800); }
+.text-secondary-900 { color: var(--color-secondary-900); }
 
 /* Border Colors */
 .border-primary {
   border-color: var(--color-primary);
 }
 
-.border-primary-100 {
-  border-color: var(--color-primary-100);
-}
-.border-primary-200 {
-  border-color: var(--color-primary-200);
-}
-.border-primary-300 {
-  border-color: var(--color-primary-300);
-}
-.border-primary-400 {
-  border-color: var(--color-primary-400);
-}
-.border-primary-500 {
-  border-color: var(--color-primary-500);
-}
-.border-primary-600 {
-  border-color: var(--color-primary-600);
-}
+.border-primary-100 { border-color: var(--color-primary-100); }
+.border-primary-200 { border-color: var(--color-primary-200); }
+.border-primary-300 { border-color: var(--color-primary-300); }
+.border-primary-400 { border-color: var(--color-primary-400); }
+.border-primary-500 { border-color: var(--color-primary-500); }
+.border-primary-600 { border-color: var(--color-primary-600); }
 
-.border-secondary-100 {
-  border-color: var(--color-secondary-100);
-}
-.border-secondary-200 {
-  border-color: var(--color-secondary-200);
-}
-.border-secondary-300 {
-  border-color: var(--color-secondary-300);
-}
-.border-secondary-400 {
-  border-color: var(--color-secondary-400);
-}
-.border-secondary-500 {
-  border-color: var(--color-secondary-500);
-}
+.border-secondary-100 { border-color: var(--color-secondary-100); }
+.border-secondary-200 { border-color: var(--color-secondary-200); }
+.border-secondary-300 { border-color: var(--color-secondary-300); }
+.border-secondary-400 { border-color: var(--color-secondary-400); }
+.border-secondary-500 { border-color: var(--color-secondary-500); }
 
 /* Ring Colors */
 .ring-primary-200 {
@@ -398,6 +330,75 @@ h6 {
 }
 
 /* ============================================
+   BENTO CARD SYSTEM
+   ============================================ */
+.bento-card {
+  background-color: var(--color-card-white);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.bento-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 16px 48px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.bento-card-lg {
+  border-radius: var(--radius-3xl);
+}
+
+.bento-card-sm {
+  border-radius: var(--radius-xl);
+}
+
+.bento-card-elevated {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.bento-card-elevated:hover {
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Bento Card Accent Backgrounds */
+.bento-bg-coral { background-color: var(--color-card-coral); }
+.bento-bg-teal { background-color: var(--color-card-teal); }
+.bento-bg-amber { background-color: var(--color-card-amber); }
+.bento-bg-sky { background-color: var(--color-card-sky); }
+.bento-bg-violet { background-color: var(--color-card-violet); }
+.bento-bg-sand { background-color: var(--color-card-sand); }
+.bento-bg-mint { background-color: var(--color-card-mint); }
+.bento-bg-rose { background-color: var(--color-card-rose); }
+.bento-bg-lime { background-color: var(--color-card-lime); }
+.bento-bg-slate { background-color: var(--color-card-slate); }
+.bento-bg-warm { background-color: var(--color-card-warm); }
+
+/* Bento Text Accents */
+.bento-text-coral { color: var(--color-bento-coral); }
+.bento-text-teal { color: var(--color-bento-teal); }
+.bento-text-amber { color: var(--color-bento-amber); }
+.bento-text-sky { color: var(--color-bento-sky); }
+.bento-text-violet { color: var(--color-bento-violet); }
+.bento-text-rose { color: var(--color-bento-rose); }
+.bento-text-lime { color: var(--color-bento-lime); }
+.bento-text-slate { color: var(--color-bento-slate); }
+
+/* Bento Grid */
+.bento-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* ============================================
    NOISE OVERLAY
    ============================================ */
 .noise-overlay {
@@ -408,8 +409,11 @@ h6 {
   height: 100%;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.04;
+  opacity: 0.03;
   mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
 /* ============================================
@@ -421,4 +425,25 @@ h6 {
 
 .bg-glow-secondary {
   background: radial-gradient(circle, rgba(122, 158, 126, 0.15) 0%, transparent 70%);
+}
+
+/* ============================================
+   ANIMATION UTILITIES
+   ============================================ */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
 }

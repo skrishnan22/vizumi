@@ -80,7 +80,7 @@ export function TwoViews() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: simplifyMotion ? 0.3 : 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="group relative bg-white rounded-[2rem] border border-slate-200/50 overflow-hidden shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-shadow duration-500"
+            className="group relative bento-card bento-card-lg overflow-hidden hover:shadow-xl transition-shadow duration-500"
           >
             {/* Dot Grid Background */}
             <div className="absolute inset-0 bg-[radial-gradient(#2C2C2C/10_1px,transparent_1px)] [background-size:20px_20px] opacity-30" />
@@ -145,7 +145,7 @@ export function TwoViews() {
               delay: simplifyMotion ? 0.03 : 0.1,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="group relative rounded-[2rem] border border-primary-200/50 overflow-hidden shadow-lg shadow-primary-900/5 hover:shadow-xl hover:shadow-primary-900/10 transition-shadow duration-500"
+            className="group relative bento-card bento-card-lg overflow-hidden hover:shadow-xl transition-shadow duration-500 bento-bg-coral"
           >
             {/* Gradient Mesh Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-secondary-50" />

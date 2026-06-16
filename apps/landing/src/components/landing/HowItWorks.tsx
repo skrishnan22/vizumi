@@ -97,7 +97,7 @@ export function HowItWorks() {
                 <motion.div
                   whileHover={simplifyMotion ? undefined : { scale: 1.1, rotate: 5 }}
                   transition={{ type: 'spring', stiffness: 300 }}
-                  className={`relative z-10 w-20 h-20 lg:w-24 lg:h-24 rounded-2xl ${step.color} border border-white/50 flex items-center justify-center mb-6 shadow-lg shadow-slate-900/5`}
+                  className={`relative z-10 w-20 h-20 lg:w-24 lg:h-24 rounded-2xl ${step.color} border border-white/50 flex items-center justify-center mb-6 bento-card bento-card-sm`}
                 >
                   <step.icon className={`w-8 h-8 lg:w-10 lg:h-10 ${step.iconColor}`} />
 
@@ -108,7 +108,7 @@ export function HowItWorks() {
                 </motion.div>
 
                 {/* Content */}
-                <div className="relative z-10 lg:px-4">
+                <div className="relative z-10 lg:px-4 bento-card p-4 lg:p-6">
                   <h3 className="text-xl lg:text-2xl font-display font-semibold text-ink mb-2">
                     {step.title}
                   </h3>

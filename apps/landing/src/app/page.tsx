@@ -5,20 +5,15 @@ import { TwoViews } from '@/components/landing/TwoViews';
 import { HowItWorks } from '@/components/landing/HowItWorks';
 import { LocalFirst } from '@/components/landing/LocalFirst';
 import { WhatYouGet } from '@/components/landing/WhatYouGet';
+import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
 
 export default function Home() {
   return (
     <>
       <main className="min-h-dvh bg-paper selection:bg-primary-500/20 selection:text-ink overflow-x-hidden">
-        {/* Enhanced Noise Texture Overlay */}
-        <div
-          className="fixed inset-0 pointer-events-none z-[9999] hidden md:block opacity-[0.04]"
-          style={{
-            backgroundImage: `url('/noise.svg')`,
-            backgroundRepeat: 'repeat',
-          }}
-        />
+        {/* Noise Texture Overlay — CSS-based for performance */}
+        <div className="noise-overlay hidden md:block" />
 
         <Nav />
         <Hero />
@@ -27,6 +22,7 @@ export default function Home() {
         <HowItWorks />
         <LocalFirst />
         <WhatYouGet />
+        <FinalCTA />
         <Footer />
       </main>
     </>

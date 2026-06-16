@@ -64,7 +64,7 @@ export function Nav() {
           </Link>
 
           {/* Desktop Navigation Island */}
-          <div className="hidden md:flex items-center gap-1 rounded-full bg-paper/80 p-1.5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04),0_0_0_1px_rgba(255,255,255,0.5)] backdrop-blur-md">
+          <div className="hidden md:flex items-center gap-1 rounded-full bg-paper/80 p-1.5 backdrop-blur-md bento-card bento-card-sm">
             {links.map((link) => {
               const isActive = activeHash === link.href;
 
@@ -127,7 +127,7 @@ export function Nav() {
               }
               transition={{ duration: simplifyMotion ? 0.14 : 0.2, ease: 'easeOut' }}
               id="mobile-nav-menu"
-              className="mt-3 rounded-2xl bg-paper/95 p-2 shadow-[0_18px_40px_-24px_rgba(96,48,34,0.35)] backdrop-blur-xl md:hidden relative z-50 border border-white/40"
+              className="mt-3 bento-card bento-card-lg p-2 md:hidden relative z-50"
             >
               <div className="flex flex-col gap-1">
                 {links.map((link, i) => {

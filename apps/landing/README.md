@@ -36,13 +36,38 @@ This project is designed to be deployed as a separate project on Vercel.
 
 ## Design System
 
-- **Colors**:
-  - Paper: `#f6f1ea`
-  - Ink: `#161b22`
-  - Accent: `#1c8e9a`
-  - Highlight: `#f59e0b`
-  - Mist: `#f2f5f7`
+### Bento Aesthetic
 
-- **Fonts**:
-  - Display: Instrument Serif
-  - Body: Space Grotesk
+The landing page uses a playful **bento-box** design language with card-based sections, subtle rounded corners, and soft shadows.
+
+### Colors
+
+- **Primary**: Warm coral scale (`#c65d3b`)
+- **Secondary**: Sage scale (`#5a7d5e`)
+- **Paper**: `#faf8f5`
+- **Ink**: `#2c2c2c`
+- **Bento Card Accents**: Coral, teal, amber, sky, violet, mint, rose, lime
+
+### Fonts (Self-Hosted via `next/font`)
+
+- **Display**: Space Grotesk — playful, geometric, modern
+- **Body**: Inter — clean, highly readable
+- **Mono**: JetBrains Mono — technical, crisp
+
+### Bento Utilities
+
+Custom CSS classes in `globals.css`:
+
+- `.bento-card` — standard elevated card with subtle shadow and rounded corners
+- `.bento-card-lg` — larger radius (2rem)
+- `.bento-card-sm` — smaller radius (1rem)
+- `.bento-card-elevated` — stronger shadow
+- `.bento-bg-{color}` — tinted card backgrounds (coral, teal, amber, sky, violet, sand, mint, rose, lime, slate, warm)
+- `.bento-text-{color}` — vibrant text accents
+
+### Performance
+
+- Fonts are self-hosted via `next/font/google` (no external CDN requests)
+- Noise texture is CSS-based (no external SVG request)
+- Hero background animations simplified to CSS-only grid + subtle gradient
+- Reduced motion respected throughout
