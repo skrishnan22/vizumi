@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Lock, HardDrive, Sparkles } from 'lucide-react';
@@ -219,6 +219,16 @@ export function Hero() {
     }
   };
 
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const submittedUrl = formData.get('url') as string;
+    const params = new URLSearchParams();
+    if (submittedUrl) params.set('url', submittedUrl);
+    params.set('mode', mode);
+    window.location.href = `https://notes.vizumi.app?${params.toString()}`;
+  };
+
   return (
     <section className="relative flex items-start md:items-center pt-10 md:pt-12 pb-12 md:pb-16 md:min-h-[95dvh] overflow-hidden">
       {/* === ENHANCED BACKGROUND LAYERS === */}
@@ -420,17 +430,16 @@ export function Hero() {
               className="space-y-4 max-w-xl"
             >
               {/* Neumorphic Input Container */}
-              <div className="relative p-3 bg-white/75 md:bg-white/60 md:backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50">
+              <form onSubmit={handleSubmit} className="relative p-3 bg-white/75 md:bg-white/60 md:backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50">
                 <div className="flex flex-col sm:flex-row gap-3">
                   {/* URL Input */}
                   <div className="flex-1 relative">
                     <input
                       type="text"
+                      name="url"
                       placeholder="Paste any URL..."
-                      aria-label="Demo URL input"
+                      aria-label="URL input"
                       className="w-full px-5 py-4 rounded-xl bg-white/50 border border-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-ink placeholder:text-ink-muted font-sans text-sm shadow-inner transition-all hover:bg-white/80"
-                      defaultValue="example.blog.com"
-                      readOnly
                     />
                   </div>
 
@@ -451,6 +460,7 @@ export function Hero() {
                     />
 
                     <button
+                      type="button"
                       onClick={() => handleModeSwitch('blueprints')}
                       aria-pressed={mode === 'blueprints'}
                       className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 flex items-center justify-center gap-1.5 ${
@@ -462,9 +472,10 @@ export function Hero() {
                       <span
                         className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-primary-400/50'}`}
                       />
-                      Canvas
+                      Blueprints
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleModeSwitch('canvas')}
                       aria-pressed={mode === 'canvas'}
                       className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 flex items-center justify-center gap-1.5 ${
@@ -476,11 +487,11 @@ export function Hero() {
                       <span
                         className={`size-1.5 rounded-full ${mode === 'canvas' ? 'bg-secondary-500' : 'bg-secondary-400/50'}`}
                       />
-                      Blueprints
+                      Canvas
                     </button>
                   </div>
                 </div>
-              </div>
+              </form>
 
               {/* Trust Badges */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-ink-muted px-2">
@@ -563,7 +574,7 @@ export function Hero() {
                     <span
                       className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-secondary-500'}`}
                     />
-                    {mode === 'blueprints' ? 'Canvas View' : 'Blueprints View'}
+                    {mode === 'blueprints' ? 'Blueprints View' : 'Canvas View'}
                   </motion.div>
                 </div>
               </div>

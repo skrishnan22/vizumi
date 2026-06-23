@@ -1,12 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 
 export function FinalCTA() {
   const [url, setUrl] = useState('');
   const [mode, setMode] = useState<'blueprints' | 'canvas'>('canvas');
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (url) params.set('url', url);
+    params.set('mode', mode);
+    window.location.href = `https://notes.vizumi.app?${params.toString()}`;
+  };
 
   return (
     <section className="py-32 bg-dark text-white relative overflow-hidden">
@@ -61,7 +69,7 @@ export function FinalCTA() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="max-w-2xl mx-auto"
           >
-            <div className="p-2 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+            <form onSubmit={handleSubmit} className="p-2 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
               <div className="flex flex-col md:flex-row gap-2">
                 {/* URL Input */}
                 <input
@@ -84,6 +92,7 @@ export function FinalCTA() {
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                   <button
+                    type="button"
                     onClick={() => setMode('blueprints')}
                     className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 ${
                       mode === 'blueprints' ? 'text-ink' : 'text-white/50 hover:text-white'
@@ -92,6 +101,7 @@ export function FinalCTA() {
                     Blueprints
                   </button>
                   <button
+                    type="button"
                     onClick={() => setMode('canvas')}
                     className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 ${
                       mode === 'canvas' ? 'text-ink' : 'text-white/50 hover:text-white'
@@ -102,14 +112,14 @@ export function FinalCTA() {
                 </div>
 
                 {/* Submit Button */}
-                <button className="px-6 py-3 bg-primary-500 hover:bg-primary-400 text-ink font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shrink-0 group">
+                <button type="submit" className="px-6 py-3 bg-primary-500 hover:bg-primary-400 text-ink font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shrink-0 group">
                   <span className="font-mono uppercase tracking-wider text-xs">
                     {mode === 'blueprints' ? 'Generate' : 'Generate'}
                   </span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </button>
               </div>
-            </div>
+            </form>
           </motion.div>
 
           {/* Trust Indicators */}

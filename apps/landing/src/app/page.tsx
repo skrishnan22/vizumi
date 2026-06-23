@@ -5,6 +5,7 @@ import { TwoViews } from '@/components/landing/TwoViews';
 import { HowItWorks } from '@/components/landing/HowItWorks';
 import { LocalFirst } from '@/components/landing/LocalFirst';
 import { WhatYouGet } from '@/components/landing/WhatYouGet';
+import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
 
 export default function Home() {
@@ -27,6 +28,7 @@ export default function Home() {
         <HowItWorks />
         <LocalFirst />
         <WhatYouGet />
+        <FinalCTA />
         <Footer />
       </main>
     </>

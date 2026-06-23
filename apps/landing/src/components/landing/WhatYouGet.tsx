@@ -55,7 +55,7 @@ export function WhatYouGet() {
   const stats = [
     { value: '0', unit: 's', label: 'Setup time' },
     { value: '100', unit: '%', label: 'Private' },
-    { value: '∞', label: 'Possibilities' },
+    { value: 'Any', label: 'URL' },
   ];
 
   return (
