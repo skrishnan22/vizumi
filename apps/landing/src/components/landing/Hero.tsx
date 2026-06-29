@@ -369,7 +369,7 @@ export function Hero() {
                 delay: simplifyMotion ? 0.05 : 0.1,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-ink drop-shadow-sm"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-green-800 drop-shadow-sm"
             >
               From URL <span className="text-ink/40 font-light">to</span>
               <br />
@@ -402,7 +402,7 @@ export function Hero() {
                 delay: simplifyMotion ? 0.1 : 0.2,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="text-lg md:text-xl text-ink-soft max-w-xl leading-relaxed font-sans"
+              className="text-lg md:text-xl text-ink max-w-xl leading-relaxed font-sans"
             >
               Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with
               diagrams, plus a connected Canvas that shows how the ideas fit together.

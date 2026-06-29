@@ -25,6 +25,18 @@
   --color-secondary-800: #314034;
   --color-secondary-900: #29362c;
 
+  /* Olive Green Scale */
+  --color-olive-50: #f6f7f0;
+  --color-olive-100: #e9ecda;
+  --color-olive-200: #d3d9b5;
+  --color-olive-300: #b7c18a;
+  --color-olive-400: #9ba664;
+  --color-olive-500: #7f8a4a;
+  --color-olive-600: #656f3b;
+  --color-olive-700: #505830;
+  --color-olive-800: #404728;
+  --color-olive-900: #363c23;
+
   /* Background Colors - Warm & Creamy */
   --color-paper: #faf8f5;
   --color-paper-warm: #f5f2ed;
