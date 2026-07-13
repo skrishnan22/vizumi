@@ -76,8 +76,8 @@ export function Nav() {
                   className={cn(
                     'rounded-full px-5 py-2.5 text-[11px] font-mono uppercase tracking-[0.14em] transition-all duration-300',
                     isActive
-                      ? 'bg-white text-primary-800 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_0_0_1px_rgba(251,210,199,0.4)]'
-                      : 'text-ink/60 hover:bg-white/60 hover:text-ink'
+                      ? 'bg-white text-deep-blue shadow-[0_1px_3px_rgba(0,0,0,0.06),0_0_0_1px_rgba(251,210,199,0.4)]'
+                      : 'text-deep-blue/60 hover:bg-white/60 hover:text-deep-blue'
                   )}
                 >
                   {link.label}
@@ -90,7 +90,7 @@ export function Nav() {
           <div className="flex items-center gap-3">
             <Link
               href="https://notes.vizumi.app"
-              className="inline-flex items-center justify-center h-10 rounded-full bg-primary-500 px-6 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-[0_4px_14px_-2px_rgba(198,93,59,0.3)] transition-all hover:bg-primary-600 hover:shadow-[0_6px_20px_-2px_rgba(198,93,59,0.4)] hover:-translate-y-0.5 md:h-11 md:px-7"
+              className="inline-flex items-center justify-center h-10 rounded-full bg-primary-500 px-6 text-xs font-mono uppercase tracking-[0.12em] text-deep-blue shadow-[0_4px_14px_-2px_rgba(198,93,59,0.3)] transition-all hover:bg-primary-600 hover:shadow-[0_6px_20px_-2px_rgba(198,93,59,0.4)] hover:-translate-y-0.5 md:h-11 md:px-7"
             >
               Get Started
             </Link>
@@ -101,8 +101,8 @@ export function Nav() {
               className={cn(
                 'inline-flex size-10 items-center justify-center rounded-xl border transition-colors md:hidden',
                 mobileMenuOpen
-                  ? 'border-primary-200 bg-primary-100 text-primary-800'
-                  : 'border-primary-100 bg-white/70 text-ink/70 hover:bg-white/90 hover:text-ink'
+                  ? 'border-primary-200 bg-primary-100 text-deep-blue'
+                  : 'border-primary-100 bg-white/70 text-deep-blue/70 hover:bg-white/90 hover:text-deep-blue'
               )}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -145,8 +145,8 @@ export function Nav() {
                         className={cn(
                           'block rounded-xl px-4 py-3 text-[11px] font-mono uppercase tracking-[0.14em] transition-colors',
                           isActive
-                            ? 'bg-primary-50/80 text-primary-800 ring-1 ring-primary-100/50'
-                            : 'text-ink/75 hover:bg-white/80 hover:text-ink'
+                            ? 'bg-primary-50/80 text-deep-blue ring-1 ring-primary-100/50'
+                            : 'text-deep-blue/75 hover:bg-white/80 hover:text-deep-blue'
                         )}
                         onClick={() => {
                           setActiveHash(link.href);
@@ -162,7 +162,7 @@ export function Nav() {
                 <div className="mt-1 border-t border-primary-100/30 pt-2">
                   <Link
                     href="https://notes.vizumi.app"
-                    className="inline-flex items-center justify-center h-10 w-full rounded-xl bg-primary-500 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-md shadow-primary-500/20"
+                    className="inline-flex items-center justify-center h-10 w-full rounded-xl bg-primary-500 text-xs font-mono uppercase tracking-[0.12em] text-deep-blue shadow-md shadow-primary-500/20"
                   >
                     Get Started
                   </Link>
