@@ -373,7 +373,7 @@ export function Hero() {
             >
               From URL <span className="text-ink/40 font-light">to</span>
               <br />
-              <span className="italic relative inline-block">
+              <span className="italic relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-primary-500 to-secondary-600">
                 mental model.
                 {/* Subtle underline decoration */}
                 <motion.svg
