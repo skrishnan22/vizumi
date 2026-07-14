@@ -462,7 +462,7 @@ export function Hero() {
                       <span
                         className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-primary-400/50'}`}
                       />
-                      Canvas
+                      Blueprints
                     </button>
                     <button
                       onClick={() => handleModeSwitch('canvas')}
@@ -476,7 +476,7 @@ export function Hero() {
                       <span
                         className={`size-1.5 rounded-full ${mode === 'canvas' ? 'bg-secondary-500' : 'bg-secondary-400/50'}`}
                       />
-                      Blueprints
+                      Canvas
                     </button>
                   </div>
                 </div>
@@ -563,7 +563,7 @@ export function Hero() {
                     <span
                       className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-secondary-500'}`}
                     />
-                    {mode === 'blueprints' ? 'Canvas View' : 'Blueprints View'}
+                    {mode === 'blueprints' ? 'Blueprints View' : 'Canvas View'}
                   </motion.div>
                 </div>
               </div>
