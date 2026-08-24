@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Lock, HardDrive, Sparkles } from 'lucide-react';
+import { ArrowRight, Lock, Sparkles } from 'lucide-react';
 import { useIsMobileMotionDevice } from '@/lib/useIsMobileMotionDevice';
 
 interface Star {
@@ -24,25 +24,25 @@ const heroEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const blueprintPreviewBlocks = [
   {
-    title: 'Traditional RAG Process',
-    body: 'Chunk, embed, rank, and fuse evidence for retrieval.',
-    tags: ['Chunk Text', 'Embeddings', 'BM25'],
+    title: 'Forward Pass',
+    body: 'Inputs flow through the network to produce a prediction.',
+    tags: ['Weights', 'Activations'],
     headerClass: 'bg-teal-600 text-white',
     bodyClass: 'bg-teal-50/80 border-teal-200',
-    connector: 'uses',
+    connector: 'produces',
   },
   {
-    title: 'Context Conundrum',
-    body: 'Isolated chunks lose context and reduce answer accuracy.',
-    tags: ['Missing Context', 'Retrieval Drift'],
+    title: 'Loss Function',
+    body: 'Measures how far the prediction is from the truth.',
+    tags: ['MSE', 'Cross-Entropy'],
     headerClass: 'bg-violet-600 text-white',
     bodyClass: 'bg-violet-50/80 border-violet-200',
-    connector: 'limited by',
+    connector: 'reduced by',
   },
   {
-    title: 'Contextual Retrieval',
-    body: 'Adds compact context before indexing and reranking.',
-    tags: ['Contextual BM25', 'Re-ranking'],
+    title: 'Backpropagation',
+    body: 'Updates weights by pushing the error backward through the network.',
+    tags: ['Gradients', 'Learning Rate'],
     headerClass: 'bg-slate-900 text-white',
     bodyClass: 'bg-slate-50 border-slate-200',
   },
@@ -51,31 +51,31 @@ const blueprintPreviewBlocks = [
 const canvasPreviewCards = [
   {
     id: 'top',
-    title: 'Knowledge Access Challenge',
-    blurb: 'RAG loses meaning without chunk-level grounding.',
+    title: 'How Do Neural Networks Learn?',
+    blurb: 'Weights, loss, and backprop turn data into skills.',
     tone: 'bg-amber-50 border-amber-200',
     position: { top: '22%', left: '50%' },
     size: 'w-[52%]',
   },
   {
     id: 'left',
-    title: 'Contextual Retrieval Method',
-    blurb: 'Embeddings + BM25 improve relevance.',
+    title: 'Gradient Descent',
+    blurb: 'Loss guides small weight updates each step.',
     tone: 'bg-sky-50 border-sky-200',
     position: { top: '72%', left: '30%' },
     size: 'w-[40%]',
     previewSrc: '/canvas-contextual-preview.svg',
-    previewAlt: 'Contextual retrieval layered preview',
+    previewAlt: 'Gradient descent layered preview',
   },
   {
     id: 'right',
-    title: 'Reranking for Accuracy',
-    blurb: 'Filter to top chunks after reranking.',
+    title: 'Learning Rate',
+    blurb: 'Controls how big each update is.',
     tone: 'bg-amber-50 border-amber-200',
     position: { top: '72%', left: '72%' },
     size: 'w-[40%]',
     previewSrc: '/canvas-rerank-preview.svg',
-    previewAlt: 'Reranking layered preview',
+    previewAlt: 'Learning rate layered preview',
   },
 ];
 
@@ -213,10 +213,22 @@ export function Hero() {
     { id: 5, top: '44%', left: '50%', size: 15, rotation: 42, duration: 3.9, delay: 0.9 },
   ];
 
+  const urlRef = useRef<HTMLInputElement>(null);
+
   const handleModeSwitch = (newMode: 'blueprints' | 'canvas') => {
     if (newMode !== mode) {
       setMode(newMode);
     }
+  };
+
+  const handleGenerate = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const target = urlRef.current?.value.trim() ?? '';
+    const app = 'https://notes.vizumi.app';
+    const params = new URLSearchParams();
+    if (target) params.set('url', target);
+    params.set('mode', mode === 'blueprints' ? 'note' : 'canvas');
+    window.location.href = `${app}/?${params.toString()}`;
   };
 
   return (
@@ -357,7 +369,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/85 md:bg-white/60 md:backdrop-blur-md border border-primary-200/50 text-primary-700 text-xs font-mono uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300"
             >
               <Sparkles className="size-3.5 text-primary-500" />
-              <span>Blueprints + Canvas from any link</span>
+              <span>Visual notes from any link · No signup</span>
             </motion.div>
 
             {/* Headline */}
@@ -371,10 +383,10 @@ export function Hero() {
               }}
               className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-ink drop-shadow-sm"
             >
-              From URL <span className="text-ink/40 font-light">to</span>
+              Read less.
               <br />
               <span className="italic relative inline-block">
-                mental model.
+                Understand more.
                 {/* Subtle underline decoration */}
                 <motion.svg
                   initial={
@@ -404,8 +416,9 @@ export function Hero() {
               }}
               className="text-lg md:text-xl text-ink-soft max-w-xl leading-relaxed font-sans"
             >
-              Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with
-              diagrams, plus a connected Canvas that shows how the ideas fit together.
+              Paste any link — an article, tutorial, or paper — and Vizumi turns it into visual
+              notes: AI-written sections, diagrams, and a connected map of how the ideas fit
+              together.
             </motion.p>
 
             {/* Input Field with Lens Switch */}
@@ -420,18 +433,27 @@ export function Hero() {
               className="space-y-4 max-w-xl"
             >
               {/* Neumorphic Input Container */}
-              <div className="relative p-3 bg-white/75 md:bg-white/60 md:backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50">
+              <form
+                onSubmit={handleGenerate}
+                className="relative p-3 bg-white/75 md:bg-white/60 md:backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50"
+              >
                 <div className="flex flex-col sm:flex-row gap-3">
-                  {/* URL Input */}
-                  <div className="flex-1 relative">
+                  {/* URL Input + Generate */}
+                  <div className="flex-1 flex gap-2">
                     <input
+                      ref={urlRef}
                       type="text"
-                      placeholder="Paste any URL..."
-                      aria-label="Demo URL input"
-                      className="w-full px-5 py-4 rounded-xl bg-white/50 border border-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-ink placeholder:text-ink-muted font-sans text-sm shadow-inner transition-all hover:bg-white/80"
-                      defaultValue="example.blog.com"
-                      readOnly
+                      placeholder="Paste any article URL..."
+                      aria-label="Article URL to process"
+                      className="w-full min-w-0 px-5 py-4 rounded-xl bg-white/50 border border-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-ink placeholder:text-ink-muted font-sans text-sm shadow-inner transition-all hover:bg-white/80"
                     />
+                    <button
+                      type="submit"
+                      className="shrink-0 inline-flex items-center gap-1.5 px-5 py-4 rounded-xl bg-primary-500 text-white text-xs font-mono uppercase tracking-wider shadow-[0_4px_14px_-2px_rgba(198,93,59,0.35)] transition-all hover:bg-primary-600 hover:-translate-y-0.5"
+                    >
+                      Generate
+                      <ArrowRight className="size-4" />
+                    </button>
                   </div>
 
                   {/* Lens Switch Toggle */}
@@ -451,6 +473,7 @@ export function Hero() {
                     />
 
                     <button
+                      type="button"
                       onClick={() => handleModeSwitch('blueprints')}
                       aria-pressed={mode === 'blueprints'}
                       className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 flex items-center justify-center gap-1.5 ${
@@ -462,9 +485,10 @@ export function Hero() {
                       <span
                         className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-primary-400/50'}`}
                       />
-                      Canvas
+                      Blueprints
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleModeSwitch('canvas')}
                       aria-pressed={mode === 'canvas'}
                       className={`relative z-10 px-4 py-2.5 text-xs font-mono uppercase tracking-wider rounded-lg transition-colors duration-200 flex items-center justify-center gap-1.5 ${
@@ -476,11 +500,11 @@ export function Hero() {
                       <span
                         className={`size-1.5 rounded-full ${mode === 'canvas' ? 'bg-secondary-500' : 'bg-secondary-400/50'}`}
                       />
-                      Blueprints
+                      Canvas
                     </button>
                   </div>
                 </div>
-              </div>
+              </form>
 
               {/* Trust Badges */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-ink-muted px-2">
@@ -489,12 +513,12 @@ export function Hero() {
                   No account required
                 </span>
                 <span className="flex items-center gap-2">
-                  <HardDrive className="size-3.5 text-primary-600" />
-                  Saved locally
+                  <Sparkles className="size-3.5 text-primary-600" />
+                  Free to start
                 </span>
                 <span className="flex items-center gap-2">
                   <Lock className="size-3.5 text-secondary-600" />
-                  Keys stored locally
+                  Private by default
                 </span>
               </div>
             </motion.div>
@@ -563,7 +587,7 @@ export function Hero() {
                     <span
                       className={`size-1.5 rounded-full ${mode === 'blueprints' ? 'bg-primary-500' : 'bg-secondary-500'}`}
                     />
-                    {mode === 'blueprints' ? 'Canvas View' : 'Blueprints View'}
+                    {mode === 'blueprints' ? 'Blueprints View' : 'Canvas View'}
                   </motion.div>
                 </div>
               </div>
