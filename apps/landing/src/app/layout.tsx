@@ -5,18 +5,18 @@ import ogImage from './og-image.png';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.vizumi.app'),
-  title: 'Vizumi - From URL to mental model',
+  title: 'Vizumi — Read less. Understand more.',
   description:
-    'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
+    'Paste any link — an article, tutorial, or paper — and Vizumi turns it into visual notes: AI-written sections, diagrams, and a connected map of how the ideas fit together.',
   icons: {
     icon: '/apple-touch-icon.png',
     shortcut: '/apple-touch-icon.png',
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Vizumi - From URL to mental model',
+    title: 'Vizumi — Read less. Understand more.',
     description:
-      'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
+      'Paste any link — an article, tutorial, or paper — and Vizumi turns it into visual notes: AI-written sections, diagrams, and a connected map of how the ideas fit together.',
     images: [
       {
         url: ogImage.src,
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Vizumi - From URL to mental model',
+    title: 'Vizumi — Read less. Understand more.',
     description:
-      'Paste a link and Vizumi uses AI to build a deck: sectioned Blueprints with diagrams, plus a connected Canvas.',
+      'Paste any link — an article, tutorial, or paper — and Vizumi turns it into visual notes: AI-written sections, diagrams, and a connected map of how the ideas fit together.',
     images: [
       {
         url: ogImage.src,
