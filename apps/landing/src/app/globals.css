@@ -1,40 +1,40 @@
 @import 'tailwindcss';
 
 :root {
-  /* Primary Color Scale - Terracotta */
-  --color-primary-50: #fef3f0;
-  --color-primary-100: #fde8e3;
-  --color-primary-200: #fbd2c7;
-  --color-primary-300: #f7b5a3;
-  --color-primary-400: #f08e75;
-  --color-primary-500: #c65d3b;
-  --color-primary-600: #a84d30;
-  --color-primary-700: #8c4028;
-  --color-primary-800: #743624;
-  --color-primary-900: #603022;
+  /* Primary Color Scale - Terracotta (deepened for richer tone + contrast) */
+  --color-primary-50: #fdf3ee;
+  --color-primary-100: #fbe6da;
+  --color-primary-200: #f6cdb8;
+  --color-primary-300: #efab8c;
+  --color-primary-400: #e2825b;
+  --color-primary-500: #c2572d;
+  --color-primary-600: #aa4a26;
+  --color-primary-700: #8d3c20;
+  --color-primary-800: #713119;
+  --color-primary-900: #5b2915;
 
-  /* Secondary Color Scale - Sage */
-  --color-secondary-50: #f4f8f5;
-  --color-secondary-100: #e3efe6;
-  --color-secondary-200: #c7decf;
-  --color-secondary-300: #9fc4ac;
-  --color-secondary-400: #7a9e7e;
-  --color-secondary-500: #5a7d5e;
-  --color-secondary-600: #456348;
-  --color-secondary-700: #3a4f3d;
-  --color-secondary-800: #314034;
-  --color-secondary-900: #29362c;
+  /* Secondary Color Scale - Sage (slightly deepened) */
+  --color-secondary-50: #f3f8f4;
+  --color-secondary-100: #e1ece3;
+  --color-secondary-200: #c2d8c7;
+  --color-secondary-300: #99bfa0;
+  --color-secondary-400: #739d7a;
+  --color-secondary-500: #577d5e;
+  --color-secondary-600: #456548;
+  --color-secondary-700: #39513c;
+  --color-secondary-800: #2f4232;
+  --color-secondary-900: #28352a;
 
-  /* Background Colors - Warm & Creamy */
-  --color-paper: #faf8f5;
-  --color-paper-warm: #f5f2ed;
+  /* Background Colors - Warm & Creamy (slightly richer) */
+  --color-paper: #fbf7f1;
+  --color-paper-warm: #f5efe6;
   --color-dark: #2c2c2c;
-  --color-mist: #f0ede8;
+  --color-mist: #f1ece3;
 
-  /* Text Colors */
-  --color-ink: #2c2c2c;
-  --color-ink-soft: #5a5a5a;
-  --color-ink-muted: #8a8a8a;
+  /* Text Colors (darkened for stronger contrast / readability) */
+  --color-ink: #211f1c;
+  --color-ink-soft: #4b4843;
+  --color-ink-muted: #75716b;
 
   /* Semantic Aliases */
   --color-accent: var(--color-primary-500);
@@ -377,23 +377,23 @@ h6 {
    ============================================ */
 .neumorphic {
   box-shadow:
-    8px 8px 16px rgba(198, 93, 59, 0.08),
+    8px 8px 16px rgba(194, 87, 45, 0.08),
     -8px -8px 16px rgba(255, 255, 255, 0.8);
 }
 
 .shadow-primary {
-  box-shadow: 0 20px 40px -15px rgba(198, 93, 59, 0.15);
+  box-shadow: 0 20px 40px -15px rgba(194, 87, 45, 0.15);
 }
 
 .shadow-secondary {
-  box-shadow: 0 20px 40px -15px rgba(122, 158, 126, 0.15);
+  box-shadow: 0 20px 40px -15px rgba(115, 157, 122, 0.15);
 }
 
 /* ============================================
    SELECTION
    ============================================ */
 ::selection {
-  background-color: rgba(198, 93, 59, 0.2);
+  background-color: rgba(194, 87, 45, 0.2);
   color: var(--color-ink);
 }
 
@@ -416,9 +416,9 @@ h6 {
    DECORATIVE ELEMENTS
    ============================================ */
 .bg-glow-primary {
-  background: radial-gradient(circle, rgba(198, 93, 59, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(194, 87, 45, 0.15) 0%, transparent 70%);
 }
 
 .bg-glow-secondary {
-  background: radial-gradient(circle, rgba(122, 158, 126, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(115, 157, 122, 0.15) 0%, transparent 70%);
 }

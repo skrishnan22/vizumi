@@ -357,7 +357,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/85 md:bg-white/60 md:backdrop-blur-md border border-primary-200/50 text-primary-700 text-xs font-mono uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300"
             >
               <Sparkles className="size-3.5 text-primary-500" />
-              <span>Blueprints + Canvas from any link</span>
+              <span>AI visual notes from any link</span>
             </motion.div>
 
             {/* Headline */}
@@ -371,10 +371,11 @@ export function Hero() {
               }}
               className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-display font-semibold leading-[0.95] tracking-tight text-ink drop-shadow-sm"
             >
-              From URL <span className="text-ink/40 font-light">to</span>
+              Understand anything
+              <span className="text-ink/40 font-light">from</span>
               <br />
               <span className="italic relative inline-block">
-                mental model.
+                a single link.
                 {/* Subtle underline decoration */}
                 <motion.svg
                   initial={
@@ -404,8 +405,8 @@ export function Hero() {
               }}
               className="text-lg md:text-xl text-ink-soft max-w-xl leading-relaxed font-sans"
             >
-              Paste a link and Vizumi uses AI to build visual notes: sectioned Blueprints with
-              diagrams, plus a connected Canvas that shows how the ideas fit together.
+              Paste any link and Vizumi turns it into visual notes you can actually grasp:
+              sectioned Blueprints for structure, plus a connected Canvas for the big picture.
             </motion.p>
 
             {/* Input Field with Lens Switch */}
@@ -485,7 +486,7 @@ export function Hero() {
               {/* Trust Badges */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-ink-muted px-2">
                 <span className="flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-primary-500/80 shadow-[0_0_8px_rgba(198,93,59,0.4)]" />
+                  <span className="size-1.5 rounded-full bg-primary-500/80 shadow-[0_0_8px_rgba(194,87,45,0.4)]" />
                   No account required
                 </span>
                 <span className="flex items-center gap-2">
