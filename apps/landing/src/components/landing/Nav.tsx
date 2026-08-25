@@ -90,7 +90,7 @@ export function Nav() {
           <div className="flex items-center gap-3">
             <Link
               href="https://notes.vizumi.app"
-              className="inline-flex items-center justify-center h-10 rounded-full bg-primary-500 px-6 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-[0_4px_14px_-2px_rgba(198,93,59,0.3)] transition-all hover:bg-primary-600 hover:shadow-[0_6px_20px_-2px_rgba(198,93,59,0.4)] hover:-translate-y-0.5 md:h-11 md:px-7"
+              className="inline-flex items-center justify-center h-10 rounded-full bg-primary-500 px-6 text-xs font-mono uppercase tracking-[0.12em] text-white shadow-[0_4px_14px_-2px_rgba(194,87,45,0.3)] transition-all hover:bg-primary-600 hover:shadow-[0_6px_20px_-2px_rgba(194,87,45,0.4)] hover:-translate-y-0.5 md:h-11 md:px-7"
             >
               Get Started
             </Link>
